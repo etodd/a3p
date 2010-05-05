@@ -1,0 +1,3 @@
+packager.setHost("http://a3p.sourceforge.net/maps")
+class a3pmaps(package):
+	dir("pkg-maps")

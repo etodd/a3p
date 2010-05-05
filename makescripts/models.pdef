@@ -1,0 +1,3 @@
+packager.setHost("http://a3p.sourceforge.net/models")
+class a3pmodels(package):
+	dir("pkg-models")

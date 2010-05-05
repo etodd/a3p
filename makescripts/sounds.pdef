@@ -1,0 +1,3 @@
+packager.setHost("http://a3p.sourceforge.net/sounds")
+class a3psounds(package):
+	dir("pkg-sounds")
