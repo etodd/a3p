@@ -1,0 +1,47 @@
+//Cg
+
+float2 offset = {0.1, 0.1};
+
+float4 color = {0.0, 0.3, 0.5, 0.1};
+
+void vshader(float4 vtx_position : POSITION,
+			 float2 vtx_texcoord0 : TEXCOORD0,
+			 float3 vtx_norm : NORMAL,
+             uniform float4x4 mat_modelproj,
+             uniform float4x4 trans_model_to_clip,
+			 uniform float4x4 trans_model_to_view,
+			 uniform float4 k_time,
+             out float4 l_position : POSITION,
+             out float2 l_texcoord0 : TEXCOORD0,
+			 out float4 l_texcoord1 : TEXCOORD1,
+			 out float3 l_texcoord2 : TEXCOORD2,
+			 out float4 l_texcoord3 : TEXCOORD3)
+{
+    l_position = mul(mat_modelproj, vtx_position);
+	l_texcoord0 = vtx_texcoord0 * 10 + offset * k_time.x;
+    l_texcoord1 = mul(trans_model_to_clip, vtx_position);
+    l_texcoord1.z = l_texcoord1.w;
+	l_texcoord2 = vtx_norm;
+	l_texcoord3 = mul(trans_model_to_view, vtx_position);
+}
+
+void fshader(float2 l_texcoord0 : TEXCOORD0,
+			 float4 l_texcoord1 : TEXCOORD1,
+			 float3 l_texcoord2 : TEXCOORD2,
+			 float4 l_texcoord3 : TEXCOORD3,
+       	     uniform sampler2D k_reflectionscreen : TEXUNIT1,
+			 in uniform sampler2D k_watermap : TEXUNIT0,
+             uniform float4 texpad_reflectionscreen,
+             out float4 o_color : COLOR)
+{
+	float2 distortion = tex2D(k_watermap, l_texcoord0).xy * 0.02;
+    float3 screen = l_texcoord1.xyz / l_texcoord1.w;
+    float2 reflectiontexcoords = float2(screen.xy) * texpad_reflectionscreen.xy + texpad_reflectionscreen.xy;
+    float3 toCamera = -1 * normalize(l_texcoord3.xyz);
+	float3 normal = l_texcoord2;
+	normal.xy += distortion * 10.0;
+	normal = normalize(normal);
+	float fresnel = clamp(dot(toCamera, normal) + 0.4, 0.0, 1.0);
+	o_color.xyz = tex2D(k_reflectionscreen, reflectiontexcoords + distortion).xyz * fresnel + (color.xyz * color.w) * (1.0 - fresnel);
+	o_color.w = 1.0 - fresnel;
+}
