@@ -1,0 +1,13 @@
+.svn
+.svg
+.blend
+.blend1
+.xcf
+.psd
+src-
+.mtl
+.obj
+.vmf
+.bsp
+.pyc
+Thumbs.db
