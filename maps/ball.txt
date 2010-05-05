@@ -1,0 +1,3 @@
+model ball
+geometry sphere 2
+mass 20.0 sphere 2

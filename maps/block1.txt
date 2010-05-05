@@ -1,0 +1,3 @@
+model block1
+geometry box 4.294 4.294 4.294
+mass 3.0 box 4.294 4.294 4.294
