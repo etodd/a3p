@@ -1,0 +1,75 @@
+<CoordinateSystem> { Z-up }
+
+<Comment> { "Egg laid by Chicken for Blender, version R76b" }
+
+<Material> Material.002 {
+  <Scalar> diffr {0.800000011921}
+  <Scalar> diffg {0.800000011921}
+  <Scalar> diffb {0.800000011921}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
+}
+<Texture> Material.002_01_Tex.004 {
+  "./metal-grunge.jpg"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Texture> Material.002_00_Tex.002 {
+  "./metal-grunge2.jpg"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { NORMAL }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Group> Plane {
+  <VertexPool> Plane {
+    <Vertex> 0 {
+      -81.2250442505 -81.2250442505 -7.65908479691
+      <UV>  {
+        -3.500000 -3.500000
+        <Tangent> { 0.000000 1.000000 0.000000 }
+        <Binormal> { 1.000000 -0.000000 -0.000000 }
+      }
+      <Normal> { 0.000000 0.000000 1.000000 }
+    }
+    <Vertex> 1 {
+      81.2250213623 -81.2250747681 -7.65908479691
+      <UV>  {
+        -3.500000 4.500000
+        <Tangent> { 0.000000 1.000000 0.000000 }
+        <Binormal> { 1.000000 -0.000000 -0.000000 }
+      }
+      <Normal> { 0.000000 0.000000 1.000000 }
+    }
+    <Vertex> 2 {
+      81.2250518799 81.2250366211 -7.65908479691
+      <UV>  {
+        4.500000 4.500000
+        <Tangent> { 0.000000 1.000000 0.000000 }
+        <Binormal> { 1.000000 -0.000000 -0.000000 }
+      }
+      <Normal> { 0.000000 0.000000 1.000000 }
+    }
+    <Vertex> 3 {
+      -81.2250442505 81.2250442505 -7.65908479691
+      <UV>  {
+        4.500000 -3.500000
+        <Tangent> { 0.000000 1.000000 -0.000000 }
+        <Binormal> { 1.000000 -0.000000 -0.000000 }
+      }
+      <Normal> { 0.000000 0.000000 1.000000 }
+    }
+  }
+  <Polygon> {
+    <TRef> { Material.002_00_Tex.002 }
+    <TRef> { Material.002_01_Tex.004 }
+    <MRef> { Material.002 }
+    <VertexRef> { 0 1 2 3 <Ref> { Plane } }
+  }
+}

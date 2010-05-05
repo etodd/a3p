@@ -1,0 +1,302 @@
+<CoordinateSystem> { Z-up }
+
+<Comment> { "Egg laid by Chicken for Blender, version R85" }
+
+<Material> Material {
+  <Scalar> diffr {0.800000011921}
+  <Scalar> diffg {0.800000011921}
+  <Scalar> diffb {0.800000011921}
+  <Scalar> specr {0.307664990425}
+  <Scalar> specg {0.307664990425}
+  <Scalar> specb {0.307664990425}
+  <Scalar> shininess {47.75}
+}
+<Material> texture_5.001 {
+  <Scalar> diffr {0.800000011921}
+  <Scalar> diffg {0.800000011921}
+  <Scalar> diffb {0.800000011921}
+  <Scalar> specr {0.25}
+  <Scalar> specg {0.25}
+  <Scalar> specb {0.25}
+  <Scalar> shininess {42.0}
+}
+<Texture> Material_00_Tex {
+  "./texture (0).jpg"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Texture> texture_5.001_00_Tex.009 {
+  "./texture (5).jpg"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Texture> Material_01_Tex.012 {
+  "./normal (0).jpg"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { NORMAL }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Texture> texture_5.001_01_Tex.003 {
+  "./normal (5).jpg"
+  <Scalar> saved-result { 1 }
+  <Scalar> envtype { NORMAL }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+<Group> block {
+  <VertexPool> block {
+    <Vertex> 0 {
+      -2.14765739441 -2.14763832092 2.14763736725
+      <UV>  {
+        -2.000000 6.000000
+        <Tangent> { 0.000000 1.000000 0.000000 }
+        <Binormal> { -0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 1 {
+      -2.14765739441 2.14763784409 2.14763736725
+      <UV>  {
+        -1.000000 6.000000
+        <Tangent> { -0.000000 1.000000 -0.000000 }
+        <Binormal> { 0.000000 0.000000 1.000000 }
+      }
+    }
+    <Vertex> 2 {
+      -2.14765739441 2.14763784409 -2.14763736725
+      <UV>  {
+        -1.000000 5.000000
+        <Tangent> { 0.000000 1.000000 0.000000 }
+        <Binormal> { -0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 3 {
+      -2.14765739441 -2.14763832092 -2.14763736725
+      <UV>  {
+        -2.000000 5.000000
+        <Tangent> { 0.000000 1.000000 0.000000 }
+        <Binormal> { -0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 4 {
+      2.14765739441 2.14763784409 2.14763736725
+      <UV>  {
+        -1.000000 6.000000
+        <Tangent> { 0.000000 -1.000000 0.000000 }
+        <Binormal> { -0.000000 0.000000 1.000000 }
+      }
+    }
+    <Vertex> 5 {
+      2.14765739441 -2.14763832092 2.14763736725
+      <UV>  {
+        -2.000000 6.000000
+        <Tangent> { -0.000000 -1.000000 -0.000000 }
+        <Binormal> { 0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 6 {
+      2.14765739441 -2.14763832092 -2.14763736725
+      <UV>  {
+        -2.000000 5.000000
+        <Tangent> { 0.000000 -1.000000 0.000000 }
+        <Binormal> { -0.000000 0.000000 1.000000 }
+      }
+    }
+    <Vertex> 7 {
+      2.14765739441 2.14763784409 -2.14763736725
+      <UV>  {
+        -1.000000 5.000000
+        <Tangent> { 0.000000 -1.000000 0.000000 }
+        <Binormal> { -0.000000 0.000000 1.000000 }
+      }
+    }
+    <Vertex> 8 {
+      -2.14765739441 -2.14763832092 2.14763736725
+      <UV>  {
+        -8.000000 6.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { 0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 9 {
+      -2.14765739441 -2.14763832092 -2.14763736725
+      <UV>  {
+        -8.000000 5.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { 0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 10 {
+      2.14765739441 -2.14763832092 -2.14763736725
+      <UV>  {
+        -7.000000 5.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { 0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 11 {
+      2.14765739441 -2.14763832092 2.14763736725
+      <UV>  {
+        -7.000000 6.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { 0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 12 {
+      -2.14765739441 2.14763784409 -2.14763736725
+      <UV>  {
+        -8.000000 5.000000
+        <Tangent> { 1.000000 0.000000 0.000000 }
+        <Binormal> { -0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 13 {
+      -2.14765739441 2.14763784409 2.14763736725
+      <UV>  {
+        -8.000000 6.000000
+        <Tangent> { 1.000000 0.000000 0.000000 }
+        <Binormal> { -0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 14 {
+      2.14765739441 2.14763784409 2.14763736725
+      <UV>  {
+        -7.000000 6.000000
+        <Tangent> { 1.000000 0.000000 0.000000 }
+        <Binormal> { -0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 15 {
+      2.14765739441 2.14763784409 -2.14763736725
+      <UV>  {
+        -7.000000 5.000000
+        <Tangent> { 1.000000 0.000000 -0.000000 }
+        <Binormal> { 0.000000 -0.000000 1.000000 }
+      }
+    }
+    <Vertex> 16 {
+      2.14765739441 2.14763784409 2.14763736725
+      <UV>  {
+        -7.000000 -1.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { 0.000000 1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 17 {
+      -2.14765739441 2.14763784409 2.14763736725
+      <UV>  {
+        -8.000000 -1.000000
+        <Tangent> { -1.000000 -0.000000 -0.000000 }
+        <Binormal> { -0.000000 1.000000 0.000000 }
+      }
+    }
+    <Vertex> 18 {
+      -2.14765739441 -2.14763832092 2.14763736725
+      <UV>  {
+        -8.000000 -2.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { 0.000000 1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 19 {
+      2.14765739441 -2.14763832092 2.14763736725
+      <UV>  {
+        -7.000000 -2.000000
+        <Tangent> { -1.000000 0.000000 0.000000 }
+        <Binormal> { 0.000000 1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 20 {
+      2.14765739441 2.14763784409 -2.14763736725
+      <UV>  {
+        -7.000000 -1.000000
+        <Tangent> { 1.000000 0.000000 0.000000 }
+        <Binormal> { -0.000000 1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 21 {
+      2.14765739441 -2.14763832092 -2.14763736725
+      <UV>  {
+        -7.000000 -2.000000
+        <Tangent> { 1.000000 0.000000 0.000000 }
+        <Binormal> { -0.000000 1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 22 {
+      -2.14765739441 -2.14763832092 -2.14763736725
+      <UV>  {
+        -8.000000 -2.000000
+        <Tangent> { 1.000000 0.000000 0.000000 }
+        <Binormal> { -0.000000 1.000000 -0.000000 }
+      }
+    }
+    <Vertex> 23 {
+      -2.14765739441 2.14763784409 -2.14763736725
+      <UV>  {
+        -8.000000 -1.000000
+        <Tangent> { 1.000000 0.000000 0.000000 }
+        <Binormal> { -0.000000 1.000000 -0.000000 }
+      }
+    }
+  }
+  <Group> block_00_Material {
+    <Polygon> {
+      <TRef> { Material_00_Tex }
+      <TRef> { Material_01_Tex.012 }
+      <MRef> { Material }
+      <Normal> { -1.000000 0.000000 0.000000
+      }
+      <VertexRef> { 0 1 2 3 <Ref> { block } }
+    }
+    <Polygon> {
+      <TRef> { Material_00_Tex }
+      <TRef> { Material_01_Tex.012 }
+      <MRef> { Material }
+      <Normal> { 1.000000 0.000000 -0.000000
+      }
+      <VertexRef> { 4 5 6 7 <Ref> { block } }
+    }
+    <Polygon> {
+      <TRef> { Material_00_Tex }
+      <TRef> { Material_01_Tex.012 }
+      <MRef> { Material }
+      <Normal> { -0.000000 -1.000000 0.000000
+      }
+      <VertexRef> { 8 9 10 11 <Ref> { block } }
+    }
+    <Polygon> {
+      <TRef> { Material_00_Tex }
+      <TRef> { Material_01_Tex.012 }
+      <MRef> { Material }
+      <Normal> { 0.000000 1.000000 0.000000
+      }
+      <VertexRef> { 12 13 14 15 <Ref> { block } }
+    }
+  }
+  <Group> block_01_texture_5.001 {
+    <Polygon> {
+      <TRef> { texture_5.001_00_Tex.009 }
+      <TRef> { texture_5.001_01_Tex.003 }
+      <MRef> { texture_5.001 }
+      <Normal> { 0.000000 -0.000000 1.000000
+      }
+      <VertexRef> { 16 17 18 19 <Ref> { block } }
+    }
+    <Polygon> {
+      <TRef> { texture_5.001_00_Tex.009 }
+      <TRef> { texture_5.001_01_Tex.003 }
+      <MRef> { texture_5.001 }
+      <Normal> { 0.000000 0.000000 -1.000000
+      }
+      <VertexRef> { 20 21 22 23 <Ref> { block } }
+    }
+  }
+}
