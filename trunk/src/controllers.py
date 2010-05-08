@@ -10,6 +10,7 @@ import components
 import hashlib
 import net2
 import particles
+import ai
 
 types = None
 specialTypes = None
@@ -211,7 +212,7 @@ class TeamEntityController(Controller):
 			elif self.entity.isSurvivors:
 				pos = self.entity.dock.getPosition()
 			else:
-				pos = aiWorld.getOpenSpawnPoint(self.entity, entityGroup)
+				pos = aiWorld.getOpenSpawnPoint(self.entity, entityGroup) + Vec3(uniform(-2, 2), uniform(-2, 2), 0)
 			pos.setZ(0)
 			queue = aiWorld.getCollisionQueue(pos + Vec3(0, 0, 100), Vec3(0, 0, -1))
 			for i in range(queue.getNumEntries()):
@@ -778,7 +779,7 @@ class ActorController(ObjectController):
 					p.add(p2)
 		p.add(net.Uint8(255)) # End of component packets
 		p.add(net.Boolean(self.onFire))
-		if engine.clock.getTime() - self.lastDamage > 4.0 and self.entity.health < self.entity.maxHealth:
+		if self.entity.health < self.entity.maxHealth and (engine.clock.getTime() - self.lastDamage > 4.0 or (self.entity.team.dock.getPosition() - self.entity.getPosition()).length() < self.entity.team.dock.radius):
 			self.healthAddition += 60 * engine.clock.timeStep
 		self.entity.health += int(self.healthAddition)
 		self.lastHealthAddition = self.healthAddition
@@ -1122,8 +1123,10 @@ class PlayerController(DroidController):
 			if engine.clock.getTime() - self.lastCommandTimes[id] < 0.4:
 				# Player double-tapped the key. Special attack.
 				self.commands.append((actor.getId(), -1)) # -1 means special attack
-			elif self.targetedEnemy != None and self.targetedEnemy.active and id < len(self.entity.team.actors):
+			elif self.targetedEnemy != None and self.targetedEnemy.active:
 				self.commands.append((actor.getId(), self.targetedEnemy.getId())) # Set the bot's target entity
+			else:
+				self.commands.append((actor.getId(), self.entity.getId())) # No target. Return to the player.
 			self.commandSound.play()
 			self.lastCommandTimes[id] = engine.clock.getTime()
 
@@ -1144,7 +1147,8 @@ class PlayerController(DroidController):
 			blend = min(1.0, (engine.clock.getTime() - self.zoomTime) / self.totalZoomTime)
 			self.fov = self.currentFov + ((self.desiredFov - self.currentFov) * blend)
 			self.cameraOffset = self.currentCameraOffset + ((self.desiredCameraOffset - self.currentCameraOffset) * blend)
-			base.camLens.setFov(self.fov)
+			if base.camLens != None: # If we're a daemon.
+				base.camLens.setFov(self.fov)
 			if blend >= 1.0:
 				self.zoomTime = -1
 
@@ -1156,7 +1160,6 @@ class PlayerController(DroidController):
 			self.pickRay.setDirection(Vec3(math.sin(self.angleX), math.cos(self.angleX), math.sin(self.angleY)))
 			self.angleX += math.pi
 		else:
-			#pos = Vec3(pos.getX() - (self.cameraOffset.getX() * aimOffset.getX()), pos.getY() - (self.cameraOffset.getX() * aimOffset.getY()), pos.getZ() + self.cameraOffset.getZ() - (self.cameraOffset.getX() * aimOffset.getZ()))		
 			camera.setHpr(-math.degrees(self.angleX) + entityGroup.cameraShakeX * 0.5, math.degrees(self.angleY) + entityGroup.cameraShakeY * 0.5, 0)
 			cameraPos = render.getRelativeVector(camera, self.cameraOffset)
 			camera.setPos(pos + cameraPos)
@@ -1172,7 +1175,6 @@ class PlayerController(DroidController):
 				self.toggleZoom()
 			self.reload()
 			self.keyMap["reload"] = False
-		
 
 		angleX = self.angleX
 		move = True
@@ -1222,11 +1224,11 @@ class PlayerController(DroidController):
 		else:
 			self.targetPos = target
 		
-		origin = base.cam.getPos()
-		dir = self.targetPos - origin
-		closestDot = 0.5
+		origin = camera.getPos()
+		dir = render.getRelativeVector(camera, Vec3(0, 1, 0))
+		closestDot = 0.95
 		self.targetedEnemy = None
-		for enemy in (x for x in entityGroup.entities.values() if isinstance(x, entities.DropPod) or (isinstance(x, entities.Actor) and not x.team.isAlly(self.entity.team) and not x.cloaked)):
+		for enemy in (x for x in entityGroup.entities.values() if isinstance(x, entities.DropPod) or ((isinstance(x, entities.Actor) and not x.team.isAlly(self.entity.team) and not x.cloaked))):
 			vector = enemy.getPosition() - origin
 			vector.normalize()
 			dot = vector.dot(dir)
@@ -1293,7 +1295,11 @@ class PlayerController(DroidController):
 				if net.Boolean.getFrom(iterator):
 					controller.enableSpecial()
 				else:
-					controller.setTarget(entityGroup.getEntity(net.Uint8.getFrom(iterator)))
+					target = entityGroup.getEntity(net.Uint8.getFrom(iterator))
+					if target == self.entity:
+						controller.setTarget(None)
+					else:
+						controller.setTarget(target)
 		
 		particles.UnitHighlightParticleGroup.draw(self.entity.getPosition(), self.entity.team.color, self.entity.radius + 0.4)
 
@@ -1306,33 +1312,25 @@ class PlayerController(DroidController):
 			weapon.show()
 	
 	def delete(self, killed = False):
-		base.camLens.setFov(self.defaultFov)
+		if base.camLens != None: # If we're a daemon.
+			base.camLens.setFov(self.defaultFov)
 		DroidController.delete(self, killed)
 
-NORMAL = 0
-ADVANCE = 1
-RETREAT = 2
 class AIController(DroidController):
 	"""The AIController uses the ai module's pathfinding algorithms to go places.
 	At the moment, only BasicDroid actors are supported."""
 	def __init__(self):
 		DroidController.__init__(self)
-		self.moving = False
-		self.targetPos = Vec3(0, 0, 0)
-		self.mode = NORMAL
-		self.path = None
-		self.goal = None
-		self.pathGoal = None
-		self.lastPathCalculation = engine.clock.getTime() + random()
-		self.lastTraversedPoint = None
-		self.enemy = None
+		self.nearestEnemy = None
 		self.targetedEnemy = None
-		self.traversalTimeStart = -1
-		self.goalDistanceLimit = 16
-		self.damagingUnits = dict() # List of units that have damaged us
+		self.moving = False
+		self.path = ai.Path()
+		self.lastAiNode = None
+		self.lastTargetAiNode = None
+		self.lastPathFind = engine.clock.getTime() + random()
 		self.direction = Vec3()
-		self.lastLogicUpdate = engine.clock.getTime() - (random() * 0.5)
 		self.lastShot = 0
+		self.lastTargetCheck = 0
 	
 	def buildSpawnPacket(self):
 		p = DroidController.buildSpawnPacket(self)
@@ -1350,156 +1348,66 @@ class AIController(DroidController):
 		DroidController.actorDamaged(self, entity, damage, ranged)
 		if not isinstance(entity, entities.BasicDroid) or entity.cloaked:
 			return
-		# Simple aggro implementation
-		if entity in self.damagingUnits:
-			self.damagingUnits[entity] += damage
-		else:
-			self.damagingUnits[entity] = damage
-		items = self.damagingUnits.items()
-		backitems = [[v[1], v[0]] for v in items if not v[0].cloaked]
-		backitems.sort()
-		sortedlist = [backitems[i][1] for i in range(0, len(backitems))]
-		self.enemy = sortedlist[len(sortedlist) - 1] # Our target is the unit that has damaged us most.
-	
+
 	def enableSpecial(self):
 		if self.entity.special != None:
 			self.entity.special.enable()
-	
+
 	def setTarget(self, target):
-		self.lastTargetedEnemy = self.targetedEnemy
 		self.targetedEnemy = target
-	
-	def moveToward(self, aiWorld, entityGroup, target):
-		pos = self.entity.getPosition()
-		self.goal = Vec3(target)
-		vector = Vec3()
-		traversalTime = engine.clock.getTime() - self.traversalTimeStart
-		if ((self.path == None or (self.pathGoal - self.goal).length() > 8) and engine.clock.getTime() - self.lastPathCalculation > 0.25) or traversalTime > 5.0:
-			self.lastPathCalculation = engine.clock.getTime()
-			if traversalTime > 5.0 and self.traversalTimeStart != -1: # We can't get to the first waypoint, so find a path without using that waypoint.
-				if self.path != None:
-					self.path = aiWorld.findPath(pos, self.goal, self.path.current())
-				else:
-					self.path = aiWorld.findPath(pos, self.goal, aiWorld.getNearestWaypoint(pos))
-			else:
-				self.path = aiWorld.findPath(pos, self.goal)
-			self.pathGoal = Vec3(self.goal)
-			if self.path != None and self.path.current() != self.lastTraversedPoint:
-				self.traversalTimeStart = engine.clock.getTime()
-		if self.path != None and self.path.hasNext():
-			if (self.path.current().position - pos).length() < 3 or self.path.current() == self.lastTraversedPoint:
-				self.lastTraversedPoint = self.path.current()
-				goTo = self.path.next().position
-				self.traversalTimeStart = engine.clock.getTime()
-			else:
-				goTo = self.path.current().position
-			vector = pos - goTo
-			vector.normalize()
-			self.moving = True
-		elif (pos - self.goal).length() > 2:
-			goTo = self.goal
-			vector = pos - goTo
-			vector.normalize()
-			self.moving = True
-		else:
-			goTo = pos
-			self.moving = False
-			
-		obj = entityGroup.getNearestPhysicsEntity(pos)
-		if obj != None:
-			diff = obj.getPosition() - pos
-			if diff.length() < obj.radius + self.entity.radius + 1.5:
-				diff.setZ(0)
-				diff.normalize()
-				if vector.dot(-diff) > 0.7:
-					up = Vec3(0, 0, 1)
-					vector = diff.cross(up)
-		self.direction = vector
 
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
-		weapon = self.entity.components[self.activeWeapon]
-		if engine.clock.getTime() - self.lastLogicUpdate > 0.5:
-			pos = self.entity.getPosition()
-			if self.targetedEnemy != None and self.targetedEnemy.active:
-				if isinstance(self.targetedEnemy, entities.BasicDroid): # If the target is a drop pod, we're just going to go there. We're not going to actually attack it.
-					self.enemy = self.targetedEnemy
-				self.mode = ADVANCE
-			else:
-				self.targetedEnemy = None
-				self.mode = NORMAL
-				if self.enemy == None or self.enemy.cloaked or not self.enemy.active or (self.enemy.getPosition() - pos).length() > 10:
-					self.enemy = aiWorld.getNearestEnemy(entityGroup, pos, self.entity.team)
-					
-			if self.enemy != None and self.enemy.active and not self.enemy.cloaked:
-				self.lastLogicUpdate = engine.clock.getTime()
-				self.targetPos = self.enemy.getPosition()
-				enemyPos = self.enemy.getPosition()
-				vector = enemyPos - pos
-				enemyDistance = vector.length()
-				if enemyDistance == 0:
-					return
-				vector.normalize()
-				mode = self.mode
-				
-				if self.entity.health > self.entity.maxHealth * 0.4 and enemyDistance > self.goalDistanceLimit * 1.25 and (isinstance(weapon, components.Gun) and weapon.ammo < weapon.clipSize * 0.3):
-					self.reload()
-				
-				if self.entity.team.getPlayer() == None:
-					self.mode = ADVANCE
-					self.targetedEnemy = aiWorld.getNearestDropPod(entityGroup, pos)
-					mode = self.mode
-				if self.isReloading():
-					mode = RETREAT
-				if mode == NORMAL:
-					playerPos = self.entity.team.getPlayer().getPosition()
-					if (playerPos - pos).length() > 10:
-						goal = playerPos
-					else:
-						goal = pos
-				elif mode == ADVANCE:
-					if self.targetedEnemy != None and self.targetedEnemy.active and isinstance(self.targetedEnemy, entities.DropPod):
-						enemyPos = self.targetedEnemy.getPosition()
-						enemyDistance = (enemyPos - pos).length()
-					else:
-						enemyPos = self.enemy.getPosition()
-					if enemyDistance < self.goalDistanceLimit * 0.7:
-						goal = enemyPos - (vector * 10)
-					elif enemyDistance <= self.goalDistanceLimit + 1.0:
-						up = Vec3(0, 0, 1)
-						cross = vector.cross(up)
-						goal = pos + (cross * 10)
-					else:
-						goal = enemyPos
-				elif mode == RETREAT:
-					if enemyDistance < 25 or (enemyDistance > 35 and enemyDistance < 50):
-						goal = self.enemy.getPosition() - (vector * 28)
-					else:
-						goal = pos
-				else:
-					goal = pos
-				self.moveToward(aiWorld, entityGroup, goal)
-				if enemyDistance < weapon.range:
-					if entityGroup.getEntityFromEntry(aiWorld.getFirstCollision(pos + (vector * (self.entity.radius + 0.2)), vector)) == self.enemy:
-						if weapon.burstTimer == -1 and engine.clock.getTime() - weapon.burstDelayTimer >= weapon.burstDelay:
-							weapon.burstTimer = engine.clock.getTime()
-							weapon.burstDelayTimer = -1
-							weapon.burstTime = weapon.burstTimeBase * ((random() * 1.5) + 1)
-							weapon.shotDelay = weapon.shotDelayBase * ((random() * 1.5) + 1)
-			elif self.entity.team.getPlayer() == None:
-				self.reload()
-			elif (pos - self.entity.team.getPlayer().getPosition()).length() > 10:
-				self.moveToward(aiWorld, entityGroup, self.entity.team.getPlayer().getPosition())
-				self.reload()
+		if engine.clock.getTime() - self.lastPathFind > 0.5:
+			self.lastPathFind = engine.clock.getTime()
+			player = self.entity.team.getPlayer()
+			if player == None and (self.targetedEnemy == None or not self.targetedEnemy.active):
+				self.targetedEnemy = aiWorld.getNearestDropPod(entityGroup, self.entity.getPosition())
+				if self.targetedEnemy == None:
+					self.targetedEnemy = aiWorld.getNearestEnemy(entityGroup, self.entity.getPosition(), self.entity.team)
+			if self.targetedEnemy != None and self.targetedEnemy.active and isinstance(self.targetedEnemy, entities.Actor):
+				self.nearestEnemy = self.targetedEnemy
+			elif self.nearestEnemy == None or not self.nearestEnemy.active or (self.nearestEnemy.getPosition() - self.entity.getPosition()).length() > 15:
+				self.nearestEnemy = aiWorld.getNearestEnemy(entityGroup, self.entity.getPosition(), self.entity.team)
+			self.pathFindUpdate(aiWorld, entityGroup)
 		
-		self.entity.addTorque(Vec3(engine.impulseToForce(self.torque * self.direction.getY()), engine.impulseToForce(-self.torque * self.direction.getX()), 0))
+		weapon = self.entity.components[self.activeWeapon]
+		if engine.clock.getTime() - self.lastTargetCheck > 0.1 and weapon.burstTimer == -1 and engine.clock.getTime() - weapon.burstDelayTimer >= weapon.burstDelay:
+			self.lastTargetCheck = engine.clock.getTime()
+			if self.nearestEnemy != None and self.nearestEnemy.active:
+				self.targetPos = Vec3(self.nearestEnemy.getPosition())
+				vector = self.targetPos - self.entity.getPosition()
+				if vector.length() < weapon.range:
+					vector.normalize()
+					if entityGroup.getEntityFromEntry(aiWorld.getFirstCollision(self.entity.getPosition() + (vector * (self.entity.radius + 0.2)), vector)) == self.nearestEnemy:
+						weapon.burstTimer = engine.clock.getTime()
+						weapon.burstDelayTimer = -1
+						weapon.burstTime = weapon.burstTimeBase * ((random() * 1.5) + 1)
+						weapon.shotDelay = weapon.shotDelayBase * ((random() * 1.5) + 1)
+
+		self.movementUpdate()
+		
+		self.weaponUpdate()
+	
+		p = DroidController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
+
+		return p
+	
+	def clientUpdate(self, aiWorld, entityGroup, iterator = None):
+		DroidController.clientUpdate(self, aiWorld, entityGroup, iterator)
+	
+	def movementUpdate(self):
 		angularVel = self.entity.getAngularVelocity()
-		if angularVel.length() > self.maxSpeed:
-			angularVel.normalize()
-			self.entity.setAngularVelocity(angularVel * self.maxSpeed)
-		if not self.moving:
+		if self.moving:
+			self.entity.addTorque(Vec3(engine.impulseToForce(-self.torque * self.direction.getY()), engine.impulseToForce(self.torque * self.direction.getX()), 0))
+			if angularVel.length() > self.maxSpeed:
+				angularVel.normalize()
+				self.entity.setAngularVelocity(angularVel * self.maxSpeed)
+		else:
 			self.entity.addTorque(Vec3(engine.impulseToForce(-angularVel.getX() * 6), engine.impulseToForce(-angularVel.getY() * 6), engine.impulseToForce(-angularVel.getZ() * 6)))
 	
-		if weapon.burstTimer != -1 and engine.clock.getTime() - weapon.burstTimer <= weapon.burstTime and self.enemy != None and self.enemy.active:
+	def weaponUpdate(self):
+		weapon = self.entity.components[self.activeWeapon]			
+		if weapon.burstTimer != -1 and engine.clock.getTime() - weapon.burstTimer <= weapon.burstTime and self.nearestEnemy != None and self.nearestEnemy.active:
 			if engine.clock.getTime() - self.lastShot > weapon.shotDelay:
 				if weapon.fire():
 					weapon.burstDelayTimer = engine.clock.getTime()
@@ -1507,7 +1415,7 @@ class AIController(DroidController):
 					self.lastShot = engine.clock.getTime()
 		else:
 			weapon.burstTimer = -1
-	
+
 		if weapon.firing:
 			vector = self.targetPos - self.entity.getPosition()
 			distance = vector.length()
@@ -1517,20 +1425,57 @@ class AIController(DroidController):
 			cross = vector.cross(up)
 			self.targetPos += up * coefficient
 			self.targetPos += cross * coefficient
+
+	def pathFindUpdate(self, aiWorld, entityGroup):
+		aiNode = aiWorld.navMesh.getNode(self.entity.getPosition(), self.lastAiNode)
+		targetAiNode = None
+		target = Vec3()
+		if self.targetedEnemy != None and self.targetedEnemy.active:
+			target = self.targetedEnemy.getPosition()
+		elif self.entity.team.getPlayer() != None and self.entity.team.getPlayer().active:
+			target = self.entity.team.getPlayer().getPosition()
+		if (target - self.entity.getPosition()).length() > 10:
+			targetAiNode = aiWorld.navMesh.getNode(target, self.lastTargetAiNode)
+			if (targetAiNode != None and aiNode != None) and (targetAiNode != self.lastTargetAiNode or aiNode != self.lastAiNode):
+				self.path = aiWorld.navMesh.findPathFromNodes(aiNode, targetAiNode, self.entity.getPosition(), target, self.entity.radius + 0.5)
+				if self.path != None:
+					self.path.clean()
+		elif self.nearestEnemy != None and self.nearestEnemy.active and (self.nearestEnemy.getPosition() - self.entity.getPosition()).length() < 10:
+			# Do some tricksy dodging and stuff
+			target += Vec3(uniform(-10, 10), uniform(-10, 10), 0)
+			targetAiNode = aiWorld.navMesh.getNode(target, self.lastTargetAiNode)
+			if (targetAiNode != None and aiNode != None) and (targetAiNode != self.lastTargetAiNode or aiNode != self.lastAiNode):
+				self.path = aiWorld.navMesh.findPathFromNodes(aiNode, targetAiNode, self.entity.getPosition(), target, self.entity.radius + 0.5)
+				if self.path != None:
+					self.path.clean()
 	
-		p = DroidController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
+		self.moving = False
+		self.direction = Vec3()
+		if self.path != None and self.path.hasNext():
+			self.moving = True
+			self.direction = self.path.current() - self.entity.getPosition()
+			if self.direction.length() < self.entity.radius + 2:
+				self.path.next()
+			self.direction.normalize()
+		elif self.path != None and self.path.end != None and (self.path.end - self.entity.getPosition()).length() > 10:
+			self.direction = self.path.end - self.entity.getPosition()
+			self.direction.normalize()
+			self.moving = True
+		self.lastAiNode = aiNode
+		self.lastTargetAiNode = targetAiNode
 
-		if self.goal != None:
-			p.add(net2.StandardVec3(self.goal))
-		else:
-			p.add(net2.StandardVec3(Vec3()))
-
-		return p
-
-	def clientUpdate(self, aiWorld, entityGroup, iterator = None):
-		DroidController.clientUpdate(self, aiWorld, entityGroup, iterator)
-		if iterator != None:
-			self.goal = net2.StandardVec3.getFrom(iterator)
+		# Simple obstacle avoidance
+		obj = entityGroup.getNearestPhysicsEntity(self.entity.getPosition())
+		if obj != None:
+			diff = obj.getPosition() - self.entity.getPosition()
+			if diff.length() < obj.radius + self.entity.radius + 1.5:
+				diff.setZ(0)
+				diff.normalize()
+				if self.direction.dot(diff) > 0.7:
+					up = Vec3(0, 0, 1)
+					self.direction = diff.cross(up)
+					if random() > 0.5:
+						self.direction *= -1
 
 class Special(DirectObject):
 	def __init__(self, actor):
@@ -1877,7 +1822,6 @@ class EditController(Controller):
 		self.teamIndex = len([team for team in entityGroup.teams if team.dock != None])
 		# Aspect ratio corrects for horizontal scaling when calculating the cursor position / picking ray.
 		self.aspectRatio = float(base.win.getProperties().getXSize()) / float(base.win.getProperties().getYSize())
-		self.particleGroup = particles.WaypointParticleGroup()
 		self.mouseDown = False
 		self.spawnedObjects = []
 		self.clickTime = 0
@@ -1932,10 +1876,7 @@ class EditController(Controller):
 			self.teamIndex += 1
 			normal = entry.getSurfaceNormal(render)
 			dock.setPosition(target.getX(), target.getY(), target.getZ() + dock.vradius)
-			dock.node.setR(math.degrees(math.atan2(normal.getX(), normal.getZ())))
-			dock.node.setP(math.degrees(-math.atan2(normal.getY(), normal.getZ())))
-			dock.geometry.setQuaternion(dock.node.getQuat(render))
-			dock.commitChanges()
+			dock.setRotation(Vec3(0, math.degrees(-math.atan2(normal.getY(), normal.getZ())), math.degrees(math.atan2(normal.getX(), normal.getZ()))))
 			aiWorld.docks.append(dock)
 			self.spawnedObjects.append(dock)
 		elif self.selectedTool == 3:
@@ -1950,24 +1891,6 @@ class EditController(Controller):
 			aiWorld.addSpawnPoint(geom)
 			self.spawnedObjects.append(geom)
 		elif self.selectedTool == 4:
-			# Make a waypoint
-			id = ""
-			while id == "" or id in aiWorld.waypoints:
-				hash = hashlib.md5()
-				hash.update(str(random()))
-				id = hash.hexdigest()[0:3]
-			aiWorld.addWaypoint(ai.Waypoint(id, target))
-		elif self.selectedTool == 5:
-			# Link two waypoints
-			if self.savedPoint == None:
-				self.savedPoint = Vec3(target)
-			else:
-				aiWorld.getNearestWaypoint(self.savedPoint).link(aiWorld.getNearestWaypoint(target))
-				self.savedPoint = None
-		elif self.selectedTool == 6:
-			# Delete waypoints
-			aiWorld.removeWaypoint(aiWorld.getNearestWaypoint(target))
-		elif self.selectedTool == 7:
 			# Make vertical glass
 			if self.savedPoint == None:
 				self.savedPoint = Vec3(target)
@@ -1985,7 +1908,7 @@ class EditController(Controller):
 				entityGroup.spawnEntity(glass)
 				self.savedPoint = None
 				self.spawnedObjects.append(glass)
-		elif self.selectedTool == 8:
+		elif self.selectedTool == 5:
 			# Make horizontal glass
 			if self.savedPoint == None:
 				self.savedPoint = Vec3(target)
@@ -2002,18 +1925,6 @@ class EditController(Controller):
 				entityGroup.spawnEntity(glass)
 				self.savedPoint = None
 				self.spawnedObjects.append(glass)
-		elif self.selectedTool == 9:
-			# Make a springboard
-			board = entities.Springboard(aiWorld.world, aiWorld.space)
-			board.setPosition(target.getX(), target.getY(), target.getZ() + board.vradius)
-			normal = entry.getSurfaceNormal(render)
-			board.node.setR(math.degrees(math.atan2(normal.getX(), normal.getZ())))
-			board.node.setP(math.degrees(-math.atan2(normal.getY(), normal.getZ())))
-			board.body.setQuaternion(board.node.getQuat(render))
-			board.commitChanges()
-			board.controller.setDirection(normal)
-			entityGroup.spawnEntity(board)
-			self.spawnedObjects.append(board)
 
 	def serverUpdate(self, aiWorld, entityGroup, data):
 		p = Controller.serverUpdate(self, aiWorld, entityGroup, data)
@@ -2059,16 +1970,6 @@ class EditController(Controller):
 		pos = self.pos
 		camera.setPos(pos)
 		camera.setHpr(-math.degrees(self.angleX), math.degrees(self.angleY), 0)
-		
-		if self.enableEdit:
-			# Draw waypoints
-			drawnLinks = []
-			for waypoint in aiWorld.waypoints.values():
-				self.particleGroup.draw(waypoint.position)
-				for link in waypoint.links:
-					if not link in drawnLinks:
-						self.particleGroup.drawLink(link.a.position, link.b.position)
-						drawnLinks.append(link)
 		return p
 		
 	def delete(self):

@@ -617,9 +617,9 @@ class TeamEntity(Entity):
 		return self.secondaryWeapon
 	def getSpecial(self):
 		return self.special
-	def respawn(self, weapon, special):
+	def respawn(self, weapon, special, index):
 		if self.controller != None and (weapon, special) in self.purchasedTypes:
-			self.controller.respawn(weapon, special, self.purchasedTypes.index((weapon, special)))
+			self.controller.respawn(weapon, special, index)
 	def respawnPlayer(self):
 		if self.controller != None:
 			self.controller.respawnPlayer(self.primaryWeapon, self.secondaryWeapon, self.special)
@@ -627,14 +627,14 @@ class TeamEntity(Entity):
 		if self.controller != None:
 			self.controller.platformSpawnPlayer(self.primaryWeapon, self.secondaryWeapon, None, pos)
 	def respawnUnits(self):
+		activeIndices = []
+		for actor in (x for x in self.actors if x.active):
+			activeIndices.append(actor.teamIndex)
+		index = 0
 		for unit in self.purchasedTypes:
-			unitActive = False
-			for actor in (x for x in self.actors if x.active):
-				if actor.weaponIds[0] == unit[0] and actor.specialId == unit[1]:
-					unitActive = True
-					break
-			if not unitActive:
-				self.respawn(unit[0], unit[1])
+			if not index in activeIndices:
+				self.respawn(unit[0], unit[1], index)
+			index += 1
 	def setPlayer(self, player):
 		self.player = player
 		if player != None:
@@ -734,10 +734,10 @@ class BasicDroid(Actor):
 		space.setSurfaceType(self.geometry, 2)
 		self.cloaked = False
 		self.shielded = False
-		self.node.setTransparency(TransparencyAttrib.MAlpha)
 		self.shieldNode = engine.loadModel("models/shield/shield")
 		self.shieldNode.reparentTo(self.node)
-		self.shieldNode.setColor(0.95, 0.96, 1.0, 0.6)
+		self.shieldNode.setTwoSided(True)
+		self.shieldNode.setColor(1.0, 0.9, 0.8, 0.6)
 		self.shieldNode.setTransparency(TransparencyAttrib.MAlpha)
 		self.shieldNode.hide()
 		self.shieldNode.hide(BitMask32.bit(4)) # Don't cast shadows

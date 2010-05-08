@@ -205,7 +205,7 @@ class WaypointParticleGroup(ParticleGroup):
 	
 	def drawLink(self, a, b):
 		if self.active and ParticleGroup.begun:
-			ParticleGroup.generator.segment(a, b, 1, .1, self.color)
+			ParticleGroup.generator.segment(a, b, ParticleGroup.frames[1], .1, self.color)
 
 class BulletTracerParticleGroup(ParticleGroup):
 	def __init__(self):

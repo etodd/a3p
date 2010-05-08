@@ -133,9 +133,10 @@ class Gun(Weapon):
 		self.ammoAdditions = 0 # So that if fire() is called between serverUpdate and clientUpdate, ammo is still depleted
 		self.reloadTime = 2.0
 		self.reloadActive = False
+		self.newReloadActive = False
 		self.reloadStarted = False # Server side; only true one frame
 		self.damage = damage
-		self.lastReload = -self.reloadTime
+		self.lastReload = -1
 		self.ricochetSound = audio.SoundPlayer("ricochet")
 		self.reloadSound = audio.SoundPlayer("reload")
 		self.reloadBeepSound = audio.SoundPlayer("reload-beep")
@@ -167,15 +168,17 @@ class Gun(Weapon):
 	
 	def hide(self):
 		Weapon.hide(self)
+		self.newReloadActive = False
 		self.reloadActive = False
 		self.reloadStarted = False
-		self.lastReload = 0
+		self.lastReload = -1
 		if self.reloadBeepSound.isPlaying():
 			self.reloadBeepSound.stop()
 	
 	def reload(self):
 		if not self.reloadActive and self.selected and self.ammo < self.clipSize:
 			self.lastReload = engine.clock.getTime()
+			self.newReloadActive = True
 			self.reloadActive = True
 			self.reloadStarted = True
 		
@@ -185,7 +188,7 @@ class Gun(Weapon):
 			if result:
 				self.ammoAdditions -= 1
 			return result
-		elif self.isReady():
+		elif self.showTime == -1 and self.isReady():
 			self.reload()
 		return False
 	
@@ -205,19 +208,23 @@ class Gun(Weapon):
 
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
 		p = Weapon.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
-		activeSound = 0 # No sound
-		elapsedReloadTime = engine.clock.getTime() - self.lastReload
+
 		if self.reloadStarted:
 			self.addCriticalPacket(p, packetUpdate)
 			self.reloadStarted = False
-		if elapsedReloadTime < self.reloadTime:
-			activeSound = 1 # Reload beep sound
-		elif self.reloadActive:
-			self.ammo = self.clipSize
-			self.reloadActive = False
-			activeSound = 2 # Reload ready sound
-			self.addCriticalPacket(p, packetUpdate)
-		p.add(net.Uint8(activeSound))
+		
+		self.reloadActive = self.newReloadActive
+		self.activeSound = 0 # No sound
+		if self.reloadActive:
+			if engine.clock.getTime() - self.lastReload < self.reloadTime:
+				self.activeSound = 1 # Reload beep sound
+			else:
+				self.ammo = self.clipSize
+				self.reloadActive = False
+				self.newReloadActive = False
+				self.activeSound = 2 # Reload ready sound
+				self.addCriticalPacket(p, packetUpdate)
+		p.add(net.Uint8(self.activeSound))
 		p.add(net.Boolean(self.selected))
 		self.ammo += self.ammoAdditions
 		self.ammoAdditions = 0
@@ -334,8 +341,6 @@ class ChainGun(Gun):
 
 	def clientUpdate(self, aiWorld, entityGroup, iterator = None):
 		Gun.clientUpdate(self, aiWorld, entityGroup, iterator)
-		
-		
 
 		if iterator != None:
 			if net.Boolean.getFrom(iterator): # We're firing
@@ -500,7 +505,7 @@ class SniperRifle(Gun):
 		self.fireTime = 0.8
 		self.reloadTime = 3.0
 		self.range = 300
-		self.accuracy = 0.8
+		self.accuracy = 0.7
 	
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
 		p = Gun.serverUpdate(self, aiWorld, entityGroup, packetUpdate)

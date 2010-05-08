@@ -19,7 +19,7 @@ class World:
 	def __init__(self):
 		"Initializes the ODE world and space."
 		self.grids = dict()
-		self.waypoints = dict()
+		self.navMesh = None
 		self.spawnPoints = []
 		self.docks = []
 		if base.cTrav == 0:
@@ -53,13 +53,6 @@ class World:
 		self.space.autoCollide()
 		self.world.quickStep(engine.clock.timeStep)
 		self.contactGroup.empty() # Clear the contact joints
-
-	def addWaypoint(self, waypoint):
-		self.waypoints[waypoint.id] = waypoint
-	
-	def removeWaypoint(self, waypoint):
-		waypoint.delete()
-		del self.waypoints[waypoint.id]
 	
 	def addSpawnPoint(self, point):
 		self.spawnPoints.append(point)
@@ -99,28 +92,6 @@ class World:
 				distance = vector.length()
 				pod = entity
 		return pod
-
-	def getNearestWaypoint(self, pos):
-		lowestDistance = -1
-		returnValue = None
-		for point in self.waypoints.values():
-			vector1 = pos - point.position
-			dist = vector1.length()
-			if dist < lowestDistance or lowestDistance == -1:
-				lowestDistance = dist
-				returnValue = point
-		return returnValue
-
-	def getNearestWaypointOtherThan(self, pos, waypoint):
-		lowestDistance = -1
-		returnValue = None
-		for point in (x for x in self.waypoints.values() if x != waypoint):
-			vector1 = pos - point.position
-			dist = vector1.length()
-			if dist < lowestDistance or lowestDistance == -1:
-				lowestDistance = dist
-				returnValue = point
-		return returnValue
 	
 	def getNearestSpawnPoint(self, pos):
 		lowestDistance = -1
@@ -216,59 +187,6 @@ class World:
 		queue.sortEntries()
 		return queue
 	
-	def findPath(self, startPos, endPos, avoidedWaypoint = None):
-		if avoidedWaypoint != None:
-			return self._find(self.getNearestWaypointOtherThan(startPos, avoidedWaypoint), self.getNearestWaypoint(endPos))
-		else:
-			return self._find(self.getNearestWaypoint(startPos), self.getNearestWaypoint(endPos))
-	
-	def _find(self, startPoint, endPoint):
-		"A* algorithm."
-		if len(self.waypoints) == 0:
-			return None
-		def reconstructPath(path, currentPoint):
-			if currentPoint.cameFrom != None:
-				reconstructPath(path, currentPoint.cameFrom)
-				currentPoint.clear()
-				path.add(currentPoint)
-		self.clearPaths()
-		path = Path()
-		path.add(startPoint)
-		openPoints = [startPoint]
-		startPoint.gScore = 0
-		startPoint.hScore = (startPoint.position - endPoint.position).length()
-		startPoint.fScore = startPoint.hScore + startPoint.gScore
-		while len(openPoints) > 0:
-			openPoints.sort(lambda x, y: (x.fScore > y.fScore) - (x.fScore < y.fScore))
-			currentPoint = openPoints.pop(0)
-			if currentPoint == endPoint:
-				reconstructPath(path, currentPoint)
-				return path
-			currentPoint.closed = True
-			for link in currentPoint.links:
-				neighbor = link.b
-				if link.b == currentPoint:
-					neighbor = link.a
-				if neighbor.closed:
-					continue
-				tentativeGScore = currentPoint.gScore + link.distance
-				tentativeIsBetter = False
-				if not neighbor in openPoints:
-					openPoints.append(neighbor)
-					neighbor.hScore = (neighbor.position - endPoint.position).length()
-					tentativeIsBetter = True
-				elif tentativeGScore < neighbor.gScore:
-					tentativeIsBetter = True
-				if tentativeIsBetter:
-					neighbor.cameFrom = currentPoint
-					neighbor.gScore = tentativeGScore
-					neighbor.fScore = neighbor.gScore + neighbor.hScore
-		return None
-	
-	def clearPaths(self):
-		for waypoint in self.waypoints.values():
-			waypoint.clear()
-	
 	def delete(self):
 		"Destroys the ODE world. IMPORTANT: do not delete the AI world before deleting the entity group."
 		for point in self.spawnPoints:
@@ -277,56 +195,264 @@ class World:
 		for dock in self.docks:
 			dock.delete()
 		del self.docks[:]
+		if self.navMesh != None:
+			self.navMesh.delete()
 		self.world.destroy()
 		self.space.destroy()
 
-class Waypoint:
-	def __init__(self, id, pos):
-		self.id = id
-		self.position = Vec3(pos)
-		self.links = []
-		self.closed = False
-		self.cameFrom = None
-		self.gScore = 0
-		self.hScore = 0
-		self.fScore = 0
-		
-	def clear(self):
-		self.closed = False
-		self.cameFrom = None
-		self.gScore = 0
-		self.hScore = 0
-		self.fScore = 0
-		
-	def link(self, waypoint):
-		if waypoint != self:
-			for link in self.links:
-				if link.a == waypoint or link.b == waypoint:
-					return # We're already linked
-			link = WaypointLink(self, waypoint)
-			self.links.append(link)
-			waypoint.links.append(link)
+class NavMesh:
+	def __init__(self, directory, filename):
+		self.edges = []
+		self.nodes = []
+		self.filename = filename
+		self.node = engine.loadModel(directory + "/" + self.filename)
+		self._processNode(self.node)
 	
 	def delete(self):
-		self.clear()
-		for link in self.links:
-			neighbor = link.b
-			if link.b == self:
-				neighbor = link.a
-			neighbor.links.remove(link)
-		del self.links[:]
+		self.node.removeNode()
+	
+	def _processNode(self, node):
+		geomNodeCollection = node.findAllMatches('**/+GeomNode')
+		for nodePath in geomNodeCollection:
+			geomNode = nodePath.node()
+			self._processGeomNode(geomNode)
+		for edge in self.edges:
+			if len(edge.nodes) <= 1:
+				edge.navigable = False
 
-class WaypointLink:
-	def __init__(self, a, b):
-		self.a = a
-		self.b = b
-		self.distance = (self.a.position - self.b.position).length()
+	def _processGeomNode(self, geomNode):
+		for i in range(geomNode.getNumGeoms()):
+			geom = geomNode.getGeom(i)
+			state = geomNode.getGeomState(i)
+			self._processGeom(geom)
+
+	def _processGeom(self, geom):
+		vdata = geom.getVertexData()
+		for i in range(geom.getNumPrimitives()):
+			prim = geom.getPrimitive(i)
+			self._processPrimitive(prim, vdata)
+
+	def _processPrimitive(self, prim, vdata):
+		vertex = GeomVertexReader(vdata, "vertex")
+		prim = prim.decompose()
+		def getVertex(index):
+			vi = prim.getVertex(index)
+			vertex.setRow(vi)
+			return vertex.getData3f()
+		for p in range(prim.getNumPrimitives()):
+			s = prim.getPrimitiveStart(p)
+			e = prim.getPrimitiveEnd(p)
+			for i in range(s, e):
+				v = getVertex(i)
+				if i + 1 >= e:
+					break
+				v2 = getVertex(i + 1)
+				edge1 = self.addEdge(v, v2)
+				if i + 2 >= e:
+					break
+				v3 = getVertex(i + 2)
+				edge2 = self.addEdge(v2, v3)
+				edge3 = self.addEdge(v3, v)
+				self.nodes.append(NavNode(edge1, edge2, edge3))
+
+	def getNode(self, pos, lastKnownNode = None):
+		if lastKnownNode != None:
+			if lastKnownNode.containerTest(pos):
+				return lastKnownNode
+			nodes = []
+			for edge in lastKnownNode.edges:
+				nodes += [x for x in edge.getNodes() if x != lastKnownNode and x.containerTest(pos)]
+			if len(nodes) == 0:
+				nodes = [x for x in self.nodes if x.containerTest(pos)]
+		else:
+			nodes = [x for x in self.nodes if x.containerTest(pos)]
+		size = len(nodes)
+		if size == 0:
+			return None
+		if size > 1:
+			nodes.sort(lambda x, y: cmp((x.center - pos).length(), (y.center - pos).length()))
+		return nodes[0]
+	
+	def findPath(self, startPos, endPos, radius = 1):
+		"A* algorithm."
+		startNode = self.getNode(startPos)
+		endNode = self.getNode(endPos)
+		return self.findPathFromNodes(startNode, endNode, startPos, endPos, radius)
+	
+	def findPathFromNodes(self, startNode, endNode, startPos, endPos, radius = 1):
+		def reconstructPath(path, currentEdge):
+			if currentEdge.cameFrom != None:
+				reconstructPath(path, currentEdge.cameFrom)
+				path.add(currentEdge)
+		# Clear pathfinding data
+		for edge in self.edges:
+			edge.closed = False
+			edge.cameFrom = None
+			edge.gScore = 0
+			edge.hScore = 0
+			edge.fScore = 0
+		path = Path(startPos, endPos, radius)
+		openEdges = startNode.edges[:]
+		for edge in startNode.edges:
+			edge.gScore = 0
+			edge.hScore = edge.cost(endNode.center)
+			edge.fScore = edge.hScore
+		while len(openEdges) > 0:
+			openEdges.sort(lambda x, y: (x.fScore > y.fScore) - (x.fScore < y.fScore))
+			currentEdge = openEdges.pop(0)
+			if endNode in currentEdge.nodes:
+				reconstructPath(path, currentEdge)
+				return path
+			currentEdge.closed = True
+			for neighbor in (x for x in currentEdge.neighbors if x.navigable and not x.closed):
+				tentativeGScore = currentEdge.gScore + currentEdge.costToEdge(neighbor)
+				tentativeIsBetter = False
+				if not neighbor in openEdges:
+					openEdges.append(neighbor)
+					neighbor.hScore = neighbor.cost(endNode.center)
+					tentativeIsBetter = True
+				elif tentativeGScore < neighbor.gScore:
+					tentativeIsBetter = True
+				if tentativeIsBetter:
+					neighbor.cameFrom = currentEdge
+					neighbor.gScore = tentativeGScore
+					neighbor.fScore = neighbor.gScore + neighbor.hScore
+		return None
+	
+	def addEdge(self, v1, v2):
+		edge = self._checkForEdge(v1, v2)
+		if edge == None:
+			edge = Edge(Vec3(v1), Vec3(v2))
+			self.edges.append(edge)
+		return edge
+	
+	def _checkForEdge(self, v1, v2):
+		epsilon = 0.1
+		for edge in self.edges:
+			if (edge.a.almostEqual(v1, epsilon) and edge.b.almostEqual(v2, epsilon)) or (edge.a.almostEqual(v2, epsilon) and edge.b.almostEqual(v1, epsilon)):
+				return edge
+		return None
+
+class NavNode:
+	def __init__(self, edge1, edge2, edge3):
+		self.edges = []
+		self.edgeNormals = [] # For containerTest
+		self.center = Vec3()
+		for e in [edge1, edge2, edge3]:
+			self._addEdge(e)
+		for edge in self.edges:
+			self.center += edge.a + edge.b
+		self.center /= len(self.edges) * 2 # Node center is only calculated once.
+		up = Vec3(0, 0, 1)
+		for edge in self.edges:
+			toCenter = edge.center - self.center
+			toCenter.setZ(0)
+			toCenter.normalize()
+			parallel = Vec3(edge.a.getX(), edge.a.getY(), 0) - Vec3(edge.b.getX(), edge.b.getY(), 0)
+			parallel.setZ(0)
+			parallel.normalize()
+			normal = parallel.cross(up)
+			reverseNormal = normal * -1
+			if toCenter.dot(normal) < 0:
+				self.edgeNormals.append(normal)
+			else:
+				self.edgeNormals.append(reverseNormal)
+	
+	def containerTest(self, p):
+		p2 = Vec3(p.getX(), p.getY(), 0)
+		for i in range(len(self.edgeNormals)):
+			vector = p2 - self.edges[i].flatCenter
+			vector.normalize()
+			if vector.dot(self.edgeNormals[i]) < 0:
+				return False
+		# To do: vertical test
+		return True
+	
+	def _addEdge(self, edge):
+		if not edge in self.edges:
+			self.edges.append(edge)
+			edge.addNode(self)
+			for e in (x for x in self.edges if x != edge):
+				edge.addNeighbor(e)
+				e.addNeighbor(edge)
+
+class Edge:
+	def __init__(self, v1, v2):
+		self.a = v1
+		self.b = v2
+		self.aToBVector = self.b - self.a
+		self.aToBVector.normalize()
+		self.center = (self.a + self.b) / 2
+		self.flatCenter = Vec3(self.center.getX(), self.center.getY(), 0)
+		self.neighbors = []
+		self.nodes = []
+		# Temporary pathfinding data
+		self.closed = False
+		self.cameFrom = None
+		self.gScore = 0
+		self.hScore = 0
+		self.fScore = 0
+		self.navigable = True
+	
+	def intersects(self, c, d, radius = 0):
+		def ccw(u,v,w):
+			return (w.getY() - u.getY()) * (v.getX() - u.getX()) > (v.getY() - u.getY()) * (w.getX() - u.getX())
+		a = self.a + (self.aToBVector * radius)
+		b = self.b - (self.aToBVector * radius)
+		return ccw(a, c, d) != ccw(b, c, d) and ccw(a, b, c) != ccw(a, b, d)
+
+	def addNode(self, node):
+		if node not in self.nodes:
+			self.nodes.append(node)
+	
+	def cost(self, pos):
+		# The cost is the distance from given point to the closer of our two corners.
+		dist1 = (self.a - pos).length()
+		dist2 = (self.b - pos).length()
+		return min(dist1, dist2)
+	
+	def costToEdge(self, edge):
+		# The cost is the distance between the two closest corners of the two edges.
+		dist1 = (self.a - edge.a).length()
+		dist2 = (self.b - edge.b).length()
+		dist3 = (self.a - edge.b).length()
+		dist4 = (self.b - edge.a).length()
+		return min(dist1, dist2, dist3, dist4)
+	
+	def getNodes(self):
+		return self.nodes
+	
+	def addNeighbor(self, e):
+		if not e in self.neighbors:
+			self.neighbors.append(e)
+	
+	def getNeighbors(self):
+		return self.neighbors
 
 class Path:
-	def __init__(self):
+	def __init__(self, start = None, end = None, radius = 0):
 		self.waypoints = []
-	def add(self, point):
-		self.waypoints.append(point)
+		self.edges = []
+		self.radius = radius
+		if start == None:
+			self.start = None
+			self.end = None
+		else:
+			self.start = Vec3(start)
+			self.end = Vec3(end)
+	def clean(self):
+		i = len(self.waypoints) - 2
+		while i > 0:
+			if self.edges[i].intersects(self.waypoints[i - 1], self.waypoints[i + 1], self.radius):
+				del self.waypoints[i]
+				del self.edges[i]
+			i -= 1
+	def add(self, edge):
+		self.edges.append(edge)
+		if (edge.a - self.end).length() < (edge.b - self.end).length():
+			self.waypoints.append(edge.a + (edge.aToBVector * self.radius))
+		else:
+			self.waypoints.append(edge.b - (edge.aToBVector * self.radius))
 	def current(self):
 		if len(self.waypoints) > 0:
 			return self.waypoints[0]

@@ -213,7 +213,7 @@ class PythonNetContext(NetworkContext):
 		if self.mode == MODE_SERVER:
 			loadingTimeout = self.connectionTimeout * 2
 			for client in self.activeConnections.values():
-				if timeFunction() - client.lastPacketTime > (self.connectionTimeout if x.ready else loadingTimeout):
+				if timeFunction() - client.lastPacketTime > (self.connectionTimeout if client.ready else loadingTimeout):
 					del self.activeConnections[client.address]
 					if self.disconnectCallback != None:
 						self.disconnectCallback(client.address)

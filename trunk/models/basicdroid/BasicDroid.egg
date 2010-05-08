@@ -12,9 +12,9 @@
   <Scalar> shininess {35.25}
 }
 <Material> Material {
-  <Scalar> diffr {0.490197479725}
-  <Scalar> diffg {0.490197479725}
-  <Scalar> diffb {0.490197479725}
+  <Scalar> diffr {0.385622262955}
+  <Scalar> diffg {0.383983939886}
+  <Scalar> diffb {0.383983939886}
   <Scalar> specr {0.737872362137}
   <Scalar> specg {0.737872362137}
   <Scalar> specb {0.737872362137}
