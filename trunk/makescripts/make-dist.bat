@@ -3,12 +3,9 @@ cd ..
 rmdir /S /Q pkg-maps
 rmdir /S /Q pkg-sounds
 rmdir /S /Q pkg-models
-rmdir /S /Q pkg-maps
 rmdir /S /Q p3d-src
 
 xcopy maps pkg-maps\maps\ /i /e /y /exclude:makescripts\multifile-exclusions.txt
-
-xcopy shaders pkg-shaders\shaders\ /i /e /y /exclude:makescripts\multifile-exclusions.txt
 
 xcopy sounds pkg-sounds\sounds\ /i /e /y /exclude:makescripts\multifile-exclusions.txt
 

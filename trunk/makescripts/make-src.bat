@@ -4,8 +4,6 @@ rmdir /S /Q dist-src
 
 xcopy maps dist-src\maps\ /i /e /y /exclude:makescripts\multifile-exclusions.txt
 
-xcopy shaders dist-src\shaders\ /i /e /y /exclude:makescripts\multifile-exclusions.txt
-
 xcopy sounds dist-src\sounds\ /i /e /y /exclude:makescripts\multifile-exclusions.txt
 
 xcopy models dist-src\models\ /i /e /y /exclude:makescripts\multifile-exclusions.txt

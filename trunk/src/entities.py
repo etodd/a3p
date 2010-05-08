@@ -617,7 +617,7 @@ class TeamEntity(Entity):
 		return self.secondaryWeapon
 	def getSpecial(self):
 		return self.special
-	def respawn(self, weapon, special, index):
+	def respawn(self, weapon, special, index = 0):
 		if self.controller != None and (weapon, special) in self.purchasedTypes:
 			self.controller.respawn(weapon, special, index)
 	def respawnPlayer(self):

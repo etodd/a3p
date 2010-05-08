@@ -412,8 +412,6 @@ class Map(DirectObject):
 						team.color = colors[i]
 						team.name = colorNames[i]
 						team.isSurvivors = True
-						if len(aiWorld.docks) > 0:
-							team.setDock(aiWorld.docks[0]) # Everyone gets the same dock in survival mode
 						entityGroup.spawnEntity(team)
 						entityGroup.addTeam(team)
 					for team in entityGroup.teams:
@@ -438,7 +436,7 @@ class Map(DirectObject):
 				self.waterNode = render.attachNewNode(maker.generate())
 				self.waterNode.setHpr(0, -90, 0)
 				self.waterNode.setPos(0, 0, float(tokens[1])) # Second token is water height
-				self.waterNode.setShader(loader.loadShader("shaders/water.sha"))
+				self.waterNode.setShader(loader.loadShader("images/water.sha"))
 				self.waterNode.setTransparency(TransparencyAttrib.MAlpha)
 				self.waterNode.setShaderInput("watermap", loader.loadTexture("images/water-normal.png"))
 				self.waterNode.setShaderInput("time", clock.getTime())
