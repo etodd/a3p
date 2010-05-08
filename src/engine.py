@@ -398,6 +398,8 @@ class Map(DirectObject):
 					if len(tokens) > 2: # 2 v 2
 						entityGroup.teams[0].addAlly(entityGroup.teams[2].getId())
 						entityGroup.teams[1].addAlly(entityGroup.teams[3].getId())
+			elif tokens[0] == "navmesh":
+				aiWorld.navMesh = ai.NavMesh(mapDirectory, tokens[1])
 			elif tokens[0] == "survival":
 				self.isSurvival = True
 				numTeams = 4
@@ -505,7 +507,7 @@ class Map(DirectObject):
 					lightNode.setHpr(float(tokens[7]), float(tokens[8]), float(tokens[9]))
 					lightNode.setPos(render.getRelativeVector(lightNode, Vec3(0, 1, 0)) * -self.worldSize * 2.25)
 					if len(tokens) >= 11 and tokens[10] == "shadow" and hasattr(light, "setShadowCaster"):
-						light.setShadowCaster(True, 2048, 2048)
+						light.setShadowCaster(True, 1024, 1024)
 						light.setCameraMask(BitMask32.bit(4))
 					parentNode.setLight(lightNode)
 					self.lights.append(lightNode)
@@ -552,10 +554,7 @@ class Map(DirectObject):
 						continue
 					normal = entry.getSurfaceNormal(render)
 					break
-				dock.node.setR(math.degrees(math.atan2(normal.getX(), normal.getZ())))
-				dock.node.setP(math.degrees(-math.atan2(normal.getY(), normal.getZ())))
-				dock.geometry.setQuaternion(dock.node.getQuat(render))
-				dock.commitChanges()
+				dock.setRotation(Vec3(0, math.degrees(-math.atan2(normal.getY(), normal.getZ())), math.degrees(math.atan2(normal.getX(), normal.getZ()))))
 				aiWorld.docks.append(dock)
 			elif tokens[0] == "physicsentity":
 				if net.netMode == net.MODE_SERVER:
@@ -579,10 +578,6 @@ class Map(DirectObject):
 				scenery.setPos(float(tokens[2]), float(tokens[3]), float(tokens[4]))
 				scenery.reparentTo(renderLit)
 				self.sceneries[tokens[1]] = scenery
-			elif tokens[0] == "waypoint":
-				aiWorld.addWaypoint(ai.Waypoint(tokens[1], Vec3(float(tokens[2]), float(tokens[3]), float(tokens[4]))))
-			elif tokens[0] == "waypoint-link":
-				aiWorld.waypoints[tokens[1]].link(aiWorld.waypoints[tokens[2]])
 		
 		# Create winnar platforms
 		entry = aiWorld.getFirstCollision(Vec3(0, 0, 100), Vec3(0, 0, -1))
@@ -608,6 +603,8 @@ class Map(DirectObject):
 				self.data += line
 		mapFile = MapFile()
 		mapFile.write("world " + str(self.worldSize) + "\n")
+		if aiWorld.navMesh != None:
+			mapFile.write("navmesh " + aiWorld.navMesh.filename + "\n")
 		for dock in aiWorld.docks:
 			pos = dock.getPosition()
 			mapFile.write("dock " + str(dock.teamIndex) + " " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + "\n")
@@ -672,14 +669,6 @@ class Map(DirectObject):
 			pos = point.getPosition()
 			rot = point.getRotation()
 			mapFile.write("spawnpoint " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + " " + str(rot.getX()) + " " + str(rot.getY()) + " " + str(rot.getZ()) + "\n")
-		savedLinks = []
-		for waypoint in aiWorld.waypoints.values():
-			mapFile.write("waypoint " + waypoint.id + " " + str(waypoint.position.getX()) + " " + str(waypoint.position.getY()) + " " + str(waypoint.position.getZ()) + "\n")
-		for waypoint in aiWorld.waypoints.values():
-			for link in waypoint.links:
-				if not link in savedLinks:
-					mapFile.write("waypoint-link " + link.a.id + " " + link.b.id + "\n")
-					savedLinks.append(link)
 		stream = open(self.filename, "w")
 		stream.write(mapFile.data)
 		stream.close()
@@ -800,37 +789,36 @@ class SpawnPoint(DirectObject):
 	def __init__(self, space):
 		self.node = loadModel("models/spawnpoint/SpawnPoint")
 		self.node.reparentTo(renderEnvironment)
-		self.collisionNode = loadModel("models/spawnpoint/SpawnPointTriMesh")
-		self.collisionNode.hide()
-		self.collisionNode.reparentTo(self.node)
-		self.collisionNode.setCollideMask(BitMask32(1))
-		triMeshData = OdeTriMeshData(self.collisionNode, True)
-		self.geometry = OdeTriMeshGeom(space, triMeshData)
-		self.geometry.setCollideBits(BitMask32(0x00000001))
-		self.geometry.setCategoryBits(BitMask32(0x00000001))
-		space.setSurfaceType(self.geometry, 0)
 	
 	def setPosition(self, pos):
-		self.geometry.setPosition(pos)
 		self.node.setPos(pos)
 	
 	def getPosition(self):
-		return self.geometry.getPosition()
+		return self.node.getPos()
 	
 	def setRotation(self, hpr):
 		self.node.setHpr(hpr)
-		self.geometry.setQuaternion(self.node.getQuat(render))
 	
 	def getRotation(self):
 		return self.node.getHpr()
 	
 	def delete(self):
 		deleteModel(self.node, "models/spawnpoint/SpawnPoint")
-		self.geometry.destroy()
-		
-	def commitChanges(self):
-		"Updates the NodePath to reflect the position of the ODE geometry."
-		self.node.setPosQuat(renderEnvironment, self.getPosition(), Quat(self.geometry.getQuaternion()))
+
+class Dock(SpawnPoint):
+	"Docks have a one-to-one relationship with Teams. Their Controllers increment the team's money and spawn newly purchased units."
+	def __init__(self, space, teamIndex):
+		self.teamIndex = teamIndex
+		self.radius = 6
+		self.node = loadModel("models/dock/Dock")
+		self.node.reparentTo(renderEnvironment)
+		self.shieldNode = loadModel("models/shield/shield")
+		self.shieldNode.reparentTo(self.node)
+		self.shieldNode.setScale(self.radius)
+		self.shieldNode.setTwoSided(True)
+		self.shieldNode.setColor(0.8, 0.9, 1.0, 0.6)
+		self.shieldNode.setTransparency(TransparencyAttrib.MAlpha)
+		self.shieldNode.hide(BitMask32.bit(4)) # Don't cast shadows
 
 class Platform(DirectObject):
 	"Makes a platform upon which to parade the game winners."
@@ -877,27 +865,6 @@ class Platform(DirectObject):
 	def commitChanges(self):
 		"Updates the NodePath to reflect the position of the ODE geometry."
 		self.node.setPosQuat(renderEnvironment, self.getPosition(), Quat(self.geometry.getQuaternion()))
-
-class Dock(SpawnPoint):
-	"Docks have a one-to-one relationship with Teams. Their Controllers increment the team's money and spawn newly purchased units."
-	def __init__(self, space, teamIndex):
-		self.teamIndex = teamIndex
-		self.node = loadModel("models/dock/Dock")
-		self.node.reparentTo(renderEnvironment)
-		self.radius = 12
-		self.vradius = 2
-		self.collisionNode = CollisionNode("cnode")
-		cnodepath = self.node.attachNewNode(self.collisionNode)
-		size = self.radius
-		vsize = self.vradius
-		point1 = Point3(-size / 2.0, -size / 2.0, -vsize / 2.0)
-		point2 = Point3(size / 2.0, size / 2.0, vsize / 2.0)
-		self.collisionNode.addSolid(CollisionBox(point1, point2))
-		self.collisionNodePath = self.node.attachNewNode(self.collisionNode)
-		self.geometry = OdeBoxGeom(space, size, size, vsize * 2)
-		self.geometry.setCollideBits(BitMask32(0x00000001))
-		self.geometry.setCategoryBits(BitMask32(0x00000001))
-		space.setSurfaceType(self.geometry, 0)
 
 class Mouse:
 	"""A mouse can be created by any object that needs it (usually a controller).

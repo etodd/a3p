@@ -281,12 +281,14 @@ class PointControlBackend(ServerBackend):
 		queue = None
 		while queue == None or queue.getNumEntries() == 0:
 			queue = self.aiWorld.getCollisionQueue(Vec3(uniform(-size, size), uniform(-size, size), 100), Vec3(0, 0, -1))
-		
-		for i in range(queue.getNumEntries()):
-			entry = queue.getEntry(i)
-			if entry.getSurfaceNormal(render).getZ() >= 0:
-				pos = entry.getSurfacePoint(render) + Vec3(0, 0, 1.0)
-				break
+			pos = None
+			for i in range(queue.getNumEntries()):
+				entry = queue.getEntry(i)
+				if entry.getSurfaceNormal(render).getZ() >= 0:
+					pos = entry.getSurfacePoint(render) + Vec3(0, 0, 1.0)
+					break
+			if pos == None or self.aiWorld.navMesh.getNode(pos) == None:
+				queue = None
 		pod = entities.DropPod(controllers.DropPodController())
 		pod.controller.setFinalPosition(pos)
 		self.entityGroup.spawnEntity(pod)

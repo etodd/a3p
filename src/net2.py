@@ -248,8 +248,10 @@ class NetManager(DirectObject):
 			packetUpdate = True
 			self.lastPacketUpdate = engine.clock.getRealTime() # Reset packet update timer
 		
+		sendSpawn = False
 		spawnPacket = net.Packet()
 		if len(self.spawnPackets) > 0 and packetUpdate:
+			sendSpawn = True
 			for p in self.spawnPackets:
 				spawnPacket.add(p)
 			del self.spawnPackets[:]
@@ -266,13 +268,17 @@ class NetManager(DirectObject):
 				updatedEntities.append(entity)
 
 		# Make sure we update our own copy of the entities.
+		sendController = False
 		if len(controllerPacket.dataObjects) > 0:
+			sendController = True
 			data = PyDatagram()
 			controllerPacket.addTo(data)
 			self.processPacket(data, backend)
 		
 		deletePacket = net.Packet()
+		sendDelete = False
 		if len(self.deletePackets) > 0 and packetUpdate:
+			sendDelete = True
 			for p in self.deletePackets:
 				deletePacket.add(p)
 			del self.deletePackets[:]
@@ -298,10 +304,8 @@ class NetManager(DirectObject):
 				else:
 					engine.log.warning("Client requested spawn packet for non-existent entity.")
 			del self.clientSpawnPacketRequests[:]
-			if outboundPacket.getSize() > 0:
+			if sendSpawn or sendController or sendDelete:
 				net.context.broadcast(outboundPacket)
-				self.outgoingPackets += 1
-				#self.totalOutgoingPacketSize += outboundPacket.getLength() # Need to find a way to do this
 
 		packets = net.context.readTick()
 		for packet in packets:
@@ -311,38 +315,17 @@ class NetManager(DirectObject):
 			self.totalIncomingPacketSize += len(packet[0])
 			if net.netMode == net.MODE_SERVER and rebroadcast:
 				net.context.broadcastDatagramExcept(data, packet[1])
-				self.outgoingPackets += 1
-				self.totalOutgoingPacketSize += len(packet[0])
 		del packets
 
 		if len(entityList) > len(updatedEntities):
 			for entity in (x for x in entityList if x.active and not x in updatedEntities):
 				entity.controller.clientUpdate(backend.aiWorld, backend.entityGroup)
 		
-		if engine.enableNetworkStatistics and engine.clock.getTime() - self.lastStatsLog > 5.0:
-			inAverage = 0
-			outAverage = 0
-			if self.incomingPackets > 0:
-				inAverage = round(self.totalIncomingPacketSize / self.incomingPackets)
-			if self.outgoingPackets > 0:
-				outAverage = round(self.totalOutgoingPacketSize / self.outgoingPackets)
-			inRate = round(self.totalIncomingPacketSize / (engine.clock.getTime() - self.lastStatsLog))
-			outRate = round(self.totalOutgoingPacketSize / (engine.clock.getTime() - self.lastStatsLog))
-			engine.log.debug("Incoming Stats - Packets/sec: " + str(self.incomingPackets / (engine.clock.getTime() - self.lastStatsLog)) + " Average size (bytes): " + str(inAverage) + " Bytes/sec: " + str(inRate))
-			engine.log.debug("Outgoing Stats - Packets/sec: " + str(self.outgoingPackets / (engine.clock.getTime() - self.lastStatsLog)) + " Average size (bytes): " + str(outAverage) + " Bytes/sec: " + str(outRate))
-			self.incomingPackets = 0
-			self.totalIncomingPacketSize = 0
-			self.outgoingPackets = 0
-			self.totalOutgoingPacketSize = 0
-			self.lastStatsLog = engine.clock.getTime()
-		
 		clientAddress = [] if net.netMode == net.MODE_SERVER else [net.context.hostConnection]
 		emptyPacket = net.Packet()
 		emptyPacket.add(net.Uint8(net.PACKET_EMPTY))
 		for client in (x for x in net.context.activeConnections.values() + clientAddress if net.timeFunction() - x.lastSentPacketTime > 0.5 and x.ready):
 			net.context.send(emptyPacket, client.address)
-			self.outgoingPackets += 1
-			#self.totalOutgoingPacketSize += emptyPacket.getLength() # Need to find a way to do this
 		
 		net.context.writeTick()
 			
