@@ -1,3 +1,0 @@
-packager.setHost("http://a3p.sourceforge.net/shaders")
-class a3pshaders(package):
-	dir("pkg-shaders")

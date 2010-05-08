@@ -122,8 +122,12 @@ class World:
 				returnValue = point
 		return returnValue
 
-	def getRandomSpawnPoint(self):
-		return choice(self.spawnPoints).getPosition()
+	def getRandomSpawnPoint(self, zombieSpawnsOnly = False):
+		if zombieSpawnsOnly:
+			spawns = self.spawnPoints[1:]
+		else:
+			spawns = self.spawnPoints
+		return choice(spawns).getPosition()
 	
 	def getRayCollisionQueue(self, rayNP, node = None):
 		"""Gets a CollisionHandlerQueue containing all collisions along the specified ray.

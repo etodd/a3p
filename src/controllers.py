@@ -208,9 +208,9 @@ class TeamEntityController(Controller):
 			if not self.entity.active:
 				return
 			if self.entity.isZombies:
-				pos = aiWorld.getRandomSpawnPoint()
+				pos = aiWorld.getRandomSpawnPoint(zombieSpawnsOnly = True) # Zombies spawn at any spawn point other than the first.
 			elif self.entity.isSurvivors:
-				pos = self.entity.dock.getPosition()
+				pos = aiWorld.spawnPoints[0].getPosition() # Survivors always spawn at the first defined spawn point.
 			else:
 				pos = aiWorld.getOpenSpawnPoint(self.entity, entityGroup) + Vec3(uniform(-2, 2), uniform(-2, 2), 0)
 			pos.setZ(0)
@@ -779,7 +779,7 @@ class ActorController(ObjectController):
 					p.add(p2)
 		p.add(net.Uint8(255)) # End of component packets
 		p.add(net.Boolean(self.onFire))
-		if self.entity.health < self.entity.maxHealth and (engine.clock.getTime() - self.lastDamage > 4.0 or (self.entity.team.dock.getPosition() - self.entity.getPosition()).length() < self.entity.team.dock.radius):
+		if self.entity.health < self.entity.maxHealth and (engine.clock.getTime() - self.lastDamage > 4.0 or (self.entity.team.dock != None and (self.entity.team.dock.getPosition() - self.entity.getPosition()).length() < self.entity.team.dock.radius)):
 			self.healthAddition += 60 * engine.clock.timeStep
 		self.entity.health += int(self.healthAddition)
 		self.lastHealthAddition = self.healthAddition
