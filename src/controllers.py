@@ -1862,12 +1862,9 @@ class EditController(Controller):
 			directory = self.map.mapDirectory + "/" + filename.rpartition("/")[0]
 			data = vfs.readFile(self.map.mapDirectory + "/" + filename + ".txt", 1)
 			obj = entities.PhysicsEntity(aiWorld.world, aiWorld.space, data, directory, filename)
-			obj.setPosition(target.getX(), target.getY(), target.getZ() + obj.vradius)
+			obj.setPosition(target + Vec3(0, 0, obj.vradius))
 			normal = entry.getSurfaceNormal(render)
-			obj.node.setR(math.degrees(math.atan2(normal.getX(), normal.getZ())))
-			obj.node.setP(math.degrees(-math.atan2(normal.getY(), normal.getZ())))
-			obj.body.setQuaternion(obj.node.getQuat(render))
-			obj.commitChanges()
+			obj.setRotation(Vec3(0, math.degrees(-math.atan2(normal.getY(), normal.getZ())), math.degrees(math.atan2(normal.getX(), normal.getZ()))))
 			entityGroup.spawnEntity(obj)
 			self.spawnedObjects.append(obj)
 		elif self.selectedTool == 2:
@@ -1875,7 +1872,7 @@ class EditController(Controller):
 			dock = engine.Dock(aiWorld.space, self.teamIndex)
 			self.teamIndex += 1
 			normal = entry.getSurfaceNormal(render)
-			dock.setPosition(target.getX(), target.getY(), target.getZ() + dock.vradius)
+			dock.setPosition(target + Vec3(0, 0, dock.vradius))
 			dock.setRotation(Vec3(0, math.degrees(-math.atan2(normal.getY(), normal.getZ())), math.degrees(math.atan2(normal.getX(), normal.getZ()))))
 			aiWorld.docks.append(dock)
 			self.spawnedObjects.append(dock)
@@ -1884,10 +1881,7 @@ class EditController(Controller):
 			geom = engine.SpawnPoint(aiWorld.space)
 			geom.setPosition(Vec3(target))
 			normal = entry.getSurfaceNormal(render)
-			geom.node.setR(math.degrees(math.atan2(normal.getX(), normal.getZ())))
-			geom.node.setP(math.degrees(-math.atan2(normal.getY(), normal.getZ())))
-			geom.geometry.setQuaternion(geom.node.getQuat(render))
-			geom.commitChanges()
+			geom.setRotation(Vec3(0, math.degrees(-math.atan2(normal.getY(), normal.getZ())), math.degrees(math.atan2(normal.getX(), normal.getZ()))))
 			aiWorld.addSpawnPoint(geom)
 			self.spawnedObjects.append(geom)
 		elif self.selectedTool == 4:
@@ -1902,9 +1896,7 @@ class EditController(Controller):
 				glass.setPosition(pos + Vec3(0, 0, 5))
 				v = target - self.savedPoint
 				v.normalize()
-				glass.node.setHpr(math.degrees(math.atan2(v.getY(), v.getX())), 0, 0)
-				glass.body.setQuaternion(glass.node.getQuat(render))
-				glass.commitChanges()
+				glass.setRotation(Vec3(math.degrees(math.atan2(v.getY(), v.getX())), 0, 0))
 				entityGroup.spawnEntity(glass)
 				self.savedPoint = None
 				self.spawnedObjects.append(glass)
@@ -1919,12 +1911,15 @@ class EditController(Controller):
 				glass = entities.Glass(aiWorld.world, aiWorld.space)
 				glass.initGlass(aiWorld.world, aiWorld.space, width if width >= 0 else width * -1, height if height >= 0 else height * -1)
 				glass.setPosition(pos)
-				glass.setPosition(pos)
-				glass.node.setHpr(0, 90, 0)
-				glass.geometry.setQuaternion(glass.node.getQuat(render))
+				glass.setRotation(Vec3(0, 90, 0))
 				entityGroup.spawnEntity(glass)
 				self.savedPoint = None
 				self.spawnedObjects.append(glass)
+		elif self.selectedTool == 6:
+			# Delete physics entity
+			entity = entityGroup.getNearestPhysicsEntity(target)
+			entityGroup.removeEntity(entity)
+			entityGroup.clearDeletedEntities()
 
 	def serverUpdate(self, aiWorld, entityGroup, data):
 		p = Controller.serverUpdate(self, aiWorld, entityGroup, data)
@@ -1940,11 +1935,7 @@ class EditController(Controller):
 			r = node.getR()
 			p = node.getP()
 			node.lookAt(target)
-			node.setR(r)
-			node.setP(p)
-			if hasattr(obj, "body"):
-				obj.body.setQuaternion(obj.node.getQuat(render))
-			obj.geometry.setQuaternion(obj.node.getQuat(render))
+			obj.setRotation(Vec3(node.getH(), p, r))
 		
 		if self.keyMap["rotate"] == 1 or not self.enableEdit:
 			self.angleX += self.ui.mouse.getDX()

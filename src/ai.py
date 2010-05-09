@@ -274,7 +274,13 @@ class NavMesh:
 		if size == 0:
 			return None
 		if size > 1:
-			nodes.sort(lambda x, y: cmp((x.center - pos).length(), (y.center - pos).length()))
+			highest = -100
+			highestNode = None
+			for node in nodes:
+				if node.highest > highest and node.lowest < pos.getZ():
+					highest = node.highest
+					highestNode = node
+			return highestNode
 		return nodes[0]
 	
 	def findPath(self, startPos, endPos, radius = 1):
@@ -339,6 +345,8 @@ class NavMesh:
 
 class NavNode:
 	def __init__(self, edge1, edge2, edge3):
+		self.highest = -10000
+		self.lowest = 10000
 		self.edges = []
 		self.edgeNormals = [] # For containerTest
 		self.center = Vec3()
@@ -374,6 +382,14 @@ class NavNode:
 	
 	def _addEdge(self, edge):
 		if not edge in self.edges:
+			if edge.a.getZ() < self.lowest:
+				self.lowest = edge.a.getZ()
+			if edge.b.getZ() < self.lowest:
+				self.lowest = edge.b.getZ()
+			if edge.a.getZ() > self.highest:
+				self.highest = edge.a.getZ()
+			if edge.b.getZ() > self.highest:
+				self.highest = edge.b.getZ()
 			self.edges.append(edge)
 			edge.addNode(self)
 			for e in (x for x in self.edges if x != edge):
