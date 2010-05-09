@@ -719,6 +719,7 @@ class BasicDroid(Actor):
 		self.collisionNodePath = self.node.attachNewNode(self.collisionNode)
 		self.collisionNode.addSolid(CollisionSphere(0, 0, 0, self.radius + 0.05))
 		self.node.hide(BitMask32.bit(4)) # Don't cast shadows
+		self.node.setTransparency(TransparencyAttrib.MAlpha) # For when we're cloaked
 		self.lowResNode = engine.loadModel("models/basicdroid/BasicDroid-lowres")
 		self.lowResNode.reparentTo(self.node)
 		self.lowResNode.hide(BitMask32.bit(1))

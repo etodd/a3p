@@ -808,6 +808,7 @@ class Dock(SpawnPoint):
 	def __init__(self, space, teamIndex):
 		self.teamIndex = teamIndex
 		self.radius = 6
+		self.vradius = 2
 		self.node = loadModel("models/dock/Dock")
 		self.node.reparentTo(renderEnvironment)
 		self.shieldNode = loadModel("models/shield/shield")
