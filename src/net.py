@@ -19,14 +19,13 @@ PACKET_CONTROLLER = 1
 PACKET_SPAWN = 2
 PACKET_DELETE = 3
 PACKET_ENDMATCH = 4
-PACKET_CLIENTMATCHREADY = 5 # Means the client user is ready to start the match
-PACKET_NEWCLIENT = 6 # New client is connecting
-PACKET_CLIENTREQUESTSPAWNPACKET = 7 # Client missed a spawn packet.
-PACKET_DISCONNECT = 8 # Server or client disconnect
-PACKET_SERVERFULL = 9 # Server can't take any more clients
-PACKET_CHAT = 10 # Chat data
-PACKET_EMPTY = 11 # No data. Used for establishing and maintaining connections.
-PACKET_CLIENTREADY = 12
+PACKET_NEWCLIENT = 5 # New client is connecting
+PACKET_CLIENTREQUESTSPAWNPACKET = 6 # Client missed a spawn packet.
+PACKET_DISCONNECT = 7 # Server or client disconnect
+PACKET_SERVERFULL = 8 # Server can't take any more clients
+PACKET_CHAT = 9 # Chat data
+PACKET_EMPTY = 10 # No data. Used for establishing and maintaining connections.
+PACKET_CLIENTREADY = 11
 
 # For communication with lobby server
 PACKET_REQUESTHOSTLIST = 13 # Client requesting the host list from the lobby server

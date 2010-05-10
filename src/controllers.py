@@ -1252,7 +1252,7 @@ class PlayerController(DroidController):
 		if self.keyMap["jump"]:
 			if engine.clock.getTime() - self.lastJump > 0.25 and aiWorld.testCollisions(self.entity.collisionNodePath).getNumEntries() > 0:
 				self.lastJump = engine.clock.getTime()
-				self.entity.addForce(engine.impulseToForce(0, 0, 800))
+				self.entity.addForce(engine.impulseToForce(0, 0, 1000))
 
 		self.entity.components[self.activeWeapon].zoomed = self.zoomed
 		
@@ -1312,7 +1312,7 @@ class PlayerController(DroidController):
 			weapon.show()
 	
 	def delete(self, killed = False):
-		if base.camLens != None: # If we're a daemon.
+		if self.entity.isLocal and base.camLens != None: # If we're a local player and we're not running in a daemon.
 			base.camLens.setFov(self.defaultFov)
 		DroidController.delete(self, killed)
 

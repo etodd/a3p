@@ -210,9 +210,6 @@ class NetManager(DirectObject):
 				elif type == net.PACKET_ENDMATCH:
 					engine.log.info("Received match end packet.")
 					messenger.send("end-match", [iterator])
-				elif type == net.PACKET_CLIENTMATCHREADY:
-					messenger.send("client-match-ready", [iterator])
-					rebroadcast = False
 				elif type == net.PACKET_NEWCLIENT:
 					messenger.send("server-new-connection", [sender, net.String.getFrom(iterator)]) # Sender address and username
 					rebroadcast = False

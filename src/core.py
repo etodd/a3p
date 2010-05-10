@@ -46,12 +46,12 @@ class Backend(DirectObject):
 		self.entityGroup = entities.EntityGroup(self.netManager)
 		self.game = None
 		self.lastGc = engine.clock.getRealTime()
-		self.scoreLimit = 2500
+		self.scoreLimit = 1500
 		self.username = username
 		self.enableRespawn = True
 		self.startTime = engine.clock.getTime()
 		self.gameOver = False
-		self.matchLimit = 5
+		self.matchLimit = 3
 		self.matchNumber = 0
 
 	def setGame(self, game):
@@ -100,7 +100,6 @@ class ServerBackend(Backend):
 		self.registerHost = registerHost
 		self.clients = []
 		self.accept("server-new-connection", self.newConnectionCallback)
-		self.accept("client-match-ready", self.clientMatchReadyCallback)
 		self.accept("disconnect", self.clientDisconnectedCallback)
 		net.context.disconnectCallback = self.clientDisconnectedCallback
 		self.accept("change-map", self.loadMap)
@@ -133,6 +132,7 @@ class ServerBackend(Backend):
 		Backend.loadMap(self, mapFile)
 		net.context.resetConnectionStatuses()
 		for client in net.context.activeConnections:
+			net.context.activeConnections[client].ready = False
 			self.sendSetupPackets(client)
 		if self.game != None:
 			self.game.setLocalTeamID(self.entityGroup.teams[0].getId())
@@ -141,9 +141,6 @@ class ServerBackend(Backend):
 		Backend.setGame(self, game)
 		self.numClients += 1 # Count ourselves as a client since we have a Game attached
 		self.clients.append(("127.0.0.1", 0)) # Reserve a spot here; we are our own client.
-	
-	def clientMatchReadyCallback(self, iterator):
-		pass # A client has selected units and is starting to play.
 	
 	def lobbyServerRegistrationCallback(self):
 		if not self.registrationConfirmed:
@@ -274,14 +271,12 @@ class PointControlBackend(ServerBackend):
 	def update(self):
 		ServerBackend.update(self)
 		if engine.clock.getTime() - self.lastPodSpawnCheck > 0.5:
+			numPods = 1 if self.numClients <= 2 else 2
 			self.lastPodSpawnCheck = engine.clock.getTime()
 			if engine.clock.getTime() - self.lastPodSpawn > self.podSpawnDelay\
-			and len([1 for x in self.entityGroup.entities.values() if isinstance(x, entities.DropPod)]) < 2\
+			and len([1 for x in self.entityGroup.entities.values() if isinstance(x, entities.DropPod)]) < numPods\
 			and len([1 for team in self.entityGroup.teams if team.getPlayer() != None and team.getPlayer().active]) > 0:
 				self.spawnPod()
-		livePlayers, deadPlayers = self.getPlayerCounts()
-		if self.gameOver and livePlayers == 0:
-			self.loadMap(self.map.name)
 	
 	def spawnPod(self):
 		size = self.map.worldSize * 0.8
@@ -607,7 +602,7 @@ class Game(DirectObject):
 			self.localTeam.respawnUnits()
 			player = self.localTeam.getPlayer()
 			if player == None or not player.active:
-				if self.backend.type == SURVIVAL and self.unitSelector.hidden:
+				if self.unitSelector.hidden:
 					self.spectatorController.serverUpdate(self.backend.aiWorld, self.backend.entityGroup, None)
 				if self.matchInProgress and (self.backend.enableRespawn or not self.spawnedOnce):
 					self.spawnedOnce = True
