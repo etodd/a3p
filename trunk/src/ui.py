@@ -45,16 +45,16 @@ class GameUI(DirectObject):
 		self.teamScores = []
 		font = loader.loadFont("images/DejaVuSans.ttf")
 
-		self.healthBar = StatusBar(range = 100, pos = (-0.25, 0, -0.94), hpr = (0, 0, 90), width = 0.075, height = 0.5)
+		self.healthBar = StatusBar(range = 100, pos = (engine.aspectRatio - 0.02, 0, -0.94), hpr = (0, 0, -90), width = 0.075, height = 0.5)
 		
 		self.scoreChangeText = OnscreenText(pos = (0, 0.4), scale = 0.5, fg = (1, 1, 1, 0), font = visitorFont, mayChange = True)
 		self.scoreChangeTextAlpha = 0.0
 		self.scoreChangeTextSize = 0.1
 		self.lastTeamScore = 0
 		
-		self.moneyText = OnscreenText(pos = (-0.26, -0.95), scale = 0.075, align = TextNode.ARight, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)
+		self.moneyText = OnscreenText(pos = (engine.aspectRatio - 0.53, -0.95), scale = 0.075, align = TextNode.ARight, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)
 		
-		self.specialBar = StatusBar(range = entities.SPECIAL_DELAY, pos = (0.25, 0, -0.94), hpr = (0, 0, 90), width = 0.075, height = 0.2)
+		self.specialBar = StatusBar(range = entities.SPECIAL_DELAY, pos = (engine.aspectRatio - 0.02, 0, -0.85), hpr = (0, 0, -90), width = 0.05, height = 0.25)
 		color = Vec3(0.6, 0.6, 0.6)
 		self.specialBar.setColors((color.getX() + 0.4, color.getY() + 0.4, color.getZ() + 0.4, 0.5), (color.getX(), color.getY(), color.getZ(), 0.5))
 		
@@ -245,7 +245,7 @@ class GameUI(DirectObject):
 			weapon = player.components[player.controller.activeWeapon]
 			if isinstance(weapon, components.Gun) and weapon.selected:
 				self.ammoTextNode.setQuat(weapon.node.getQuat())
-				self.ammoTextNode.setPos(render.getRelativePoint(weapon.node, Vec3(0.5, 0, 0.5)))
+				self.ammoTextNode.setPos(render.getRelativePoint(weapon.node, Vec3(0.5, 0, 0.6)))
 				self.ammoTextNode.setH(self.ammoTextNode.getH() - 15) # Angle the text toward the camera
 				self.ammoTextNode.setP(self.ammoTextNode.getP() - 15)
 				self.ammoText.setText(str(weapon.ammo))
