@@ -204,16 +204,25 @@ class World:
 		self.world.destroy()
 		self.space.destroy()
 
+navMeshCache = dict()
 class NavMesh:
 	def __init__(self, directory, filename):
+		global navMeshCache
 		self.edges = []
 		self.nodes = []
 		self.filename = filename
-		self.node = engine.loadModel(directory + "/" + self.filename)
-		self._processNode(self.node)
+		if directory + "/" + self.filename in navMeshCache:
+			navMesh = navMeshCache[directory + "/" + self.filename]
+			self.edges = navMesh.edges
+			self.nodes = navMesh.nodes
+		else:
+			node = loader.loadModel(directory + "/" + self.filename)
+			self._processNode(node)
+			node.removeNode()
+			navMeshCache[directory + "/" + self.filename] = self
 	
 	def delete(self):
-		self.node.removeNode()
+		pass
 	
 	def _processNode(self, node):
 		geomNodeCollection = node.findAllMatches('**/+GeomNode')

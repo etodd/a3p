@@ -18,11 +18,14 @@ import online
 import net2
 
 import gc
-from random import uniform
+from random import uniform, choice
 
 # Game type constants
 DEATHMATCH = 0
 SURVIVAL = 1
+
+deathmatchMaps = ["impact", "verdict", "orbit", "arena", "complex", "grid"]
+survivalMaps = ["matrix"]
 
 class GameInfo(DirectObject): # Data structure containing game setup information
 	def __init__(self):
@@ -150,6 +153,8 @@ class ServerBackend(Backend):
 	def update(self):
 		Backend.update(self)
 		if self.active:
+			if self.gameOver and engine.clock.getTime() - self.gameOverTime > 10:
+				self.loadMap(choice(self.maps)) # self.maps is defined by our descendants
 			if self.registerHost:
 				registerDelay = 15.0 if self.registrationConfirmed else 2.0
 				if engine.clock.getRealTime() - self.lastRegister > registerDelay:
@@ -170,6 +175,7 @@ class ServerBackend(Backend):
 		winningTeam.matchScore += 1
 		if winningTeam.matchScore > self.matchLimit / 2:
 			self.gameOver = True
+			self.gameOverTime = engine.clock.getTime()
 		p = net.Packet()
 		p.add(net.Uint8(net.PACKET_ENDMATCH))
 		p.add(net.Boolean(self.gameOver))
@@ -263,6 +269,7 @@ class PointControlBackend(ServerBackend):
 		self.podSpawnDelay = 20
 		self.lastPodSpawn = 0
 		self.lastPodSpawnCheck = 0
+		self.maps = deathmatchMaps # List of all valid maps for this gametype
 	
 	def update(self):
 		ServerBackend.update(self)
@@ -297,6 +304,7 @@ class PointControlBackend(ServerBackend):
 class SurvivalBackend(ServerBackend):
 	def __init__(self, registerHost = True, username = "Unnamed"):
 		ServerBackend.__init__(self, registerHost, username)
+		self.maps = survivalMaps # List of all valid maps for this gametype
 		self.type = SURVIVAL
 		self.enableRespawn = False
 		self.zombiesSpawned = False
@@ -326,6 +334,7 @@ class SurvivalBackend(ServerBackend):
 	def endMatch(self, winningTeam):
 		if self.matchNumber >= len(self.zombieLoadouts) or winningTeam.isAlly(self.zombieTeam):
 			self.gameOver = True
+			self.gameOverTime = engine.clock.getTime()
 		ServerBackend.endMatch(self, winningTeam)
 		self.zombiesSpawned = False
 		self.zombieTeam.resetScore()
@@ -336,8 +345,6 @@ class SurvivalBackend(ServerBackend):
 		ServerBackend.update(self)
 		if self.numClients > 0:
 			livePlayers, deadPlayers = self.getPlayerCounts()
-			if self.gameOver and livePlayers == 0:
-				self.loadMap(self.map.name)
 			if not self.zombiesSpawned and livePlayers == self.numClients:
 				for i in range(self.zombieCounts[self.matchNumber]):
 					self.zombieTeam.respawn(self.zombieLoadouts[self.matchNumber][0], self.zombieLoadouts[self.matchNumber][1])
@@ -540,7 +547,7 @@ class Game(DirectObject):
 	def showBuyScreen(self):
 		self.unitSelector.clearPurchases()
 		if self.backend.gameOver:
-			self.promptText.setText("Game over! Waiting for other players...")
+			self.promptText.setText("Next game in 10 seconds...")
 		else:
 			self.promptText.hide()
 			self.unitSelector.show()
@@ -562,7 +569,21 @@ class Game(DirectObject):
 		self.updateScoreText()
 		self.promptText.show()
 
-		self.promptText.setText(winningTeam.name + " wins! Spacebar to continue.")
+		gameOverText = ""
+		gameText = "match"
+		if self.backend.gameOver:
+			gameOverText = "Game over! "
+			gameText = "game"
+			
+			# Find the team that won the most matches
+			if isinstance(self.backend, PointControlBackend):
+				winningTeam = None
+				highScore = 0
+				for team in self.backend.entityGroup.teams:
+					if team.matchScore > highScore:
+						highScore = team.matchScore
+						winningTeam = team
+		self.promptText.setText(gameOverText + winningTeam.name + " wins the " + gameText + "! Spacebar to continue.")
 	
 	def updateScoreText(self):
 		text = ""
