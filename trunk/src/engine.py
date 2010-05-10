@@ -579,9 +579,9 @@ class Map(DirectObject):
 		
 		# Create winnar platforms
 		entry = aiWorld.getFirstCollision(Vec3(0, 0, 100), Vec3(0, 0, -1))
-		height = 10
+		height = 15
 		if entry != None:
-			height = entry.getSurfacePoint(render).getZ() + 5.0
+			height = entry.getSurfacePoint(render).getZ() + 10.0
 		for i in range(numTeams):
 			p = Platform(aiWorld.space)
 			spacing = 7

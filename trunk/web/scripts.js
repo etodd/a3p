@@ -79,5 +79,5 @@ function ShowHosts()
 	Show("hosts");
 	document.StartClient = StartClient;
 	var hosts = document.getElementById("hostsFrame");
-	hosts.src = "http://et1337.ath.cx/hosts.html";
+	hosts.src = "http://et1337.ath.cx/hosts.html?" + new Date().getTime();
 }
