@@ -663,6 +663,10 @@ class Actor(ObjectEntity):
 		self.killer = None
 		self.teamIndex = 0
 		self.scoreMultiplier = 1.0
+		self.pinned = False
+		self.pinPosition = None
+		self.pinRotation = None
+		self.pinTime = 0
 		ObjectEntity.__init__(self, filename, controller, local)
 	
 	def setTeam(self, team):
@@ -678,6 +682,12 @@ class Actor(ObjectEntity):
 	
 	def setRangedDamageRatio(self, ratio):
 		self.rangedDamageRatio = ratio
+	
+	def pin(self, pos):
+		self.pinned = True
+		self.pinPosition = pos
+		self.pinRotation = self.getRotation()
+		self.pinTime = engine.clock.getTime()
 
 	def damage(self, entity, damage, ranged = True):
 		if self.health > 0 and (not isinstance(entity, Actor) or entity == self or (not entity.team.isAlly(self.team) and self.active)):

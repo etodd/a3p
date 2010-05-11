@@ -865,12 +865,12 @@ class Pistol(Gun):
 					p.add(net.Uint16(totalDamage))
 				
 					pinned = False
-					if totalDamage > self.damage * 0.7:
+					if isinstance(entity, entities.BasicDroid):
 						for i in range(queue.getNumEntries()):
 							entry = queue.getEntry(i)
 							pos = entry.getSurfacePoint(render)
 							testEntity = entityGroup.getEntityFromEntry(entry)
-							if testEntity == None and isinstance(testEntity, entities.Actor) and (pos - hitPos).length() < 6:
+							if testEntity == None and (pos - hitPos).length() < 5:
 								p.add(net.Boolean(True))
 								p.add(net2.HighResVec3(pos))
 								pinned = True
@@ -915,12 +915,8 @@ class Pistol(Gun):
 						if entity != None:
 							if pin:
 								self.pinSound.play(position = hitPos)
-								if entity.body.getNumJoints() == 0:
-									entity.setPosition(hitPos - (direction * entity.radius))
-									joint = OdeBallJoint(aiWorld.world)
-									joint.setAnchor(pinPos)
-									joint.setAnchor2(hitPos)
-									joint.attachBody(entity.body, 0)
+								if not entity.pinned:
+									entity.pin(hitPos - (direction * entity.radius))
 								
 							spike = entities.Spike(pinPos, direction)
 							spike.attachTo(entity)

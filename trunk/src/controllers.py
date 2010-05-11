@@ -741,9 +741,6 @@ class ActorController(ObjectController):
 		ObjectController.__init__(self)
 		self.healthAddition = 0
 		self.lastHealthAddition = 0
-		self.jointDestroyDelay = 5
-		self.lastJointCreated = -self.jointDestroyDelay
-		self.lastNumJoints = 0
 		self.componentsNeedUpdate = False
 	
 	def setEntity(self, entity):
@@ -791,10 +788,6 @@ class ActorController(ObjectController):
 
 	def actorDamaged(self, entity, damage, ranged):
 		self.healthAddition -= int(damage)
-		joints = self.entity.body.getNumJoints()
-		if joints > self.lastNumJoints:
-			self.lastNumJoints = joints
-			self.lastJointCreated = engine.clock.getTime()
 	
 	def clientUpdate(self, aiWorld, entityGroup, data = None):
 		ObjectController.clientUpdate(self, aiWorld, entityGroup, data)
@@ -813,12 +806,6 @@ class ActorController(ObjectController):
 		else:
 			for component in self.entity.components:
 				component.clientUpdate(aiWorld, entityGroup)
-		if self.active:
-			joints = self.entity.body.getNumJoints()
-			if engine.clock.getTime() - self.lastJointCreated > self.jointDestroyDelay:
-				for i in range(joints):
-					joint = self.entity.body.getJoint(i)
-					joint.destroy()
 	
 	def delete(self, killed = False):
 		ObjectController.delete(self, killed)
@@ -904,6 +891,16 @@ class DroidController(ActorController):
 			return False
 	
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
+		if self.entity.pinned:
+			if engine.clock.getTime() - self.entity.pinTime > 5.0:
+				self.entity.pinned = False
+				self.entity.pinPosition = None
+				self.entity.pinRotation = None
+			else:
+				self.entity.setPosition(self.entity.pinPosition)
+				self.entity.setRotation(self.entity.pinRotation)
+				self.entity.setLinearVelocity(Vec3(0, 0, 0))
+	
 		if self.entity.special != None:
 			specialPacket = self.entity.special.serverUpdate(aiWorld, entityGroup, packetUpdate)
 			
@@ -955,6 +952,8 @@ class DroidController(ActorController):
 	def actorDamaged(self, entity, damage, ranged):
 		ActorController.actorDamaged(self, entity, damage, ranged)
 		self.lastDamage = engine.clock.getTime()
+		if self.entity.pinned:
+			self.lastPosition = self.entity.getPosition()
 	
 	def clientUpdate(self, aiWorld, entityGroup, iterator = None):
 		ActorController.clientUpdate(self, aiWorld, entityGroup, iterator)
@@ -1138,10 +1137,37 @@ class PlayerController(DroidController):
 		self.entity.components[0].fire()
 		
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
+		if self.keyMap["melee"]:
+			if self.zoomed:
+				self.toggleZoom()
+			self.melee()
+			self.keyMap["melee"] = False
+		if self.keyMap["reload"]:
+			if self.zoomed:
+				self.toggleZoom()
+			self.reload()
+			self.keyMap["reload"] = False
+		if self.keyMap["jump"]:
+			if engine.clock.getTime() - self.lastJump > 0.25 and aiWorld.testCollisions(self.entity.collisionNodePath).getNumEntries() > 0:
+				self.lastJump = engine.clock.getTime()
+				self.entity.addForce(engine.impulseToForce(0, 0, 1000))
+		if self.keyMap["switch-weapon"]:
+			self.keyMap["switch-weapon"] = False
+			if self.activeWeapon == 1:
+				self.activeWeapon = 2
+			else:
+				self.activeWeapon = 1
+			self.activeWeapon = min(self.activeWeapon, len(self.entity.components) - 1)
+			if self.zoomed:
+				self.toggleZoom()
+			self.currentCrosshair = self.entity.components[self.activeWeapon].defaultCrosshair
+		if self.keyMap["alternate-action"]:
+			self.keyMap["alternate-action"] = False
+			if self.entity.special != None:
+				self.entity.special.enable()
+			
 		if self.currentCrosshair == -1:
 			self.currentCrosshair = self.entity.components[self.activeWeapon].defaultCrosshair
-	
-		pos = Vec3(self.entity.getPosition())
 		
 		if self.zoomTime != -1:
 			blend = min(1.0, (engine.clock.getTime() - self.zoomTime) / self.totalZoomTime)
@@ -1155,26 +1181,9 @@ class PlayerController(DroidController):
 		self.mouse.update()
 		self.angleX = self.mouse.getX()
 		self.angleY = self.mouse.getY()
-		if self.isPlatformMode:
-			self.pickRay.setOrigin(Point3(self.entity.getPosition()))
-			self.pickRay.setDirection(Vec3(math.sin(self.angleX), math.cos(self.angleX), math.sin(self.angleY)))
-			self.angleX += math.pi
-		else:
-			camera.setHpr(-math.degrees(self.angleX) + entityGroup.cameraShakeX * 0.5, math.degrees(self.angleY) + entityGroup.cameraShakeY * 0.5, 0)
-			cameraPos = render.getRelativeVector(camera, self.cameraOffset)
-			camera.setPos(pos + cameraPos)
-			self.pickRay.setFromLens(base.camNode, 0, 0)
 		
-		if self.keyMap["melee"]:
-			if self.zoomed:
-				self.toggleZoom()
-			self.melee()
-			self.keyMap["melee"] = False
-		if self.keyMap["reload"]:
-			if self.zoomed:
-				self.toggleZoom()
-			self.reload()
-			self.keyMap["reload"] = False
+		if self.isPlatformMode:
+			self.angleX += math.pi
 
 		angleX = self.angleX
 		move = True
@@ -1210,6 +1219,15 @@ class PlayerController(DroidController):
 		else:
 			self.entity.addTorque(Vec3(engine.impulseToForce(-angularVel.getX() * 20), engine.impulseToForce(-angularVel.getY() * 20), engine.impulseToForce(-angularVel.getZ() * 20)))
 
+		if self.isPlatformMode:
+			self.pickRay.setOrigin(Point3(self.entity.getPosition()))
+			self.pickRay.setDirection(Vec3(math.sin(self.angleX), math.cos(self.angleX), math.sin(self.angleY)))
+		else:
+			camera.setHpr(-math.degrees(self.angleX) + entityGroup.cameraShakeX * 0.5, math.degrees(self.angleY) + entityGroup.cameraShakeY * 0.5, 0)
+			cameraPos = render.getRelativeVector(camera, self.cameraOffset)
+			camera.setPos(self.entity.getPosition() + cameraPos)
+			self.pickRay.setFromLens(base.camNode, 0, 0)
+		
 		target = None
 		queue = aiWorld.getRayCollisionQueue(self.pickRayNP)
 		camDistance = (camera.getPos() - self.entity.getPosition()).length()
@@ -1235,32 +1253,10 @@ class PlayerController(DroidController):
 			if dot > closestDot:
 				closestDot = dot
 				self.targetedEnemy = enemy
-		
-		if self.keyMap["switch-weapon"]:
-			self.keyMap["switch-weapon"] = False
-			if self.activeWeapon == 1:
-				self.activeWeapon = 2
-			else:
-				self.activeWeapon = 1
-			self.activeWeapon = min(self.activeWeapon, len(self.entity.components) - 1)
-			if self.zoomed:
-				self.toggleZoom()
-			self.currentCrosshair = self.entity.components[self.activeWeapon].defaultCrosshair
-		
-		p = DroidController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
-		
-		if self.keyMap["jump"]:
-			if engine.clock.getTime() - self.lastJump > 0.25 and aiWorld.testCollisions(self.entity.collisionNodePath).getNumEntries() > 0:
-				self.lastJump = engine.clock.getTime()
-				self.entity.addForce(engine.impulseToForce(0, 0, 1000))
-
+			
 		self.entity.components[self.activeWeapon].zoomed = self.zoomed
-		
-		if self.keyMap["alternate-action"]:
-			self.keyMap["alternate-action"] = False
-			if self.entity.special != None:
-				self.entity.special.enable()
-		elif self.keyMap["fire"]:
+
+		if self.keyMap["fire"]:
 			if target != None:
 				direction = target - self.entity.getPosition()
 			else:
@@ -1268,6 +1264,11 @@ class PlayerController(DroidController):
 				direction = (camera.getPos() + (direction * 500)) - self.entity.getPosition()
 			direction.normalize()
 			self.entity.components[self.activeWeapon].fire()
+		
+		p = DroidController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
+		
+		if not self.isPlatformMode: # Update camera position if it's been updated by DroidController.serverUpdate. That way the screen doesn't jitter.
+			camera.setPos(self.entity.getPosition() + cameraPos)
 			
 		p.add(net.Boolean(self.sprinting))
 		cmds = len(self.commands)
