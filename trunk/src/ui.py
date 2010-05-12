@@ -873,6 +873,7 @@ class Menu(DirectObject):
 		self.postProcessingCheckBox = DirectCheckButton(parent = self.dialog, text = "Post-processing", indicatorValue = engine.enablePostProcessing, pos = (0, 0, 0.225), boxRelief = DGG.FLAT, relief = DGG.FLAT, boxPlacement = "left", text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 2.0, boxImage = ("images/checkbox-disabled.png", "images/checkbox-enabled.png", None), frameColor = (0, 0, 0, 0), scale = 0.04, rolloverSound = None, clickSound = None, command = self.togglePostProcessing)
 		self.shadersCheckBox = DirectCheckButton(parent = self.dialog, text = "Shaders", indicatorValue = engine.enableShaders, pos = (0, 0, 0.1), boxRelief = DGG.FLAT, relief = DGG.FLAT, boxPlacement = "left", text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 2.0, boxImage = ("images/checkbox-disabled.png", "images/checkbox-enabled.png", None), frameColor = (0, 0, 0, 0), scale = 0.04, rolloverSound = None, clickSound = None, command = self.toggleShaders)
 		self.distortionEffectsCheckBox = DirectCheckButton(parent = self.dialog, text = "Distortion effects", indicatorValue = engine.enableDistortionEffects, pos = (0, 0, -0.025), boxRelief = DGG.FLAT, relief = DGG.FLAT, boxPlacement = "left", text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 2.0, boxImage = ("images/checkbox-disabled.png", "images/checkbox-enabled.png", None), frameColor = (0, 0, 0, 0), scale = 0.04, rolloverSound = None, clickSound = None, command = self.toggleDistortionEffects)
+		self.shadowsCheckBox = DirectCheckButton(parent = self.dialog, text = "Shadows", indicatorValue = engine.enableShadows, pos = (0, 0, -0.15), boxRelief = DGG.FLAT, relief = DGG.FLAT, boxPlacement = "left", text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 2.0, boxImage = ("images/checkbox-disabled.png", "images/checkbox-enabled.png", None), frameColor = (0, 0, 0, 0), scale = 0.04, rolloverSound = None, clickSound = None, command = self.toggleShadows)
 		exitButton = DirectButton(parent = self.dialog, text = "Exit game", pos = (-0.25, 0, -0.25), relief = DGG.FLAT, text_font = visitorFont, frameSize = (-0.75, 0.75, -.15, .15), frameColor = (0.3, 0.3, 0.3, 1), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.2, rolloverSound = None, clickSound = None, command = engine.exit)
 		resumeButton = DirectButton(parent = self.dialog, text = "Resume", pos = (0.2, 0, -0.25), relief = DGG.FLAT, text_font = visitorFont, frameSize = (-0.5, 0.5, -.15, .15), frameColor = (0.0, 0.0, 0.0, 1), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.35, rolloverSound = None, clickSound = None, command = self.toggle)
 		self.dialog.hide()
@@ -899,3 +900,7 @@ class Menu(DirectObject):
 	def toggleDistortionEffects(self, value):
 		engine.enableDistortionEffects = value
 		engine.distortionEffectsChanged()
+	
+	def toggleShadows(self, value):
+		engine.enableShadows = value
+		engine.shadowsChanged()
