@@ -631,6 +631,7 @@ class Tutorial(Game):
 	def __init__(self, backend, index):
 		engine.log.info("Starting tutorial.")
 		Game.__init__(self, backend)
+		self.backend.matchLimit = 10
 		self.promptText.hide()
 		self.scoreText.hide()
 		self.unitSelector.hide()
