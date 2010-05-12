@@ -35,6 +35,7 @@ filters = None # Post processing filters
 enableDistortionEffects = True
 enableShaders = True
 enablePostProcessing = True
+enableShadows = True
 reflectionEffectsNeeded = False # True if we're in a level with water
 windowWidth = 800
 windowHeight = 600
@@ -43,6 +44,10 @@ isDaemon = False
 enableNetworkStatistics = False
 cache = dict()
 defaultFov = 70
+shadowMapWidth = 1024
+shadowMapHeight = 1024
+
+map = None
 
 def exit():
 	if net.context != None:
@@ -68,6 +73,7 @@ def loadConfigFile():
 	global enableDistortionEffects
 	global enableShaders
 	global enablePostProcessing
+	global enableShadows
 	global windowWidth
 	global windowHeight
 	global isFullscreen
@@ -88,6 +94,8 @@ def loadConfigFile():
 			enableShaders = parts[1] == "#t"
 		elif parts[0] == "enable-post-processing":
 			enablePostProcessing = parts[1] == "#t"
+		elif parts[0] == "enable-shadows":
+			enableShadows = parts[1] == "#t"
 	if windowHeight > 0:
 		aspectRatio = float(windowWidth) / float(windowHeight)
 
@@ -95,6 +103,7 @@ def saveConfigFile():
 	global enableDistortionEffects
 	global enableShaders
 	global enablePostProcessing
+	global enableShadows
 	global windowWidth
 	global windowHeight
 	global aspectRatio
@@ -108,6 +117,7 @@ def saveConfigFile():
 	mapFile.write("enable-distortion-effects " + boolToStr(enableDistortionEffects) + "\n")
 	mapFile.write("enable-shaders " + boolToStr(enableShaders) + "\n")
 	mapFile.write("enable-post-processing " + boolToStr(enablePostProcessing) + "\n")
+	mapFile.write("enable-shadows " + boolToStr(enableShadows))
 	mapFile.close()
 
 def loadModel(filename):
@@ -236,6 +246,15 @@ def shadersChanged():
 		renderLit.clearShader()
 	saveConfigFile()
 
+def shadowsChanged():
+	global map
+	if map != None:
+		if enableShadows:
+			map.enableShadows()
+		else:
+			map.disableShadows()
+	saveConfigFile()
+
 def distortionEffectsChanged():
 	if reflectionCamera != None:
 		reflectionCamera.node().setActive(enableDistortionEffects and reflectionEffectsNeeded)
@@ -351,6 +370,16 @@ class Map(DirectObject):
 			data = self.mf.readSubfile(fileId)
 		self.physicsEntityFileCache[file] = data
 		return data
+	
+	def disableShadows(self):
+		for light in self.lights:
+			if isinstance(light.getNode(0), Spotlight) and light.node().isShadowCaster():
+				light.node().setShadowCaster(False)
+	
+	def enableShadows(self):
+		for light in self.lights:
+			if light.getTag("shadow") == "true":
+				light.node().setShadowCaster(True, shadowMapWidth, shadowMapHeight)
 
 	def load(self, name, aiWorld, entityGroup):
 		"Loads the specified map file, creating all resources, and filling out the AI world and entity group."
@@ -505,8 +534,12 @@ class Map(DirectObject):
 					lightNode.setHpr(float(tokens[7]), float(tokens[8]), float(tokens[9]))
 					lightNode.setPos(render.getRelativeVector(lightNode, Vec3(0, 1, 0)) * -self.worldSize * 2.25)
 					if len(tokens) >= 11 and tokens[10] == "shadow" and hasattr(light, "setShadowCaster"):
-						light.setShadowCaster(True, 1024, 1024)
-						light.setCameraMask(BitMask32.bit(4))
+						lightNode.setTag("shadow", "true")
+						if enableShadows:
+							light.setShadowCaster(True, shadowMapWidth, shadowMapHeight)
+							light.setCameraMask(BitMask32.bit(4))
+					else:
+						lightNode.setTag("shadow", "false")
 					parentNode.setLight(lightNode)
 					self.lights.append(lightNode)
 				elif tokens[2] == "ambient":
@@ -644,7 +677,7 @@ class Map(DirectObject):
 					atten = light.getAttenuation()
 					fov = light.getLens().getFov()
 					exponent = light.getExponent()
-					mapFile.write("spot " + light.getName() + " " + " " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + " " + str(light.getH()) + " " + str(light.getP()) + " " + str(light.getR()) + " " + str(color.getX()) + " " + str(color.getY()) + " " + str(color.getZ()) + " " + str(atten.getX()) + " " + str(atten.getY()) + " " + str(atten.getZ()) + " " + str(fov) + " " + str(exponent) + " " + (" shadow" if light.node().isShadowCaster() else "") + "\n")
+					mapFile.write("spot " + light.getName() + " " + " " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + " " + str(light.getH()) + " " + str(light.getP()) + " " + str(light.getR()) + " " + str(color.getX()) + " " + str(color.getY()) + " " + str(color.getZ()) + " " + str(atten.getX()) + " " + str(atten.getY()) + " " + str(atten.getZ()) + " " + str(fov) + " " + str(exponent) + " " + (" shadow" if light.getTag("shadow") == "true" else "") + "\n")
 			elif isinstance(light.getNode(0), PointLight):
 				atten = light.getAttenuation()
 				pos = light.getNode(0).getPos(render)
