@@ -222,11 +222,30 @@ def go(newMode, newGameType, user, map = None, host = None):
 
 	taskMgr.add(gameLoop, "Game loop")
 
-if base.appRunner:
-	# We're running in a web browser. Expose the "go" function to javascript.
-	base.appRunner.main.go = go
-else:
-	# Console mode.
+def goMenu():
+	global gameBackend, game, mode, gametype, mainMenu
+	
+	# Initialize engine settings
+	engine.init(showFrameRate = False, daemon = (mode == MODE_DAEMON))
+	engine.preloadModels()
+	engine.log.info(GAME_NAME + " " + VERSION_CODE + " - " + COPYRIGHT)
+	
+	from direct.distributed.PyDatagram import PyDatagram
+	net.init(defaultPort, PyDatagram)
+	
+	mainMenu = core.MainMenu()
+
+	def gameLoop(task):
+		engine.update()
+		mainMenu.update()
+		engine.endUpdate()
+		return task.cont
+
+	taskMgr.add(gameLoop, "Game loop")
+
+if "-s" in sys.argv or "-d" in sys.argv or "-c" in sys.argv:
 	go(mode, gametype, username, defaultMap, defaultHost)
+else:
+	goMenu()
 
 run()

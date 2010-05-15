@@ -734,3 +734,192 @@ class Tutorial(Game):
 		Game.delete(self)
 		for screen in self.tutorialScreens:
 			screen.removeNode()
+
+import math
+class MainMenu(DirectObject):
+	def __init__(self):
+		self.active = True
+		self.accept("escape", engine.exit)
+		self.accept("mouse1", self.click)
+		self.cameraDistance = 20
+	
+		self.globe = loader.loadModel("menu/Globe")
+		self.globe.reparentTo(engine.renderLit)
+		self.globe.setTransparency(TransparencyAttrib.MAlpha)
+		self.globe.setColor(Vec4(1, 1, 1, 0.6))
+		self.globe.setTwoSided(True)
+		self.globe.setRenderModeWireframe()
+		
+		self.mouse = engine.Mouse()
+		
+		self.overlay = camera.attachNewNode("overlay")
+		self.overlay.setTransparency(TransparencyAttrib.MAlpha)
+		self.overlay.setColor(Vec4(1, 1, 1, 0))
+		self.overlay.setPos(0, self.cameraDistance, 0)
+		
+		self.overlay1 = loader.loadModel("menu/overlay1")
+		self.overlay1.setScale(4)
+		self.overlay1.setTwoSided(True)
+		self.overlay1.setRenderModeWireframe()
+		self.overlay1.reparentTo(self.overlay)
+		
+		self.overlay2 = loader.loadModel("menu/overlay2")
+		self.overlay2.setScale(4)
+		self.overlay2.setTwoSided(True)
+		self.overlay2.setRenderModeWireframe()
+		self.overlay2.reparentTo(self.overlay)
+		
+		self.overlay3 = loader.loadModel("menu/overlay3")
+		self.overlay3.setScale(4)
+		self.overlay3.setTwoSided(True)
+		self.overlay3.setRenderModeWireframe()
+		self.overlay3.setH(uniform(0, 360))
+		self.overlay3.reparentTo(self.overlay)
+		
+		self.overlay4 = loader.loadModel("menu/overlay3")
+		self.overlay4.setScale(4)
+		self.overlay4.setTwoSided(True)
+		self.overlay4.setRenderModeWireframe()
+		self.overlay4.setP(uniform(0, 360))
+		self.overlay4.reparentTo(self.overlay)
+		
+		self.text = loader.loadModel("menu/text")
+		self.text.setScale(4)
+		self.text.setTwoSided(True)
+		self.text.reparentTo(self.overlay)
+		
+		self.selector = loader.loadModel("menu/selector")
+		self.selector.setScale(4)
+		self.selector.setTwoSided(True)
+		self.selector.reparentTo(self.overlay)
+		
+		self.selectedItem = 0
+		
+		self.skyBox = loader.loadModel("menu/skybox")
+		self.skyBox.setScale(self.cameraDistance + 2)
+		self.skyBox.setRenderModeWireframe()
+		self.skyBox.setTwoSided(True)
+		self.skyBox.reparentTo(render)
+		self.skyBox.setTransparency(TransparencyAttrib.MAlpha)
+		self.skyBox.setColor(Vec4(1, 1, 1, 0))
+		
+		cmbg = CardMaker("background")
+		size = 50
+		cmbg.setFrame(-size * engine.aspectRatio, size * engine.aspectRatio, -size, size)
+		self.background = camera.attachNewNode(cmbg.generate())
+		self.background.setTexture(loader.loadTexture("menu/background.jpg"))
+		self.background.setPos(0, size * 1.25, 0)
+		self.background.setDepthWrite(False)
+		
+		self.belt = JunkBelt(5)
+		
+		# Ambient light
+		ambient = AmbientLight("ambient")
+		ambient.setColor(Vec4(1.0, 2.0, 4.0, 1))
+		self.ambientLightNode = engine.renderLit.attachNewNode(ambient)
+		engine.renderLit.setLight(self.ambientLightNode)
+		
+		self.startTime = engine.clock.getTime()
+		self.angle = uniform(0, 360)
+		self.period = 60
+		self.uiAngle = uniform(0, 360)
+
+	def update(self):
+		if not self.active:
+			return
+
+		elapsedTime = engine.clock.getTime() - self.startTime
+		if elapsedTime < 3:
+			blend = elapsedTime / 3
+			self.angle += engine.clock.timeStep * (1 - blend)
+			self.cameraDistance = 20 + (1 - blend)**2 * 200
+		elif elapsedTime < 5:
+			blend = (elapsedTime - 3) / 2
+			self.overlay.setColor(Vec4(1, 1, 1, blend))
+			self.skyBox.setColor(Vec4(1, 1, 1, blend))
+
+		self.uiAngle -= engine.clock.timeStep * 2
+		self.text.setR(self.uiAngle)
+
+		self.mouse.update()
+		vector = Vec3(self.mouse.getX(), self.mouse.getY(), 0)
+		vector.normalize()
+		self.mouse.setX(vector.getX() * 0.1)
+		self.mouse.setY(vector.getY() * 0.1)
+		angle = math.degrees(math.atan2(-vector.getX(), -vector.getY())) + 180
+		angle -= self.uiAngle
+		while angle < 0:
+			angle += 360
+		while angle > 360:
+			angle -= 360
+		self.selectedItem = int(angle/ 90.0)
+		self.selector.setR(self.uiAngle + self.selectedItem * 90)
+		
+		self.overlay1.setR(self.overlay1.getR() - engine.clock.timeStep * 2)
+		self.overlay2.setR(self.overlay2.getR() + engine.clock.timeStep * 2)
+		self.overlay3.setH(self.overlay3.getH() + engine.clock.timeStep * 10)
+		self.overlay4.setP(self.overlay4.getP() - engine.clock.timeStep * 10)
+		self.belt.update()
+		self.angle += engine.clock.timeStep * 0.025
+		camera.setPos(math.cos(self.angle) * self.cameraDistance, math.sin(self.angle) * self.cameraDistance, math.cos(elapsedTime / 45 + 2) * 2)
+		camera.lookAt(Point3(0, 0, 0))
+	
+	def click(self):
+		if self.selectedItem == 0: # Join
+			pass
+		elif self.selectedItem == 1: # Host
+			pass
+		elif self.selectedItem == 2: # Exit
+			engine.exit()
+		elif self.selectedItem == 3: # Tutorial
+			pass
+	
+	def delete(self):
+		self.active = False
+		self.overlay.removeNode()
+		self.belt.delete()
+		self.background.removeNode()
+		engine.renderLit.clearLight(self.ambientLightNode)
+		self.ambientLightNode.removeNode()
+		self.globe.removeNode()
+		self.skyBox.removeNode()
+		self.ignoreAll()
+
+from random import uniform, choice
+class JunkBelt:
+	def __init__(self, radius):
+		self.radius = radius
+		junkFiles = ["menu/junk1.egg", "menu/junk2.egg", "menu/junk3.egg", "menu/junk4.egg", "menu/junk5.egg"]
+		self.models = []
+		self.avels = []
+		self.instances = []
+		for file in junkFiles:
+			node = loader.loadModel(file)
+			node.setScale(0.01)
+			node.setRenderModeWireframe()
+			self.models.append(node)
+		for _ in range(750):
+			instance = render.attachNewNode("junk")
+			angle = uniform(0, 2 * math.pi)
+			height = uniform(-0.5, 0.5)
+			radius = (uniform(0, 1)**3) * self.radius * 2
+			radius += self.radius
+			hpr = Vec3(uniform(0, 360), uniform(0, 360), uniform(0, 360))
+			speed = 75
+			self.avels.append(Vec3(uniform(-speed, speed), uniform(-speed, speed), uniform(-speed, speed)))
+			instance.setPos(math.cos(angle) * radius, math.sin(angle) * radius, height)
+			instance.setHpr(hpr)
+			model = choice(self.models)
+			model.instanceTo(instance)
+			instance.reparentTo(engine.renderLit)
+			self.instances.append(instance)
+
+	def update(self):
+		for i in range(len(self.instances)):
+			self.instances[i].setHpr(self.instances[i].getHpr() + (self.avels[i] * engine.clock.timeStep))
+	
+	def delete(self):
+		for instance in self.instances:
+			instance.removeNode()
+		for model in self.models:
+			model.removeNode()

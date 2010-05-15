@@ -944,6 +944,12 @@ class Mouse:
 			self._lastX = centerX
 			self._lastY = centerY
 
+	def setX(self, x):
+		self._x = x
+	
+	def setY(self, y):
+		self._y = y
+	
 	def getX(self):
 		return self._x
 
