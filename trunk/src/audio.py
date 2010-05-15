@@ -127,8 +127,8 @@ class FlatSound(DirectObject):
 	def getVolume(self):
 		return self.sound.getVolume()
 	
-	def status(self):
-		return self.sound.status()
+	def isPlaying(self):
+		return self.sound.status() == 2
 	
 	def play(self):
 		if enabled:

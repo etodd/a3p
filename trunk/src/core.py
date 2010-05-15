@@ -27,6 +27,8 @@ SURVIVAL = 1
 deathmatchMaps = ["impact", "verdict", "orbit", "arena", "complex", "grid"]
 survivalMaps = ["matrix"]
 
+firstBoot = True
+
 class GameInfo(DirectObject): # Data structure containing game setup information
 	def __init__(self):
 		self.mapFile = ""
@@ -738,6 +740,9 @@ class Tutorial(Game):
 import math
 class MainMenu(DirectObject):
 	def __init__(self):
+		self.sound = audio.FlatSound("menu/background.ogg")
+		self.sound.setVolume(0)
+		self.sound.setLoop(True)
 		self.active = True
 		self.accept("escape", engine.exit)
 		self.accept("mouse1", self.click)
@@ -819,24 +824,47 @@ class MainMenu(DirectObject):
 		self.ambientLightNode = engine.renderLit.attachNewNode(ambient)
 		engine.renderLit.setLight(self.ambientLightNode)
 		
-		self.startTime = engine.clock.getTime()
 		self.angle = uniform(0, 360)
 		self.period = 60
 		self.uiAngle = uniform(0, 360)
+		
+		self.logo = OnscreenImage(image = "menu/logo.png", pos = (0, 0, 0), scale = ((512.0 / 175.0) * 0.075, 0, 0.075))
+		self.logo.setTransparency(TransparencyAttrib.MAlpha)
+		self.logo.setColor(1, 1, 1, 0)
+		self.logo.setBin("transparent", 0)
+		
+		self.introText = None
+		global firstBoot
+		self.introTime = 4
+		if firstBoot:
+			self.introTime = 6
+			visitorFont = loader.loadFont("images/visitor2.ttf")
+			self.introText = OnscreenText(pos = (0, 0), scale = 0.2, align = TextNode.ACenter, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True, text = "et1337 presents")
+		firstBoot = False
+		introSound = audio.FlatSound("menu/intro.ogg")
+		introSound.play()
+		self.startTime = engine.clock.getTime()
 
 	def update(self):
 		if not self.active:
 			return
-
 		elapsedTime = engine.clock.getTime() - self.startTime
-		if elapsedTime < 3:
-			blend = elapsedTime / 3
+		if elapsedTime < self.introTime:
+			blend = elapsedTime / self.introTime
+			if self.introText != None:
+				self.introText["scale"] = 0.05 + (blend * 0.15)
+				self.introText["fg"] = Vec4(1, 1, 1, (1 - blend)**.5)
+				self.introText["shadow"] = Vec4(1, 1, 1, (1 - blend)**.5 * 0.5)
 			self.angle += engine.clock.timeStep * (1 - blend)
 			self.cameraDistance = 20 + (1 - blend)**2 * 200
-		elif elapsedTime < 5:
-			blend = (elapsedTime - 3) / 2
+		elif elapsedTime < self.introTime + 2:
+			blend = (elapsedTime - self.introTime) / 2
 			self.overlay.setColor(Vec4(1, 1, 1, blend))
+			self.logo.setColor(1, 1, 1, blend)
 			self.skyBox.setColor(Vec4(1, 1, 1, blend))
+			if not self.sound.isPlaying():
+				self.sound.play()
+			self.sound.setVolume(blend)
 
 		self.uiAngle -= engine.clock.timeStep * 2
 		self.text.setR(self.uiAngle)
@@ -875,6 +903,7 @@ class MainMenu(DirectObject):
 			pass
 	
 	def delete(self):
+		self.sound.stop()
 		self.active = False
 		self.overlay.removeNode()
 		self.belt.delete()
@@ -884,6 +913,7 @@ class MainMenu(DirectObject):
 		self.globe.removeNode()
 		self.skyBox.removeNode()
 		self.ignoreAll()
+		self.logo.destroy()
 
 from random import uniform, choice
 class JunkBelt:

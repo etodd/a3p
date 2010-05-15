@@ -232,7 +232,7 @@ def goMenu():
 	
 	from direct.distributed.PyDatagram import PyDatagram
 	net.init(defaultPort, PyDatagram)
-	
+
 	mainMenu = core.MainMenu()
 
 	def gameLoop(task):
