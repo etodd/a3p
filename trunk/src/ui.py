@@ -156,13 +156,6 @@ class GameUI(DirectObject):
 		self.scoreChangeText.show()
 		if self.damageTransparency > 0:
 			self.damageImage.show()
-	
-	def setCursorPos(self, x, y):
-		self.cursorX = x
-		self.cursorY = y
-		self.cursorX = min(self.aspectRatio, max(-self.aspectRatio, self.cursorX))
-		self.cursorY = min(1, max(-1, self.cursorY))
-		self.crosshairs.setPos(self.cursorX, 0, self.cursorY)
 
 	def update(self, scoreLimit):
 		if self.hidden or self.localTeam == None:
@@ -179,13 +172,11 @@ class GameUI(DirectObject):
 		for i in range(len(self.teams)):
 			team = self.teams[i]
 			for bot in (x for x in team.actors if x.spawned and x.active):
-				self.droidReloadCrosshair(bot)
 				if bot.team.isAlly(self.localTeam):
 					allyList.append(bot)
 				else:
 					enemyList.append(bot)
 			player = team.getPlayer()
-			self.droidReloadCrosshair(player)
 			if team != self.localTeam:
 				if player != None and player.active and player.spawned:
 					self.playerUsernames[i].node().setTextColor(team.color.getX() + 0.25, team.color.getY() + 0.25, team.color.getZ() + 0.25, 1)
@@ -274,15 +265,10 @@ class GameUI(DirectObject):
 			self.damageImage.hide()
 		
 		self.chatLog.update()
-	
-	def droidReloadCrosshair(self, droid):
-		if droid != None and droid.active:
-			weapon = droid.components[droid.controller.activeWeapon]
-			if isinstance(weapon, components.Gun) and weapon.reloadActive:
-				particles.CrosshairParticleGroup.draw(droid.getPosition(), engine.clock.getTime() * 80, droid.team.color)
 
 	def delete(self):
-		self.crosshairs.destroy()
+		for img in self.crosshairs[1:]:
+			img.destroy()
 		self.specialBar.delete()
 		self.scoreChangeText.destroy()
 		self.moneyText.destroy()
@@ -428,7 +414,7 @@ class UnitSelectorScreen(DirectObject):
 		self.accept("mouse1-up", self.release)
 		self.accept("mouse3", self.rightClick)
 		
-		self.container = DirectFrame(frameColor = (0.0, 0.0, 0.0, 0.6), frameSize=(-1.15, 1.15, -0.85, 0.75), pos = (0, 0, 0), sortOrder = -1)
+		self.container = DirectFrame(frameColor = (0.1, 0.4, 0.6, 0.6), frameSize=(-1.15, 1.15, -0.85, 0.75), pos = (0, 0, 0), sortOrder = -1)
 		self.container.setBin("fixed", 0)
 		
 		# UI elements
@@ -436,10 +422,10 @@ class UnitSelectorScreen(DirectObject):
 		self.balanceText = OnscreenText(parent = self.container, pos = Vec3(1.05, -0.55, 0), text = "$0", align = TextNode.ARight, scale = 0.1, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)
 		inventoryLabel = OnscreenText(parent = self.container, pos = Vec3(0.7, -0.15, 0), text = "Inventory", align = TextNode.ACenter, scale = 0.07, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = False)
 		playerLabel = OnscreenText(parent = self.container, pos = Vec3(-0.8, -0.575, 0), text = "Player", align = TextNode.ACenter, scale = 0.07, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = False)
-		unitQLabel = OnscreenText(parent = self.container, pos = Vec3(-0.2, -0.575, 0), text = "Unit Q", align = TextNode.ACenter, scale = 0.07, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = False)
-		unitELabel = OnscreenText(parent = self.container, pos = Vec3(0.3, -0.575, 0), text = "Unit E", align = TextNode.ACenter, scale = 0.07, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = False)
-		undoButton = DirectButton(parent = self.container, text = "Undo", pos = (0.65, 0, -0.75), relief = DGG.FLAT, text_font = visitorFont, frameSize = (-0.5, 0.5, -.15, .15), frameColor = (0.3, 0.3, 0.3, 1), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.2, rolloverSound = None, clickSound = None, command = self.undo)
-		startButton = DirectButton(parent = self.container, text = "Start", pos = (0.95, 0, -0.75), relief = DGG.FLAT, text_font = visitorFont, frameSize = (-0.5, 0.5, -.15, .15), frameColor = (0.0, 0.0, 0.0, 1), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.35, rolloverSound = None, clickSound = None, command = self.startCallback)
+		unitQLabel = OnscreenText(parent = self.container, pos = Vec3(-0.15, -0.575, 0), text = "Unit Q", align = TextNode.ACenter, scale = 0.07, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = False)
+		unitELabel = OnscreenText(parent = self.container, pos = Vec3(0.2, -0.575, 0), text = "Unit E", align = TextNode.ACenter, scale = 0.07, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = False)
+		undoButton = DirectButton(parent = self.container, text = "Undo", pos = (0.62, 0, -0.75), relief = DGG.FLAT, text_font = visitorFont, frameSize = (-0.4, 0.4, -.15, .15), frameColor = (0.0, 0.0, 0.0, 0.5), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.35, rolloverSound = None, clickSound = None, command = self.undo)
+		startButton = DirectButton(parent = self.container, text = "Start", pos = (0.96, 0, -0.75), relief = DGG.FLAT, text_font = visitorFont, frameSize = (-0.45, 0.45, -.15, .15), frameColor = (0.0, 0.0, 0.0, 0.5), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.35, rolloverSound = None, clickSound = None, command = self.startCallback)
 		
 		# Info dialog
 		self.infoDialog = DirectFrame(sortOrder = 100, frameColor = (0.03, 0.03, 0.03, 1.0), frameSize=(0, 1.05, -0.3, 0.3), pos = (0, 0, 0))
@@ -486,15 +472,15 @@ class UnitSelectorScreen(DirectObject):
 		self.playerSlots.append(slot)
 		
 		# Unit 1 slots
-		slot = UnitIconSlot(-1, UnitIconSlot.AcceptsWeapons, Vec3(-0.3, 0, -0.7), "images/weapon-slot.png")
+		slot = UnitIconSlot(-1, UnitIconSlot.AcceptsWeapons, Vec3(-0.35, 0, -0.7), "images/weapon-slot.png")
 		self.unitSlots.append(slot)
-		slot = UnitIconSlot(-1, UnitIconSlot.AcceptsSpecials, Vec3(-0.1, 0, -0.7), "images/special-slot.png", isSpecial = True)
+		slot = UnitIconSlot(-1, UnitIconSlot.AcceptsSpecials, Vec3(-0.15, 0, -0.7), "images/special-slot.png", isSpecial = True)
 		self.unitSlots.append(slot)
 		
 		# Unit 2 slots
-		slot = UnitIconSlot(-1, UnitIconSlot.AcceptsWeapons, Vec3(0.2, 0, -0.7), "images/weapon-slot.png")
+		slot = UnitIconSlot(-1, UnitIconSlot.AcceptsWeapons, Vec3(0.1, 0, -0.7), "images/weapon-slot.png")
 		self.unitSlots.append(slot)
-		slot = UnitIconSlot(-1, UnitIconSlot.AcceptsSpecials, Vec3(0.4, 0, -0.7), "images/special-slot.png", isSpecial = True)
+		slot = UnitIconSlot(-1, UnitIconSlot.AcceptsSpecials, Vec3(0.3, 0, -0.7), "images/special-slot.png", isSpecial = True)
 		self.unitSlots.append(slot)
 		
 	
@@ -715,6 +701,8 @@ class UnitIconSlot(DirectObject):
 			self.icon.hide()
 	def delete(self):
 		self.image.destroy()
+		if self.label != None:
+			self.label.destroy()
 
 class StatusBar(DirectObject):
 	def __init__(self, range, pos, hpr, width, height):
@@ -868,14 +856,15 @@ class EditorUI(DirectObject):
 
 class Menu(DirectObject):
 	def __init__(self):
+		self.active = True
 		visitorFont = loader.loadFont("images/visitor2.ttf")
-		self.dialog = DirectFrame(frameColor = (0.0, 0.0, 0.0, 0.6), frameSize=(-.45, .45, -.3375, .3375), pos = (0.8, 0, 0))
+		self.dialog = DirectFrame(frameColor = (0.1, 0.4, 0.6, 0.6), frameSize=(-.45, .45, -.3375, .3375), pos = (0.8, 0, 0))
 		self.postProcessingCheckBox = DirectCheckButton(parent = self.dialog, text = "Post-processing", indicatorValue = engine.enablePostProcessing, pos = (0, 0, 0.225), boxRelief = DGG.FLAT, relief = DGG.FLAT, boxPlacement = "left", text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 2.0, boxImage = ("images/checkbox-disabled.png", "images/checkbox-enabled.png", None), frameColor = (0, 0, 0, 0), scale = 0.04, rolloverSound = None, clickSound = None, command = self.togglePostProcessing)
 		self.shadersCheckBox = DirectCheckButton(parent = self.dialog, text = "Shaders", indicatorValue = engine.enableShaders, pos = (0, 0, 0.1), boxRelief = DGG.FLAT, relief = DGG.FLAT, boxPlacement = "left", text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 2.0, boxImage = ("images/checkbox-disabled.png", "images/checkbox-enabled.png", None), frameColor = (0, 0, 0, 0), scale = 0.04, rolloverSound = None, clickSound = None, command = self.toggleShaders)
 		self.distortionEffectsCheckBox = DirectCheckButton(parent = self.dialog, text = "Distortion effects", indicatorValue = engine.enableDistortionEffects, pos = (0, 0, -0.025), boxRelief = DGG.FLAT, relief = DGG.FLAT, boxPlacement = "left", text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 2.0, boxImage = ("images/checkbox-disabled.png", "images/checkbox-enabled.png", None), frameColor = (0, 0, 0, 0), scale = 0.04, rolloverSound = None, clickSound = None, command = self.toggleDistortionEffects)
 		self.shadowsCheckBox = DirectCheckButton(parent = self.dialog, text = "Shadows", indicatorValue = engine.enableShadows, pos = (0, 0, -0.15), boxRelief = DGG.FLAT, relief = DGG.FLAT, boxPlacement = "left", text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 2.0, boxImage = ("images/checkbox-disabled.png", "images/checkbox-enabled.png", None), frameColor = (0, 0, 0, 0), scale = 0.04, rolloverSound = None, clickSound = None, command = self.toggleShadows)
-		exitButton = DirectButton(parent = self.dialog, text = "Exit game", pos = (-0.25, 0, -0.25), relief = DGG.FLAT, text_font = visitorFont, frameSize = (-0.75, 0.75, -.15, .15), frameColor = (0.3, 0.3, 0.3, 1), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.2, rolloverSound = None, clickSound = None, command = engine.exit)
-		resumeButton = DirectButton(parent = self.dialog, text = "Resume", pos = (0.2, 0, -0.25), relief = DGG.FLAT, text_font = visitorFont, frameSize = (-0.5, 0.5, -.15, .15), frameColor = (0.0, 0.0, 0.0, 1), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.35, rolloverSound = None, clickSound = None, command = self.toggle)
+		exitButton = DirectButton(parent = self.dialog, text = "Exit", pos = (-0.25, 0, -0.26), relief = DGG.FLAT, text_font = visitorFont, frameSize = (-0.5, 0.5, -.15, .15), frameColor = (0.0, 0.0, 0.0, 0.5), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.35, rolloverSound = None, clickSound = None, command = self.delete)
+		resumeButton = DirectButton(parent = self.dialog, text = "Resume", pos = (0.25, 0, -0.26), relief = DGG.FLAT, text_font = visitorFont, frameSize = (-0.5, 0.5, -.15, .15), frameColor = (0.0, 0.0, 0.0, 0.5), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.35, rolloverSound = None, clickSound = None, command = self.toggle)
 		self.dialog.hide()
 		self.hidden = True
 		self.accept("escape-up", self.toggle)
@@ -904,3 +893,74 @@ class Menu(DirectObject):
 	def toggleShadows(self, value):
 		engine.enableShadows = value
 		engine.shadowsChanged()
+	
+	def delete(self):
+		self.active = False
+		self.dialog.destroy()
+		self.ignoreAll()
+
+import net
+import online
+class HostList(DirectObject):
+	def __init__(self, callback):
+		self.callback = callback
+		self.active = True
+		self.visible = False
+		visitorFont = loader.loadFont("images/visitor2.ttf")
+		self.dialog = DirectFrame(text = "Choose server", text_pos = (0, .35), text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 0.1, frameColor = (0.0, 0.2, 0.3, 0.8), frameSize=(-.7, .7, -.45, .4), pos = (0, 0, 0))
+		self.serverIpEntry = DirectEntry(parent = self.dialog, pos = (-0.4, 0, -0.275), scale = .08, entryFont = visitorFont, text_fg = Vec4(1, 1, 1, 1), frameColor = (0, 0, 0, 0.5), initialText = "Manual LAN IP", numLines = 1, rolloverSound = None, clickSound = None, focus = 0, focusInCommand = self.clearServerIp, command = self.go)
+		self.cancelButton = DirectButton(parent = self.dialog, text = "Cancel", pos = (0, 0, -0.35), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0, 0, 0, 0.5), frameSize = (-0.5, 0.5, -.15, .15), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.02), scale = 0.2, rolloverSound = None, clickSound = None, command = self.hide)
+		self.serverList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.4, .4, 0, 0), frameSize = (-.6, .6, -0.25, 0.2), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.png", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.png", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.png", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
+		self.dialog.hide()
+		self.hostButtons = []
+		net.context.hostListCallback = self.showHosts
+	
+	def clearServerIp(self):
+		self.serverIpEntry.set("")
+	
+	def show(self):
+		engine.Mouse.showCursor()
+		self.dialog.show()
+		for a in self.hostButtons:
+			a.destroy()
+		del self.hostButtons[:]
+		online.getHosts()
+		self.visible = True
+	
+	def showHosts(self, hosts):
+		if not self.active:
+			return # In case the lobby calls this callback after the menu has been deleted.
+		visitorFont = loader.loadFont("images/visitor2.ttf")
+		hover = None
+		click = None
+		self.serverList.destroy()
+		for a in self.hostButtons:
+			a.destroy()
+		del self.hostButtons[:]
+		height = len(hosts) * 0.2
+		self.serverList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.4, .4, -height / 2, height / 2), frameSize = (-.6, .6, -0.2, 0.2), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.png", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.png", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.png", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
+		offset = (height / 2) - 0.1
+		for (name, host) in hosts:
+			self.hostButtons.append(DirectButton(parent = self.serverList.getCanvas(), text = name, pos = (0.175, 0, offset), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0.1, 0.4, 0.6, 0.6), frameSize = (-0.4, 0.4, -.1, .1), text_fg = (1, 1, 1, 1), text_scale = 0.1, text_pos = (0, -0.02), scale = 0.8, rolloverSound = None, clickSound = None, command = self.go, extraArgs = [host]))
+			offset -= 0.2
+	
+	def hide(self):
+		engine.Mouse.hideCursor()
+		self.dialog.hide()
+		self.visible = False
+	
+	def go(self, host = None):
+		if host == None: # Manual IP entry
+			self.callback(self.serverIpEntry.get())
+		else: # Host picked from the list
+			self.callback(host)
+		
+	def delete(self):
+		self.active = False
+		for a in self.hostButtons:
+			a.destroy()
+		del self.hostButtons[:]
+		if self.dialog != None:
+			self.dialog.destroy()
+			self.cancelButton.destroy()
+		self.ignoreAll()

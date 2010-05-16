@@ -74,6 +74,7 @@ class Weapon(Component):
 		self.triggerReleased = True
 		self.node = None
 		self.isAutomatic = False
+		self.reloadActive = False
 		self.lastTrigger = 0
 		
 		# Parameters for AI controllers
@@ -132,7 +133,6 @@ class Gun(Weapon):
 		self.ammo = self.clipSize
 		self.ammoAdditions = 0 # So that if fire() is called between serverUpdate and clientUpdate, ammo is still depleted
 		self.reloadTime = 2.0
-		self.reloadActive = False
 		self.newReloadActive = False
 		self.reloadStarted = False # Server side; only true one frame
 		self.damage = damage

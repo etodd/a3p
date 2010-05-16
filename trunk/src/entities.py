@@ -745,6 +745,13 @@ class BasicDroid(Actor):
 		space.setSurfaceType(self.geometry, 2)
 		self.cloaked = False
 		self.shielded = False
+		self.crosshairNode = engine.loadModel("models/crosshair/crosshair")
+		self.crosshairNode.setBillboardPointEye()
+		self.crosshairNode.reparentTo(self.node)
+		self.crosshairNode.setShaderOff()
+		self.crosshairNode.setLightOff(True)
+		self.crosshairNode.hide()
+		self.crosshairNode.setScale(1.5)
 		self.shieldNode = engine.loadModel("models/shield/shield")
 		self.shieldNode.reparentTo(self.node)
 		self.shieldNode.setTwoSided(True)

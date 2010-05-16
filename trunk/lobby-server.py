@@ -64,13 +64,16 @@ def updateHosts():
 			deletedHosts.append(key)
 	for key in deletedHosts:
 		del hosts[key]
-	a = open("/var/www/hosts.html", "w")
-	a.write('<html><head><meta http-equiv="Pragma" content="no-cache"/><link href="http://a3p.sourceforge.net/style.css" rel="stylesheet" type="text/css"/></head><body style="background-image: none;"><ul>\n')
-	for x in hosts.values():
-		a.write('<li><a href="http://' + HOST_ADDRESS + '/connect.php?x=' + x.ip + ':' + str(x.port) + '">' + x.user + ' - ' + x.map + '</a></li>')
-	a.write('</ul></body></html>\n')
-	a.write('\n')
-	a.close()
+	try:
+		a = open("/var/www/hosts.html", "w")
+		a.write('<html><head><meta http-equiv="Pragma" content="no-cache"/><link href="http://a3p.sourceforge.net/style.css" rel="stylesheet" type="text/css"/></head><body style="background-image: none;"><ul>\n')
+		for x in hosts.values():
+			a.write('<li><a href="http://' + HOST_ADDRESS + '/connect.php?x=' + x.ip + ':' + str(x.port) + '">' + x.user + ' - ' + x.map + '</a></li>')
+		a.write('</ul></body></html>\n')
+		a.write('\n')
+		a.close()
+	except:
+		print "Failed to open hosts file for writing."
 
 def processPacket(originalData):
 	data, address = originalData
@@ -79,6 +82,7 @@ def processPacket(originalData):
 	packet = net.Packet()
 	data = net.CustomDatagram()
 	if code == net.PACKET_REQUESTHOSTLIST:
+		print "Sent " + str(len(hosts)) + " hosts to " + net.addressToString(address)
 		updateHosts()
 		packet.add(net.Uint8(net.PACKET_HOSTLIST))
 		packet.add(net.Uint16(len(hosts.values())))
@@ -89,7 +93,6 @@ def processPacket(originalData):
 			packet.add(net.String(host.map))
 		packet.addTo(data)
 		net.context.sendDatagram(data, address)
-		print "Sent " + str(len(hosts)) + " hosts to " + net.addressToString(address)
 	elif code == net.PACKET_REGISTERHOST:
 		user = net.String.getFrom(iterator)
 		map = net.String.getFrom(iterator)
@@ -131,7 +134,8 @@ def processPacket(originalData):
 		else:
 			print net.addressToString(address) + " tried to connect to " + net.addressToString(hostAddress) + ", which is not a valid registered host."
 			log(net.addressToString(address) + "\t tried to connect to\t" + net.addressToString(hostAddress) + "\n")
-			
+	else:
+		print "Error - malformed packet"
 print GAME_NAME + " " + VERSION_CODE + " - " + COPYRIGHT
 print "Lobby server initialized."
 
@@ -147,5 +151,7 @@ def run():
 				print "Removing expired host: " + expiredHosts[0].ip + ":" + str(expiredHosts[0].port)
 				updateHosts()
 		except:
-			log(traceback.format_exc())
+			errorData = traceback.format_exc()
+			print errorData
+			log(errorData)
 run()

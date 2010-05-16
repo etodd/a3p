@@ -41,7 +41,6 @@ windowWidth = 800
 windowHeight = 600
 aspectRatio = float(windowWidth) / float(windowHeight)
 isDaemon = False
-enableNetworkStatistics = False
 cache = dict()
 defaultFov = 70
 shadowMapWidth = 1024
