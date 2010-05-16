@@ -933,6 +933,12 @@ class DroidController(ActorController):
 			elif engine.clock.getTime() - self.lastFireDamage > 0.5:
 				self.lastFireDamage = engine.clock.getTime()
 				self.entity.damage(self.fireEntity, 8, ranged = False)
+		
+		if self.entity.components[self.activeWeapon].reloadActive:
+			self.entity.crosshairNode.show()
+			self.entity.crosshairNode.setR(engine.clock.getTime() * 30)
+		else:
+			self.entity.crosshairNode.hide()
 
 		p = ActorController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
 		

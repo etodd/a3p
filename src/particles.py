@@ -32,7 +32,7 @@ class ParticleGroup:
 	# 0 - src-smoke.png
 	# 1 - src-highlight.png
 	# 2 - src-damage.png
-	# 3 - src-crosshair.png
+	# 3 - empty
 	# 4 - src-enemy-selector.png
 	# 5 - src-fire.png
 	# 6 - src-fire2.png
@@ -54,7 +54,7 @@ class ParticleGroup:
 			ParticleGroup.frames.append(Vec4(0, 0.6666, 0.3333, 0.3333)) # Smoke
 			ParticleGroup.frames.append(Vec4(0.3333, 0.6666, 0.3333, 0.3333)) # Highlight
 			ParticleGroup.frames.append(Vec4(0.6666, 0.6666, 0.3333, 0.3333)) # Damage
-			ParticleGroup.frames.append(Vec4(0, 0.3333, 0.3333, 0.3333)) # Crosshair
+			ParticleGroup.frames.append(Vec4(0, 0.3333, 0.3333, 0.3333)) # Empty
 			ParticleGroup.frames.append(Vec4(0.3333, 0.3333, 0.3333, 0.3333)) # Enemy selector
 			ParticleGroup.frames.append(Vec4(0.6666, 0.3333, 0.3333, 0.3333)) # Flames frame 1
 			ParticleGroup.frames.append(Vec4(0, 0.6666, 0.3333, 0.3333)) # Flames frame 2
@@ -242,12 +242,6 @@ class SparkParticleGroup(ParticleGroup):
 				self.velocities[i].setZ(self.velocities[i].getZ() - (engine.clock.timeStep * 40.0))
 				self.positions[i] += self.velocities[i] * engine.clock.timeStep
 				ParticleGroup.generator.segment(self.positions[i], self.positions[i] + (self.velocities[i] * 0.03), ParticleGroup.frames[1], .02, self.color)
-
-class CrosshairParticleGroup(ParticleGroup):
-	@staticmethod
-	def draw(pos, angle, color):
-		if ParticleGroup.begun:
-			ParticleGroup.generator.particle(Vec3(pos), ParticleGroup.frames[3], 2.5, color, angle)
 
 class UnitHighlightParticleGroup(ParticleGroup):
 	@staticmethod

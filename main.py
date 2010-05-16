@@ -1,7 +1,7 @@
 # Evan Todd 2010
 
 GAME_NAME = "A3P"
-VERSION_CODE = "v0.6"
+VERSION_CODE = "v1.0"
 COPYRIGHT = "Evan Todd 2010"
 
 from pandac.PandaModules import loadPrcFileData
@@ -49,12 +49,9 @@ def showHelpInfo():
 	print "-a\t\t\tDisable audio"
 	print "-p portnumber\t\tUse the specified port (for both client and server)"
 	print "-d map\t\t\tRun in dedicated server mode on the specified map"
-	print "-s map\t\t\tRun in server mode on the specified map"
-	print "-c address[:port]\tConnect to server running on specified address"
-	print "-v\t\t\t(Server only) Run the game in survival mode"
-	print "-i\t\t\tPrint basic network statistics every 5 seconds"
-	print "-t map [offset]\t\tRun tutorial on given map. Offset skips sections (0-2)"
+	print "-v\t\t\t(Daemon only) Run the game in survival mode"
 	print "-h\t\t\tShow help information"
+	print "-m\t\t\tSkip main menu introduction"
 	engine.exit()
 
 if "-h" in sys.argv or "/?" in sys.argv or "--help" in sys.argv:
@@ -63,16 +60,12 @@ if "-h" in sys.argv or "/?" in sys.argv or "--help" in sys.argv:
 engine.loadConfigFile()
 
 MODE_DAEMON = 0
-MODE_SERVER = 1
-MODE_CLIENT = 2
-MODE_TUTORIAL = 3
-MODE_SURVIVAL = 4
-MODE_SURVIVAL_DAEMON = 5
+MODE_NORMAL = 1
 
 DEATHMATCH = 0
 SURVIVAL = 1
 
-mode = MODE_SERVER
+mode = MODE_NORMAL
 gametype = DEATHMATCH
 
 customWindowSize = False
@@ -89,12 +82,6 @@ while i < len(sys.argv):
 			winSize.setWord(1, 600)
 	elif sys.argv[i] == "-d":
 		mode = MODE_DAEMON
-	elif sys.argv[i] == "-s":
-		mode = MODE_SERVER
-	elif sys.argv[i] == "-c":
-		mode = MODE_CLIENT
-	elif sys.argv[i] == "-t":
-		mode = MODE_TUTORIAL
 	elif sys.argv[i] == "-v":
 		gametype = SURVIVAL
 	i += 1
@@ -112,11 +99,12 @@ if mode != MODE_DAEMON:
 	engine.Mouse.hideCursor()
 
 disableAudio = False
-defaultPort = 1338 if mode == MODE_CLIENT else 1337
+defaultPort = 1337
 defaultMap = "impact"
 defaultHost = "127.0.0.1:1337"
 username = "Unnamed"
 tutorialOffset = 0
+skipIntro = False
 
 i = 1
 while i < len(sys.argv):
@@ -132,24 +120,9 @@ while i < len(sys.argv):
 			i += 1
 		except:
 			showHelpInfo()
-	elif sys.argv[i] == "-d" or sys.argv[i] == "-s":
+	elif sys.argv[i] == "-d":
 		try:
 			defaultMap = sys.argv[i + 1]
-			i += 1
-		except:
-			showHelpInfo()
-	elif sys.argv[i] == "-t":
-		try:
-			defaultMap = sys.argv[i + 1]
-			i += 1
-			if len(sys.argv) > i + 1 and sys.argv[i + 1][0] != "-":
-				tutorialOffset = int(sys.argv[i + 1])
-				i += 1
-		except:
-			showHelpInfo()
-	elif sys.argv[i] == "-c":
-		try:
-			defaultHost = sys.argv[i + 1]
 			i += 1
 		except:
 			showHelpInfo()
@@ -159,8 +132,8 @@ while i < len(sys.argv):
 			i += 1
 		except:
 			showHelpInfo()
-	elif sys.argv[i] == "-i":
-		engine.enableNetworkStatistics = True
+	elif sys.argv[i] == "-m":
+		skipIntro = True
 	elif sys.argv[i] == "-v":
 		pass # Already been processed.
 	else:
@@ -170,60 +143,32 @@ while i < len(sys.argv):
 if disableAudio or mode == MODE_DAEMON:
 	audio.disable()
 
-game = None
-gameBackend = None
-
-def go(newMode, newGameType, user, map = None, host = None):
-	global gameBackend, game, mode, gametype
-	
+def goDaemon():
 	# Initialize engine settings
-	engine.init(showFrameRate = False, daemon = (mode == MODE_DAEMON))
+	engine.init(showFrameRate = False, daemon = True)
 	engine.preloadModels()
 	engine.log.info(GAME_NAME + " " + VERSION_CODE + " - " + COPYRIGHT)
 	
 	from direct.distributed.PyDatagram import PyDatagram
 	net.init(defaultPort, PyDatagram)
-	
-	mode = newMode
-	gametype = newGameType
-	if mode == MODE_DAEMON:
-		if gametype == DEATHMATCH:
-			gameBackend = core.PointControlBackend(True, user)
-		elif gametype == SURVIVAL:
-			gameBackend = core.SurvivalBackend(True, user)
-		gameBackend.loadMap(map)
-	elif mode == MODE_SERVER:
-		if gametype == DEATHMATCH:
-			gameBackend = core.PointControlBackend(True, user)
-		elif gametype == SURVIVAL:
-			gameBackend = core.SurvivalBackend(True, user)
-		game = core.Game(gameBackend)
-		game.localStart(map)
-	elif mode == MODE_CLIENT:
-		online.connectTo(host)
-		gameBackend = core.ClientBackend(host, user)
-		game = core.Game(gameBackend)
-	elif mode == MODE_TUTORIAL:
-		gameBackend = core.PointControlBackend(False, user)
-		game = core.Tutorial(gameBackend, tutorialOffset)
-		game.localStart(map)
-	
-	if mode != MODE_DAEMON:
-		menu = ui.Menu()
+
+	if gametype == DEATHMATCH:
+		gameBackend = core.PointControlBackend(True, username)
+	elif gametype == SURVIVAL:
+		gameBackend = core.SurvivalBackend(True, username)
+	gameBackend.loadMap(defaultMap)
 
 	def gameLoop(task):
 		engine.update()
 		if gameBackend != None:
 			gameBackend.update()
-		if game != None:
-			game.update()
 		engine.endUpdate()
 		return task.cont
 
 	taskMgr.add(gameLoop, "Game loop")
 
 def goMenu():
-	global gameBackend, game, mode, gametype, mainMenu
+	global gameBackend, game, mode, gametype, mainMenu, skipIntro, menu
 	
 	# Initialize engine settings
 	engine.init(showFrameRate = False, daemon = (mode == MODE_DAEMON))
@@ -232,20 +177,40 @@ def goMenu():
 	
 	from direct.distributed.PyDatagram import PyDatagram
 	net.init(defaultPort, PyDatagram)
-
-	mainMenu = core.MainMenu()
+	
+	gameBackend = None
+	game = None
+	
+	mainMenu = core.MainMenu(skipIntro)
+	
+	menu = ui.Menu()
 
 	def gameLoop(task):
+		global mainMenu, gameBackend, game, menu
 		engine.update()
-		mainMenu.update()
+		if mainMenu != None and mainMenu.active:
+			gameBackend, game = mainMenu.update()
+		else:
+			mainMenu = None
+		if gameBackend != None:
+			gameBackend.update()
+		if game != None:
+			game.update()
+			if not menu.active:
+				game.delete()
+				gameBackend.delete()
+				game = None
+				gameBackend = None
+				mainMenu = core.MainMenu(skipIntro)
+				menu = ui.Menu()
 		engine.endUpdate()
 		return task.cont
 
 	taskMgr.add(gameLoop, "Game loop")
 
-if "-s" in sys.argv or "-d" in sys.argv or "-c" in sys.argv:
-	go(mode, gametype, username, defaultMap, defaultHost)
-else:
+if mode == MODE_DAEMON:
+	goDaemon()
+elif mode == MODE_NORMAL:
 	goMenu()
 
 run()

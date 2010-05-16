@@ -91,6 +91,18 @@ class Backend(DirectObject):
 		self.aiWorld = ai.World()
 		self.map = engine.Map()
 		self.matchNumber = 0
+	
+	def delete(self):
+		self.entityGroup.delete()
+		self.aiWorld.delete()
+		self.map.delete()
+		engine.clearLights()
+		self.netManager.delete()
+		del self.entityGroup
+		del self.aiWorld
+		del self.map
+		del self.netManager
+		self.active = False
 
 class ServerBackend(Backend):
 	def __init__(self, registerHost = True, username = "Unnamed"):
@@ -739,14 +751,18 @@ class Tutorial(Game):
 
 import math
 class MainMenu(DirectObject):
-	def __init__(self):
-		self.sound = audio.FlatSound("menu/background.ogg")
-		self.sound.setVolume(0)
-		self.sound.setLoop(True)
+	def __init__(self, skipIntro = False):
+		engine.Mouse.hideCursor()
+		self.backgroundSound = audio.FlatSound("menu/background.ogg")
+		self.backgroundSound.setVolume(0)
+		self.backgroundSound.setLoop(True)
 		self.active = True
 		self.accept("escape", engine.exit)
 		self.accept("mouse1", self.click)
 		self.cameraDistance = 20
+		self.mode = 0
+		self.lastModeSwitch = -1
+		self.lastMode = 0
 	
 		self.globe = loader.loadModel("menu/Globe")
 		self.globe.reparentTo(engine.renderLit)
@@ -799,6 +815,7 @@ class MainMenu(DirectObject):
 		self.selector.reparentTo(self.overlay)
 		
 		self.selectedItem = 0
+		self.clickedItem = -1
 		
 		self.skyBox = loader.loadModel("menu/skybox")
 		self.skyBox.setScale(self.cameraDistance + 2)
@@ -826,7 +843,7 @@ class MainMenu(DirectObject):
 		
 		self.angle = uniform(0, 360)
 		self.period = 60
-		self.uiAngle = uniform(0, 360)
+		self.uiAngle = 0
 		
 		self.logo = OnscreenImage(image = "menu/logo.png", pos = (0, 0, 0), scale = ((512.0 / 175.0) * 0.075, 0, 0.075))
 		self.logo.setTransparency(TransparencyAttrib.MAlpha)
@@ -835,19 +852,31 @@ class MainMenu(DirectObject):
 		
 		self.introText = None
 		global firstBoot
-		self.introTime = 4
-		if firstBoot:
+		self.introTime = 2
+		if firstBoot and not skipIntro:
 			self.introTime = 6
 			visitorFont = loader.loadFont("images/visitor2.ttf")
 			self.introText = OnscreenText(pos = (0, 0), scale = 0.2, align = TextNode.ACenter, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True, text = "et1337 presents")
 		firstBoot = False
-		introSound = audio.FlatSound("menu/intro.ogg")
-		introSound.play()
-		self.startTime = engine.clock.getTime()
+		
+		self.hostList = ui.HostList(self.startClient)
+		
+		self.introSound = audio.FlatSound("menu/intro.ogg")
+		self.introSound.play()
+		
+		self.clientConnectAddress = None
+		
+		self.startTime = -1
+	
+	def startClient(self, host):
+		self.clientConnectAddress = host
 
 	def update(self):
 		if not self.active:
 			return
+		net.context.readTick()
+		if self.startTime == -1:
+			self.startTime = engine.clock.getTime()
 		elapsedTime = engine.clock.getTime() - self.startTime
 		if elapsedTime < self.introTime:
 			blend = elapsedTime / self.introTime
@@ -862,10 +891,15 @@ class MainMenu(DirectObject):
 			self.overlay.setColor(Vec4(1, 1, 1, blend))
 			self.logo.setColor(1, 1, 1, blend)
 			self.skyBox.setColor(Vec4(1, 1, 1, blend))
-			if not self.sound.isPlaying():
-				self.sound.play()
-			self.sound.setVolume(blend)
-
+			if not self.backgroundSound.isPlaying():
+				self.backgroundSound.play()
+			self.backgroundSound.setVolume(blend)
+		elif self.mode != self.lastMode:
+			elapsedModeTime = engine.clock.getTime() - self.lastModeSwitch
+			if self.mode == 1 or self.mode == 2: # Pick map for hosting or tutorial
+				pass
+			else: # Normal (zoomed out) mode
+				pass
 		self.uiAngle -= engine.clock.timeStep * 2
 		self.text.setR(self.uiAngle)
 
@@ -880,7 +914,8 @@ class MainMenu(DirectObject):
 			angle += 360
 		while angle > 360:
 			angle -= 360
-		self.selectedItem = int(angle/ 90.0)
+		if not self.hostList.visible:
+			self.selectedItem = int(angle/ 90.0)
 		self.selector.setR(self.uiAngle + self.selectedItem * 90)
 		
 		self.overlay1.setR(self.overlay1.getR() - engine.clock.timeStep * 2)
@@ -891,19 +926,41 @@ class MainMenu(DirectObject):
 		self.angle += engine.clock.timeStep * 0.025
 		camera.setPos(math.cos(self.angle) * self.cameraDistance, math.sin(self.angle) * self.cameraDistance, math.cos(elapsedTime / 45 + 2) * 2)
 		camera.lookAt(Point3(0, 0, 0))
+		
+		backend = None
+		game = None
+		
+		if self.clientConnectAddress != None:
+			self.delete()
+			online.connectTo(self.clientConnectAddress)
+			backend = ClientBackend(self.clientConnectAddress, "Unnamed")
+			game = Game(backend)
+		elif self.clickedItem != -1:
+			if self.clickedItem == 0: # Join
+				self.hostList.show()
+			elif self.clickedItem == 1: # Tutorial
+				self.delete()
+				backend = PointControlBackend(False, "Unnamed")
+				game = Tutorial(backend, 0)
+				game.localStart("impact")
+			elif self.clickedItem == 2: # Exit
+				engine.exit()
+			elif self.clickedItem == 3: # Host
+				self.delete()
+				backend = PointControlBackend(True, "Unnamed")
+				game = Game(backend)
+				game.localStart("impact")
+			self.clickedItem = -1
+		net.context.writeTick()
+		return backend, game
 	
 	def click(self):
-		if self.selectedItem == 0: # Join
-			pass
-		elif self.selectedItem == 1: # Host
-			pass
-		elif self.selectedItem == 2: # Exit
-			engine.exit()
-		elif self.selectedItem == 3: # Tutorial
-			pass
+		if engine.clock.getTime() - self.startTime < self.introTime + 1:
+			return
+		self.clickedItem = self.selectedItem
 	
 	def delete(self):
-		self.sound.stop()
+		self.hostList.delete()
 		self.active = False
 		self.overlay.removeNode()
 		self.belt.delete()
@@ -914,6 +971,10 @@ class MainMenu(DirectObject):
 		self.skyBox.removeNode()
 		self.ignoreAll()
 		self.logo.destroy()
+		if self.introText != None:
+			self.introText.destroy()
+		self.introSound.stop()
+		self.backgroundSound.stop()
 
 from random import uniform, choice
 class JunkBelt:
