@@ -1010,7 +1010,7 @@ from random import uniform, choice
 class JunkBelt:
 	def __init__(self, radius):
 		self.radius = radius
-		junkFiles = ["menu/junk1.egg", "menu/junk2.egg", "menu/junk3.egg", "menu/junk4.egg", "menu/junk5.egg"]
+		junkFiles = ["menu/junk1", "menu/junk2", "menu/junk3", "menu/junk4", "menu/junk5"]
 		self.models = []
 		self.avels = []
 		self.instances = []

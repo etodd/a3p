@@ -1,3 +1,0 @@
-packager.setHost("http://a3p.sourceforge.net/a3pimages")
-class a3pimages(package):
-	dir("pkg-images")
