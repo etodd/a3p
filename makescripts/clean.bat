@@ -1,10 +1,6 @@
 cd ..
 
-rmdir /S /Q pkg-maps
-rmdir /S /Q pkg-images
-rmdir /S /Q pkg-models
-rmdir /S /Q pkg-sounds
-rmdir /S /Q p3d-src
-rmdir /S /Q dist-src
+rmdir /S /Q dist
+rmdir /S /Q packpanda-TMP
 
 cd makescripts
