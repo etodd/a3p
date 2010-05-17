@@ -321,7 +321,7 @@ class DropPod(Entity):
 		Entity.__init__(self, controller, local)
 		self.node = loader.loadModel("models/pod/pod")
 		self.node.reparentTo(engine.renderLit)
-		visitorFont = loader.loadFont("images/visitor2.ttf")
+		visitorFont = loader.loadFont("menu/visitor2.ttf")
 		self.amountIndicator = TextNode("dropPodAmountIndicator")
 		self.amountIndicator.setText("")
 		self.amountIndicator.setFont(visitorFont)

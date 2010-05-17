@@ -183,7 +183,7 @@ def goMenu():
 	
 	mainMenu = core.MainMenu(skipIntro)
 	
-	menu = ui.Menu()
+	menu = None
 
 	def gameLoop(task):
 		global mainMenu, gameBackend, game, menu
@@ -196,13 +196,16 @@ def goMenu():
 			gameBackend.update()
 		if game != None:
 			game.update()
-			if not menu.active:
+			if menu == None:
+				menu = ui.Menu()
+			if not menu.active or not gameBackend.connected:
 				game.delete()
 				gameBackend.delete()
 				game = None
 				gameBackend = None
 				mainMenu = core.MainMenu(skipIntro)
-				menu = ui.Menu()
+				menu.delete()
+				menu = None
 		engine.endUpdate()
 		return task.cont
 

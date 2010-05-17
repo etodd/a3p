@@ -19,6 +19,12 @@ def update():
 def add(group):
 	particleGroups.append(group)
 
+def clear():
+	global particleGroups
+	for particleGroup in particleGroups:
+		particleGroup.delete()
+	del particleGroups[:]
+
 def delete():
 	global particleGroups
 	for particleGroup in particleGroups:

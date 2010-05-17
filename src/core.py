@@ -16,6 +16,7 @@ import sys
 import audio
 import online
 import net2
+import particles
 
 import gc
 from random import uniform, choice
@@ -55,6 +56,7 @@ class Backend(DirectObject):
 		self.gameOver = False
 		self.matchLimit = 3
 		self.matchNumber = 0
+		self.connected = True # All backends are connected by default. Clients can be disconnected though.
 
 	def setGame(self, game):
 		self.game = game
@@ -97,12 +99,14 @@ class Backend(DirectObject):
 		self.aiWorld.delete()
 		self.map.delete()
 		engine.clearLights()
+		particles.clear()
 		self.netManager.delete()
 		del self.entityGroup
 		del self.aiWorld
 		del self.map
 		del self.netManager
 		self.active = False
+		self.ignoreAll()
 
 class ServerBackend(Backend):
 	def __init__(self, registerHost = True, username = "Unnamed"):
@@ -397,12 +401,6 @@ class ClientBackend(Backend):
 		p.add(net.Uint8(net.PACKET_CLIENTREADY))
 		net.context.broadcast(p)
 	
-	def update(self):
-		if self.active:
-			if not self.connected:
-				engine.exit()
-			Backend.update(self)
-	
 	def endMatchCallback(self, iterator):
 		self.entityGroup.resetMatch()
 		self.matchNumber += 1
@@ -441,7 +439,7 @@ class Game(DirectObject):
 		
 		self.unitSelector = None
 		self.gameui = None
-		visitorFont = loader.loadFont("images/visitor2.ttf")
+		visitorFont = loader.loadFont("menu/visitor2.ttf")
 		self.promptText = OnscreenText(pos = (0, 0.85), scale = 0.1, fg = (0.7, 0.7, 0.7, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)
 		self.scoreText = OnscreenText(pos = (0, 0.92), scale = 0.1, fg = (0.7, 0.7, 0.7, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)			
 		self.winSound = audio.FlatSound("sounds/win.ogg")
@@ -752,17 +750,17 @@ class Tutorial(Game):
 import math
 class MainMenu(DirectObject):
 	def __init__(self, skipIntro = False):
+		render.show()
+		engine.renderLit.show() # In case we just got back from the tutorial, which hides everything sometimes.
 		engine.Mouse.hideCursor()
 		self.backgroundSound = audio.FlatSound("menu/background.ogg")
 		self.backgroundSound.setVolume(0)
 		self.backgroundSound.setLoop(True)
+		self.clickSound = audio.FlatSound("menu/click.ogg")
 		self.active = True
-		self.accept("escape", engine.exit)
+		self.accept("escape", self.escape)
 		self.accept("mouse1", self.click)
 		self.cameraDistance = 20
-		self.mode = 0
-		self.lastModeSwitch = -1
-		self.lastMode = 0
 	
 		self.globe = loader.loadModel("menu/Globe")
 		self.globe.reparentTo(engine.renderLit)
@@ -855,21 +853,35 @@ class MainMenu(DirectObject):
 		self.introTime = 2
 		if firstBoot and not skipIntro:
 			self.introTime = 6
-			visitorFont = loader.loadFont("images/visitor2.ttf")
+			visitorFont = loader.loadFont("menu/visitor2.ttf")
 			self.introText = OnscreenText(pos = (0, 0), scale = 0.2, align = TextNode.ACenter, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True, text = "et1337 presents")
 		firstBoot = False
 		
 		self.hostList = ui.HostList(self.startClient)
+		self.mapList = ui.MapList(self.startServer)
 		
 		self.introSound = audio.FlatSound("menu/intro.ogg")
 		self.introSound.play()
 		
 		self.clientConnectAddress = None
+		self.serverMapName = None
+		self.serverMode = 0 # 0 for normal, 1 for tutorial
+		self.serverGameType = 0 # 0 for deathmatch, 1 for survival
 		
 		self.startTime = -1
 	
+	def escape(self):
+		if self.hostList.visible:
+			self.hostList.hide()
+		else:
+			engine.exit()
+	
 	def startClient(self, host):
 		self.clientConnectAddress = host
+	
+	def startServer(self, map, gametype):
+		self.serverMapName = map
+		self.serverGameType = gametype
 
 	def update(self):
 		if not self.active:
@@ -894,15 +906,16 @@ class MainMenu(DirectObject):
 			if not self.backgroundSound.isPlaying():
 				self.backgroundSound.play()
 			self.backgroundSound.setVolume(blend)
-		elif self.mode != self.lastMode:
-			elapsedModeTime = engine.clock.getTime() - self.lastModeSwitch
-			if self.mode == 1 or self.mode == 2: # Pick map for hosting or tutorial
-				pass
-			else: # Normal (zoomed out) mode
-				pass
+		else:
+			self.cameraDistance = 20
+			self.overlay.setColor(Vec4(1, 1, 1, 1))
+			self.logo.setColor(1, 1, 1, 1)
+			self.skyBox.setColor(Vec4(1, 1, 1, 1))
 		self.uiAngle -= engine.clock.timeStep * 2
 		self.text.setR(self.uiAngle)
 
+		self.hostList.update()
+		self.mapList.update()
 		self.mouse.update()
 		vector = Vec3(self.mouse.getX(), self.mouse.getY(), 0)
 		vector.normalize()
@@ -935,21 +948,37 @@ class MainMenu(DirectObject):
 			online.connectTo(self.clientConnectAddress)
 			backend = ClientBackend(self.clientConnectAddress, "Unnamed")
 			game = Game(backend)
+		elif self.serverMapName != None:
+			if self.serverMode == 0:
+				# Normal server mode
+				self.delete()
+				if self.serverGameType == 0:
+					backend = PointControlBackend(True, "Unnamed") # Deathmatch
+				else:
+					backend = SurvivalBackend(True, "Unnamed") # Survival
+				game = Game(backend)
+				game.localStart(self.serverMapName)
+			elif self.serverMode == 1:
+				if self.serverGameType == 0: # No survival maps for tutorial mode
+					# Tutorial mode
+					self.delete()
+					backend = PointControlBackend(True, "Unnamed")
+					game = Tutorial(backend, 0)
+					game.localStart(self.serverMapName)
+				else:
+					self.serverMapName = None
 		elif self.clickedItem != -1:
+			self.clickSound.play()
 			if self.clickedItem == 0: # Join
 				self.hostList.show()
 			elif self.clickedItem == 1: # Tutorial
-				self.delete()
-				backend = PointControlBackend(False, "Unnamed")
-				game = Tutorial(backend, 0)
-				game.localStart("impact")
+				self.mapList.show()
+				self.serverMode = 1
 			elif self.clickedItem == 2: # Exit
 				engine.exit()
 			elif self.clickedItem == 3: # Host
-				self.delete()
-				backend = PointControlBackend(True, "Unnamed")
-				game = Game(backend)
-				game.localStart("impact")
+				self.mapList.show()
+				self.serverMode = 0
 			self.clickedItem = -1
 		net.context.writeTick()
 		return backend, game
@@ -961,6 +990,7 @@ class MainMenu(DirectObject):
 	
 	def delete(self):
 		self.hostList.delete()
+		self.mapList.delete()
 		self.active = False
 		self.overlay.removeNode()
 		self.belt.delete()

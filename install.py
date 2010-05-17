@@ -23,7 +23,7 @@ import src.core as core
 import src.ui as ui
 
 from direct.gui.OnscreenText import OnscreenText
-visitorFont = loader.loadFont("images/visitor2.ttf")
+visitorFont = loader.loadFont("menu/visitor2.ttf")
 text = OnscreenText(pos = Vec3(0, 0, 0), text = "A3P is installed!\nHit 'play' to get started.", align = TextNode.ACenter, scale = 0.1, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = False)
 
 run()
