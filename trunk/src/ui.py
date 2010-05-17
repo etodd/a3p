@@ -28,7 +28,7 @@ class GameUI(DirectObject):
 			self.crosshairs.append(c)
 		self.currentCrosshair = 1
 		
-		visitorFont = loader.loadFont("images/visitor2.ttf")
+		visitorFont = loader.loadFont("menu/visitor2.ttf")
 		self.specialReadySound = audio.FlatSound("sounds/special-ready.ogg")
 		self.lastSpecialReady = True
 		
@@ -43,7 +43,7 @@ class GameUI(DirectObject):
 		self.playerUsernames = []
 		self.teams = []
 		self.teamScores = []
-		font = loader.loadFont("images/DejaVuSans.ttf")
+		font = loader.loadFont("menu/DejaVuSans.ttf")
 
 		self.healthBar = StatusBar(range = 100, pos = (engine.aspectRatio - 0.02, 0, -0.94), hpr = (0, 0, -90), width = 0.075, height = 0.5)
 		
@@ -87,7 +87,7 @@ class GameUI(DirectObject):
 		for username in self.playerUsernames:
 			username.removeNode()
 		del self.playerUsernames[:]
-		font = loader.loadFont("images/DejaVuSans.ttf")
+		font = loader.loadFont("menu/DejaVuSans.ttf")
 		for team in teams:
 			text = TextNode("playerId")
 			text.setText("")
@@ -293,7 +293,7 @@ class ChatLog(DirectObject):
 	def __init__(self):
 		self.localTeam = None
 		self.displayTime = 15.0 # Fifteen seconds before chats disappear
-		font = loader.loadFont("images/DejaVuSans.ttf")
+		font = loader.loadFont("menu/DejaVuSans.ttf")
 		self.chatTexts = []
 		self.messages = []
 		# Chats start at 0 at the bottom and count up
@@ -414,11 +414,11 @@ class UnitSelectorScreen(DirectObject):
 		self.accept("mouse1-up", self.release)
 		self.accept("mouse3", self.rightClick)
 		
-		self.container = DirectFrame(frameColor = (0.1, 0.4, 0.6, 0.6), frameSize=(-1.15, 1.15, -0.85, 0.75), pos = (0, 0, 0), sortOrder = -1)
+		self.container = DirectFrame(frameColor = (0.0, 0.2, 0.3, 0.8), frameSize=(-1.15, 1.15, -0.85, 0.75), pos = (0, 0, 0), sortOrder = -1)
 		self.container.setBin("fixed", 0)
 		
 		# UI elements
-		visitorFont = loader.loadFont("images/visitor2.ttf")
+		visitorFont = loader.loadFont("menu/visitor2.ttf")
 		self.balanceText = OnscreenText(parent = self.container, pos = Vec3(1.05, -0.55, 0), text = "$0", align = TextNode.ARight, scale = 0.1, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)
 		inventoryLabel = OnscreenText(parent = self.container, pos = Vec3(0.7, -0.15, 0), text = "Inventory", align = TextNode.ACenter, scale = 0.07, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = False)
 		playerLabel = OnscreenText(parent = self.container, pos = Vec3(-0.8, -0.575, 0), text = "Player", align = TextNode.ACenter, scale = 0.07, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = False)
@@ -432,7 +432,7 @@ class UnitSelectorScreen(DirectObject):
 		self.infoDialog.hide()
 		self.infoTitle = OnscreenText(pos = Vec3(0.075, 0.2, 0), parent = self.infoDialog, align = TextNode.ALeft, scale = 0.1, fg = (1, 1, 1, 1), font = visitorFont, mayChange = True)
 		self.infoCostText = OnscreenText(pos = Vec3(0.97, 0.2, 0), parent = self.infoDialog, align = TextNode.ARight, scale = 0.1, fg = (1, 1, 1, 1), font = visitorFont, mayChange = True)
-		dejavuFont = loader.loadFont("images/DejaVuSans.ttf")
+		dejavuFont = loader.loadFont("menu/DejaVuSans.ttf")
 		self.infoText = OnscreenText(pos = Vec3(0.075, 0.12, 0), parent = self.infoDialog, wordwrap = 18, align = TextNode.ALeft, scale = 0.05, fg = (1, 1, 1, 1), font = dejavuFont, mayChange = True)
 		self.infoPromptText = OnscreenText(pos = Vec3(0.97, -0.24, 0), text = "Click to purchase", parent = self.infoDialog, align = TextNode.ARight, scale = 0.05, fg = (1, 1, 1, 1), font = visitorFont, mayChange = False)
 		
@@ -677,7 +677,7 @@ class UnitIconSlot(DirectObject):
 		self.isSpecial = isSpecial
 		self.label = None
 		if label != None:
-			visitorFont = loader.loadFont("images/visitor2.ttf")
+			visitorFont = loader.loadFont("menu/visitor2.ttf")
 			self.label = OnscreenText(pos = Vec3(pos.getX() + 0.125, pos.getZ(), 0), text = label, align = TextNode.ALeft, scale = 0.075, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = False)
 		self.type = type
 		self.image = OnscreenImage(image = file, pos = pos, scale = 0.1)
@@ -750,7 +750,7 @@ class StatusBar(DirectObject):
 class ScoreBar(StatusBar):
 	def __init__(self, range, pos, hpr, width, height):
 		StatusBar.__init__(self, range, pos, hpr, width, height)
-		self.usernameText = OnscreenText(pos = (pos[0] + 0.0075, pos[2] - 0.0075, 0), align = TextNode.ALeft, scale = 0.05, fg = (1, 1, 1, 1), font = loader.loadFont("images/visitor2.ttf"), mayChange = True)
+		self.usernameText = OnscreenText(pos = (pos[0] + 0.0075, pos[2] - 0.0075, 0), align = TextNode.ALeft, scale = 0.05, fg = (1, 1, 1, 1), font = loader.loadFont("menu/visitor2.ttf"), mayChange = True)
 	
 	def setUsername(self, name):
 		self.usernameText.setText(name)
@@ -825,7 +825,7 @@ class EditorUI(DirectObject):
 		self.cursorX = 0
 		self.cursorY = 0
 		self.currentPhysicsEntityFile = "block/block"
-		font = loader.loadFont("images/DejaVuSans.ttf")
+		font = loader.loadFont("menu/DejaVuSans.ttf")
 		self.entry = DirectEntry(text = "", entryFont = font, pos = (-engine.aspectRatio + 0.02, 0, -0.77), scale = .035, text_fg = Vec4(1, 1, 1, 1), frameColor = (0, 0, 0, 0.5), width = 35, initialText="", numLines = 1, focus = 0, rolloverSound = None, clickSound = None,)
 		self.entry.setTransparency(TransparencyAttrib.MAlpha)
 		self.entry.hide()
@@ -857,7 +857,7 @@ class EditorUI(DirectObject):
 class Menu(DirectObject):
 	def __init__(self):
 		self.active = True
-		visitorFont = loader.loadFont("images/visitor2.ttf")
+		visitorFont = loader.loadFont("menu/visitor2.ttf")
 		self.dialog = DirectFrame(frameColor = (0.1, 0.4, 0.6, 0.6), frameSize=(-.45, .45, -.3375, .3375), pos = (0.8, 0, 0))
 		self.postProcessingCheckBox = DirectCheckButton(parent = self.dialog, text = "Post-processing", indicatorValue = engine.enablePostProcessing, pos = (0, 0, 0.225), boxRelief = DGG.FLAT, relief = DGG.FLAT, boxPlacement = "left", text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 2.0, boxImage = ("images/checkbox-disabled.png", "images/checkbox-enabled.png", None), frameColor = (0, 0, 0, 0), scale = 0.04, rolloverSound = None, clickSound = None, command = self.togglePostProcessing)
 		self.shadersCheckBox = DirectCheckButton(parent = self.dialog, text = "Shaders", indicatorValue = engine.enableShaders, pos = (0, 0, 0.1), boxRelief = DGG.FLAT, relief = DGG.FLAT, boxPlacement = "left", text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 2.0, boxImage = ("images/checkbox-disabled.png", "images/checkbox-enabled.png", None), frameColor = (0, 0, 0, 0), scale = 0.04, rolloverSound = None, clickSound = None, command = self.toggleShaders)
@@ -906,14 +906,35 @@ class HostList(DirectObject):
 		self.callback = callback
 		self.active = True
 		self.visible = False
-		visitorFont = loader.loadFont("images/visitor2.ttf")
-		self.dialog = DirectFrame(text = "Choose server", text_pos = (0, .35), text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 0.1, frameColor = (0.0, 0.2, 0.3, 0.8), frameSize=(-.7, .7, -.45, .4), pos = (0, 0, 0))
-		self.serverIpEntry = DirectEntry(parent = self.dialog, pos = (-0.4, 0, -0.275), scale = .08, entryFont = visitorFont, text_fg = Vec4(1, 1, 1, 1), frameColor = (0, 0, 0, 0.5), initialText = "Manual LAN IP", numLines = 1, rolloverSound = None, clickSound = None, focus = 0, focusInCommand = self.clearServerIp, command = self.go)
-		self.cancelButton = DirectButton(parent = self.dialog, text = "Cancel", pos = (0, 0, -0.35), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0, 0, 0, 0.5), frameSize = (-0.5, 0.5, -.15, .15), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.02), scale = 0.2, rolloverSound = None, clickSound = None, command = self.hide)
-		self.serverList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.4, .4, 0, 0), frameSize = (-.6, .6, -0.25, 0.2), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.png", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.png", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.png", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
+		visitorFont = loader.loadFont("menu/visitor2.ttf")
+		self.dialog = DirectFrame(text = "Choose server", text_pos = (0, .825), text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 0.1, frameColor = (0.0, 0.2, 0.3, 0.8), frameSize=(-.9, .9, -.9, .9), pos = (0, 0, 0))
+		self.serverIpEntry = DirectEntry(parent = self.dialog, pos = (-0.55, 0, -0.7), scale = .08, entryFont = visitorFont, text_fg = Vec4(1, 1, 1, 1), frameColor = (0, 0, 0, 0.5), initialText = "Manual LAN IP", numLines = 1, rolloverSound = None, clickSound = None, focus = 0, focusInCommand = self.clearServerIp, command = self.go)
+		self.cancelButton = DirectButton(parent = self.dialog, text = "Cancel", pos = (0, 0, -0.8), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0, 0, 0, 0.5), frameSize = (-0.5, 0.5, -.15, .15), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.3, rolloverSound = None, clickSound = None, command = self.hide)
+		self.joinButton = DirectButton(parent = self.dialog, text = "Join", pos = (0.4, 0, -0.68), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0, 0, 0, 0.5), frameSize = (-0.4, 0.4, -.14, .14), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.3, rolloverSound = None, clickSound = None, command = self.go)
+		self.serverList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.8, .8, 0, 0), frameSize = (-.8, .8, -0.7, 0.7), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.png", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.png", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.png", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
+		self.dialog.setScale(0.0)
 		self.dialog.hide()
 		self.hostButtons = []
 		net.context.hostListCallback = self.showHosts
+		self.lastShow = -1
+		self.lastHide = -1
+		self.transitionTime = 0.15
+		
+	def update(self):
+		if self.lastShow != -1:
+			elapsedTime = engine.clock.getTime() - self.lastShow
+			if elapsedTime < self.transitionTime:
+				self.dialog.setScale(elapsedTime / self.transitionTime)
+			else:
+				self.lastShow = -1
+				self.dialog.setScale(1.0)
+		if self.lastHide != -1:
+			elapsedTime = engine.clock.getTime() - self.lastHide
+			if elapsedTime < self.transitionTime:
+				self.dialog.setScale(1 - (elapsedTime / self.transitionTime))
+			else:
+				self.lastHide = -1
+				self.dialog.hide()
 	
 	def clearServerIp(self):
 		self.serverIpEntry.set("")
@@ -926,41 +947,100 @@ class HostList(DirectObject):
 		del self.hostButtons[:]
 		online.getHosts()
 		self.visible = True
+		self.lastHide = -1
+		self.lastShow = engine.clock.getTime()
 	
 	def showHosts(self, hosts):
 		if not self.active:
 			return # In case the lobby calls this callback after the menu has been deleted.
-		visitorFont = loader.loadFont("images/visitor2.ttf")
+		dejavuFont = loader.loadFont("menu/DejaVuSans.ttf")
 		hover = None
 		click = None
 		self.serverList.destroy()
-		for a in self.hostButtons:
-			a.destroy()
 		del self.hostButtons[:]
-		height = len(hosts) * 0.2
-		self.serverList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.4, .4, -height / 2, height / 2), frameSize = (-.6, .6, -0.2, 0.2), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.png", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.png", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.png", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
+		height = len(hosts) * 0.15
+		self.serverList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.8, .8, -height / 2, height / 2), frameSize = (-.8, .8, -0.7, 0.7), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.png", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.png", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.png", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
 		offset = (height / 2) - 0.1
 		for (name, host) in hosts:
-			self.hostButtons.append(DirectButton(parent = self.serverList.getCanvas(), text = name, pos = (0.175, 0, offset), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0.1, 0.4, 0.6, 0.6), frameSize = (-0.4, 0.4, -.1, .1), text_fg = (1, 1, 1, 1), text_scale = 0.1, text_pos = (0, -0.02), scale = 0.8, rolloverSound = None, clickSound = None, command = self.go, extraArgs = [host]))
-			offset -= 0.2
+			self.hostButtons.append(DirectButton(parent = self.serverList.getCanvas(), text = name, text_align = TextNode.ALeft, pos = (0, 0, offset), relief = DGG.FLAT, text_font = dejavuFont, frameColor = (0.1, 0.4, 0.6, 0.6), frameSize = (-0.95, 0.9, -.075, .075), text_fg = (1, 1, 1, 1), text_scale = 0.05, text_pos = (-0.9, -0.02), scale = 0.8, rolloverSound = None, clickSound = None, command = self.go, extraArgs = [host]))
+			offset -= 0.15
 	
 	def hide(self):
 		engine.Mouse.hideCursor()
-		self.dialog.hide()
+		self.lastShow = -1
+		self.lastHide = engine.clock.getTime()
 		self.visible = False
 	
 	def go(self, host = None):
 		if host == None: # Manual IP entry
-			self.callback(self.serverIpEntry.get())
+			ip = self.serverIpEntry.get()
 		else: # Host picked from the list
-			self.callback(host)
+			ip = host
+		if net.isValidIp(ip):
+			self.callback(ip)
 		
 	def delete(self):
 		self.active = False
-		for a in self.hostButtons:
-			a.destroy()
-		del self.hostButtons[:]
 		if self.dialog != None:
 			self.dialog.destroy()
-			self.cancelButton.destroy()
+		self.ignoreAll()
+
+class MapList(DirectObject):
+	def __init__(self, callback):
+		self.callback = callback
+		self.active = True
+		self.visible = False
+		visitorFont = loader.loadFont("menu/visitor2.ttf")
+		self.dialog = DirectFrame(text = "Choose map", text_pos = (0, .825), text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 0.1, frameColor = (0.0, 0.2, 0.3, 0.8), frameSize=(-.9, .9, -.9, .9), pos = (0, 0, 0))
+		self.cancelButton = DirectButton(parent = self.dialog, text = "Cancel", pos = (0, 0, -0.8), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0, 0, 0, 0.5), frameSize = (-0.5, 0.5, -.15, .15), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.3, rolloverSound = None, clickSound = None, command = self.hide)
+		self.serverList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.8, .8, 0, 0), frameSize = (-.8, .8, -0.7, 0.7), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.png", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.png", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.png", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
+		self.dialog.setScale(0.0)
+		self.dialog.hide()
+		self.mapButtons = []
+		hover = None
+		click = None
+		maps = [("verdict", 0, "Verdict [2P]"), ("orbit", 0, "Orbit [3P]"), ("impact", 0, "Impact [4P]"), ("complex", 0, "Complex [2P]"), ("grid", 0, "Grid [2P]"), ("matrix", 1, "Matrix [4P Survival]")]
+		height = len(maps) * 0.15
+		self.mapList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.8, .8, -height / 2, height / 2), frameSize = (-.8, .8, -0.7, 0.7), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.png", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.png", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.png", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
+		offset = (height / 2) - 0.1
+		for map in maps:
+			self.mapButtons.append(DirectButton(parent = self.mapList.getCanvas(), text = map[2], text_align = TextNode.ALeft, pos = (0, 0, offset), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0.1, 0.4, 0.6, 0.6), frameSize = (-0.95, 0.9, -.075, .075), text_fg = (1, 1, 1, 1), text_scale = 0.1, text_pos = (-0.9, -0.02), scale = 0.8, rolloverSound = None, clickSound = None, command = self.callback, extraArgs = [map[0], map[1]]))
+			offset -= 0.15
+		self.lastShow = -1
+		self.lastHide = -1
+		self.transitionTime = 0.15
+		
+	def update(self):
+		if self.lastShow != -1:
+			elapsedTime = engine.clock.getTime() - self.lastShow
+			if elapsedTime < self.transitionTime:
+				self.dialog.setScale(elapsedTime /self.transitionTime)
+			else:
+				self.lastShow = -1
+				self.dialog.setScale(1.0)
+		if self.lastHide != -1:
+			elapsedTime = engine.clock.getTime() - self.lastHide
+			if elapsedTime < self.transitionTime:
+				self.dialog.setScale(1 - (elapsedTime / self.transitionTime))
+			else:
+				self.lastHide = -1
+				self.dialog.hide()
+	
+	def show(self):
+		engine.Mouse.showCursor()
+		self.dialog.show()
+		self.visible = True
+		self.lastShow = engine.clock.getTime()
+		self.lastHide = -1
+
+	def hide(self):
+		engine.Mouse.hideCursor()
+		self.visible = False
+		self.lastShow = -1
+		self.lastHide = engine.clock.getTime()
+		
+	def delete(self):
+		self.active = False
+		if self.dialog != None:
+			self.dialog.destroy()
 		self.ignoreAll()

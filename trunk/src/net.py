@@ -336,6 +336,24 @@ def compareAddresses(a, b):
 def copyAddress(a):
 	return (a[0], a[1])
 
+def isValidIp(addressString):
+	try:
+		addressParts = addressString.split(":")
+		ip = addressParts[0]
+		if len(addressParts) > 1:
+			port = addressParts[1]
+			if not 0 <= int(port) <= 2**16:
+				return False
+		parts = ip.split(".")
+		if len(parts) != 4:
+			return False
+		for item in parts:
+			if not 0 <= int(item) <= 255:
+				return False
+	except:
+		return False
+	return True
+
 class Packet:
 	def __init__(self):
 		self.dataObjects = []
