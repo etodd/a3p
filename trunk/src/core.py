@@ -671,7 +671,7 @@ class Tutorial(Game):
 	
 	def startMatch(self):
 		if self.tutorialIndex >= len(self.tutorialScreens) - 1:
-			engine.exit()
+			self.backend.connected = False
 		render.show()
 		self.backend.map.hidePlatforms()
 		self.tutorialScreens[self.tutorialIndex].hide()

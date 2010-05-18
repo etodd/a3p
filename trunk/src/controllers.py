@@ -1816,7 +1816,7 @@ class EditController(Controller):
 		self.accept("mouse1-up", self.mouseUp)
 		self.accept("mouse3", self.setKey, ["rotate",1])
 		self.accept("mouse3-up", self.setKey, ["rotate",0])
-		self.accept("enter", self.map.save, [aiWorld, entityGroup])
+		self.accept("enter", self.save, [aiWorld, entityGroup])
 		self.accept("z", self.undo, [entityGroup])
 		self.accept("escape", engine.exit)
 		self.keyMap = {"left":0, "right":0, "forward":0, "back":0, "raise":0, "lower":0, "rotate":0}
@@ -1826,12 +1826,20 @@ class EditController(Controller):
 		self.savedPoint = None
 		self.selectedTool = 1
 		self.rotating = False
-		self.teamIndex = len([team for team in entityGroup.teams if team.dock != None])
 		# Aspect ratio corrects for horizontal scaling when calculating the cursor position / picking ray.
 		self.aspectRatio = float(base.win.getProperties().getXSize()) / float(base.win.getProperties().getYSize())
 		self.mouseDown = False
 		self.spawnedObjects = []
 		self.clickTime = 0
+	
+	def save(self, aiWorld, entityGroup):
+		try:
+			self.map.save(aiWorld, entityGroup)
+		except:
+			import traceback
+			exceptionData = traceback.format_exc()
+			print exceptionData
+			engine.log.info(exceptionData)
 	
 	def undo(self, entityGroup):
 		if len(self.spawnedObjects) > 0:
@@ -1876,8 +1884,7 @@ class EditController(Controller):
 			self.spawnedObjects.append(obj)
 		elif self.selectedTool == 2:
 			# Make a dock
-			dock = engine.Dock(aiWorld.space, self.teamIndex)
-			self.teamIndex += 1
+			dock = engine.Dock(aiWorld.space, len(aiWorld.docks))
 			normal = entry.getSurfaceNormal(render)
 			dock.setPosition(target + Vec3(0, 0, dock.vradius))
 			dock.setRotation(Vec3(0, math.degrees(-math.atan2(normal.getY(), normal.getZ())), math.degrees(math.atan2(normal.getX(), normal.getZ()))))
