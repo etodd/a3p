@@ -408,9 +408,9 @@ class Map(DirectObject):
 			elif tokens[0] == "teams":
 				numTeams = sum([int(token) for token in tokens[1:]])
 				if net.netMode == net.MODE_SERVER:
-					if len(tokens) > 2: # 2 v 2
-						colors = [Vec4(0.4, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.4, 1), Vec4(0.7, 0.3, 0.3, 1), Vec4(0.3, 0.3, 0.7, 1)]
-						colorNames = ["Red", "Blue", "Light Red", "Light Blue"]
+					if len(tokens) > 2: # x vs. y
+						colors = [Vec4(0.4, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.4, 1), Vec4(0.7, 0.3, 0.3, 1), Vec4(0.3, 0.3, 0.7, 1), Vec4(0.2, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.2, 1)]
+						colorNames = ["Red", "Blue", "Light Red", "Light Blue", "Dark Red", "Dark Blue"]
 					else:
 						colors = [Vec4(0.4, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.4, 1), Vec4(0, 0.4, 0, 1), Vec4(0.4, 0.4, 0, 1)]
 						colorNames = ["Red", "Blue", "Green", "Yellow"]
@@ -423,9 +423,15 @@ class Map(DirectObject):
 							team.setDock(docks[0])
 						entityGroup.spawnEntity(team)
 						entityGroup.addTeam(team)
-					if len(tokens) > 2: # 2 v 2
-						entityGroup.teams[0].addAlly(entityGroup.teams[2].getId())
-						entityGroup.teams[1].addAlly(entityGroup.teams[3].getId())
+					if len(tokens) > 2: # x vs. y
+						i = 2
+						while i < len(entityGroup.teams):
+							entityGroup.teams[0].addAlly(entityGroup.teams[i].getId())
+							i += 2
+						i = 3
+						while i < len(entityGroup.teams):
+							entityGroup.teams[1].addAlly(entityGroup.teams[i].getId())
+							i += 2
 			elif tokens[0] == "navmesh":
 				aiWorld.navMesh = ai.NavMesh(mapDirectory, tokens[1])
 			elif tokens[0] == "survival":
@@ -635,13 +641,19 @@ class Map(DirectObject):
 		mapFile.write("world " + str(self.worldSize) + "\n")
 		if aiWorld.navMesh != None:
 			mapFile.write("navmesh " + aiWorld.navMesh.filename + "\n")
+		index = 0
 		for dock in aiWorld.docks:
-			pos = dock.getPosition()
-			mapFile.write("dock " + str(dock.teamIndex) + " " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + "\n")
+			if dock.active:
+				pos = dock.getPosition()
+				mapFile.write("dock " + str(index) + " " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + "\n")
+				index += 1
 		if self.isSurvival:
 			mapFile.write("survival\n")
 		else:
-			mapFile.write("teams " + str(len(entityGroup.teams)) + "\n")
+			if len(entityGroup.teams[0].getAllies()) > 0:
+				mapFile.write("teams " + str(len(entityGroup.teams[0].getAllies())) + " " + str(len(entityGroup.teams[1].getAllies())) + "\n")
+			else:
+				mapFile.write("teams " + str(len(entityGroup.teams)) + "\n")
 		for geom in self.staticGeometries.values():
 			pos = geom.getPosition()
 			keyword = "geometry"
@@ -688,17 +700,15 @@ class Map(DirectObject):
 			pos = obj.getPosition()
 			hpr = obj.node.getHpr()
 			mapFile.write("physicsentity " + obj.dataFile + " " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + " " + str(hpr.getX()) + " " + str(hpr.getY()) + " " + str(hpr.getZ()) + "\n")
-		for board in (entity for entity in entityGroup.entities.values() if isinstance(entity, entities.Springboard)):
-			pos = board.getPosition()
-			mapFile.write("springboard " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + " " + str(board.controller.getDirection().getX()) + " " + str(board.controller.getDirection().getY()) + " " + str(board.controller.getDirection().getZ()) + " " + str(board.controller.getForce()) + "\n")
 		for glass in (entity for entity in entityGroup.entities.values() if isinstance(entity, entities.Glass)):
 			pos = glass.getPosition()
 			hpr = glass.getRotation()
 			mapFile.write("glass " + str(glass.glassWidth) + " " + str(glass.glassHeight) + " " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + " " + str(hpr.getX()) + " " + str(hpr.getY()) + " " + str(hpr.getZ()) + "\n")
 		for point in aiWorld.spawnPoints:
-			pos = point.getPosition()
-			rot = point.getRotation()
-			mapFile.write("spawnpoint " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + " " + str(rot.getX()) + " " + str(rot.getY()) + " " + str(rot.getZ()) + "\n")
+			if point.active:
+				pos = point.getPosition()
+				rot = point.getRotation()
+				mapFile.write("spawnpoint " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + " " + str(rot.getX()) + " " + str(rot.getY()) + " " + str(rot.getZ()) + "\n")
 		stream = open(self.filename, "w")
 		stream.write(mapFile.data)
 		stream.close()
@@ -819,6 +829,7 @@ class SpawnPoint(DirectObject):
 	def __init__(self, space):
 		self.node = loadModel("models/spawnpoint/SpawnPoint")
 		self.node.reparentTo(renderEnvironment)
+		self.active = True
 	
 	def setPosition(self, pos):
 		self.node.setPos(pos)
@@ -833,12 +844,14 @@ class SpawnPoint(DirectObject):
 		return self.node.getHpr()
 	
 	def delete(self):
+		self.active = False
 		deleteModel(self.node, "models/spawnpoint/SpawnPoint")
 
 class Dock(SpawnPoint):
 	"Docks have a one-to-one relationship with Teams. Their Controllers increment the team's money and spawn newly purchased units."
 	def __init__(self, space, teamIndex):
 		self.teamIndex = teamIndex
+		self.active = True
 		self.radius = 6
 		self.vradius = 2
 		self.node = loadModel("models/dock/Dock")
