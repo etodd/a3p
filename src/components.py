@@ -493,7 +493,7 @@ class SniperRifle(Gun):
 		Gun.__init__(self, actor, 50, "models/basicdroid/sniper", id)
 		self.defaultCrosshair = 0 # No crosshair
 		self.zoomedCrosshair = 3 # Sniper scope
-		self.zoomedFov = 30
+		self.zoomedFov = 25
 		self.zoomedMouseSpeed = 0.15
 		self.clipSize = 4
 		self.ammo = self.clipSize

@@ -1029,7 +1029,7 @@ class PlayerController(DroidController):
 		self.currentCameraOffset = Vec3(self.defaultCameraOffset)
 		self.defaultMouseSpeed = 1.0
 		self.zoomTime = -1
-		self.totalZoomTime = 0.075
+		self.totalZoomTime = 0.12
 		self.currentCrosshair = -1 # Used by GameUI to display the correct cursor
 		self.sprinting = False
 		self.lastSentSprinting = False
@@ -1101,22 +1101,24 @@ class PlayerController(DroidController):
 	
 	def toggleZoom(self):
 		if self.zoomTime == -1 and not self.isPlatformMode:
-			self.zoomTime = engine.clock.getTime()
 			if self.zoomed:
+				self.zoomTime = engine.clock.getTime()
 				self.currentCameraOffset = self.cameraOffset
 				self.currentFov = self.fov
 				self.desiredFov = self.defaultFov
 				self.desiredCameraOffset = self.defaultCameraOffset
 				self.mouse.setSpeed(self.defaultMouseSpeed)
 				self.currentCrosshair = self.entity.components[self.activeWeapon].defaultCrosshair
-			else:
+				self.zoomed = not self.zoomed
+			elif not self.entity.components[self.activeWeapon].reloadActive:
+				self.zoomTime = engine.clock.getTime()
 				self.currentCameraOffset = self.defaultCameraOffset
 				self.currentFov = self.defaultFov
 				self.desiredFov = self.entity.components[self.activeWeapon].zoomedFov
 				self.desiredCameraOffset = self.entity.components[self.activeWeapon].zoomedCameraOffset
 				self.mouse.setSpeed(self.entity.components[self.activeWeapon].zoomedMouseSpeed)
 				self.currentCrosshair = self.entity.components[self.activeWeapon].zoomedCrosshair
-			self.zoomed = not self.zoomed
+				self.zoomed = not self.zoomed
 	
 	def setPlatformMode(self, mode):
 		self.isPlatformMode = mode
@@ -1270,6 +1272,8 @@ class PlayerController(DroidController):
 				direction = (camera.getPos() + (direction * 500)) - self.entity.getPosition()
 			direction.normalize()
 			self.entity.components[self.activeWeapon].fire()
+			if self.entity.components[self.activeWeapon].reloadActive and self.zoomed:
+				self.toggleZoom() # Zoom out if the weapon reloaded automatically
 		
 		p = DroidController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
 		
@@ -1338,6 +1342,7 @@ class AIController(DroidController):
 		self.direction = Vec3()
 		self.lastShot = 0
 		self.lastTargetCheck = 0
+		self.enemyLastVisible = False
 	
 	def buildSpawnPacket(self):
 		p = DroidController.buildSpawnPacket(self)
@@ -1378,14 +1383,16 @@ class AIController(DroidController):
 			self.pathFindUpdate(aiWorld, entityGroup)
 		
 		weapon = self.entity.components[self.activeWeapon]
-		if engine.clock.getTime() - self.lastTargetCheck > 0.1 and weapon.burstTimer == -1 and engine.clock.getTime() - weapon.burstDelayTimer >= weapon.burstDelay:
-			self.lastTargetCheck = engine.clock.getTime()
+		if weapon.burstTimer == -1 and engine.clock.getTime() - weapon.burstDelayTimer >= weapon.burstDelay:
 			if self.nearestEnemy != None and self.nearestEnemy.active:
 				self.targetPos = Vec3(self.nearestEnemy.getPosition())
 				vector = self.targetPos - self.entity.getPosition()
 				if vector.length() < weapon.range:
 					vector.normalize()
-					if entityGroup.getEntityFromEntry(aiWorld.getFirstCollision(self.entity.getPosition() + (vector * (self.entity.radius + 0.2)), vector)) == self.nearestEnemy:
+					if engine.clock.getTime() - self.lastTargetCheck > 0.5:
+						self.lastTargetCheck = engine.clock.getTime()
+						self.enemyLastVisible = entityGroup.getEntityFromEntry(aiWorld.getFirstCollision(self.entity.getPosition() + (vector * (self.entity.radius + 0.2)), vector)) == self.nearestEnemy
+					if self.enemyLastVisible:
 						weapon.burstTimer = engine.clock.getTime()
 						weapon.burstDelayTimer = -1
 						weapon.burstTime = weapon.burstTimeBase * ((random() * 1.5) + 1)

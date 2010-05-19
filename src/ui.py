@@ -168,14 +168,11 @@ class GameUI(DirectObject):
 		self.specialBar.setValue(max(0, engine.clock.getTime() - self.localTeam.lastSpecialActivated))
 		
 		allyList = []
-		enemyList = []
 		for i in range(len(self.teams)):
 			team = self.teams[i]
 			for bot in (x for x in team.actors if x.spawned and x.active):
 				if bot.team.isAlly(self.localTeam):
 					allyList.append(bot)
-				else:
-					enemyList.append(bot)
 			player = team.getPlayer()
 			if team != self.localTeam:
 				if player != None and player.active and player.spawned:
@@ -199,10 +196,14 @@ class GameUI(DirectObject):
 		for i in range(len(allyList)):
 			actor = allyList[i]
 			self.healthBars[i].show()
+			if actor.team == self.localTeam:
+				self.healthBars[i].setTeamIndex(actor.teamIndex)
+			else:
+				self.healthBars[i].setTeamIndex(-1)
 			self.healthBars[i].setPos(actor.getPosition() + Vec3(0, 0, actor.radius + 1))
 			self.healthBars[i].setValue(actor.health, actor.maxHealth)
 			self.healthBars[i].setColor(actor.team.color)
-			self.healthBars[i].setScale(pow((camera.getPos() - self.healthBars[i].getPos()).length(), 0.3) * 0.5)
+			self.healthBars[i].setScale((camera.getPos() - self.healthBars[i].getPos()).length() * 0.07)
 
 		i = 0
 		for t in self.teams:
@@ -414,8 +415,11 @@ class UnitSelectorScreen(DirectObject):
 		self.accept("mouse1-up", self.release)
 		self.accept("mouse3", self.rightClick)
 		
-		self.container = DirectFrame(frameColor = (0.0, 0.2, 0.3, 0.8), frameSize=(-1.15, 1.15, -0.85, 0.75), pos = (0, 0, 0), sortOrder = -1)
+		self.container = DirectFrame(frameColor = (0.0, 0.0, 0.0, 0.0), frameSize=(-1.15, 1.15, -0.85, 0.75), pos = (0, 0, 0), sortOrder = -1)
 		self.container.setBin("fixed", 0)
+		self.background = OnscreenImage(image = "menu/background.jpg", pos = (0, 0, -0.05), parent = self.container, scale = (1.15, 1, 0.8))
+		self.background.setTransparency(TransparencyAttrib.MAlpha)
+		self.background.setColor(1, 1, 1, 0.6)
 		
 		# UI elements
 		visitorFont = loader.loadFont("menu/visitor2.ttf")
@@ -806,9 +810,35 @@ class StatusBar3D(NodePath):
 class UnitStatusBar(StatusBar3D):
 	def __init__(self):
 		StatusBar3D.__init__(self, Vec4(), Vec4(), 100)
-		offset = 0
+		offset = 0.15
 		self.fg.setPos(-0.5 + offset, 0, 0)
 		self.bg.setPos(0.5 + offset, 0, 0)
+		self.teamIndex = -1
+		self.text = TextNode("ammoText")
+		self.text.setText("")
+		visitorFont = loader.loadFont("menu/visitor2.ttf")
+		self.text.setFont(visitorFont)
+		self.text.setTextColor(1, 1, 1, 1)
+		self.text.setAlign(TextNode.ARight)
+		self.text.setCardColor(0, 0, 0, 0.7)
+		self.text.setCardAsMargin(0.02, 0.02, 0.02, 0.02)
+		self.text.setCardDecal(True)
+		self.textNode = self.attachNewNode(self.text)
+		self.textNode.setTwoSided(True)
+		self.textNode.setBin("fixed", 101) # 101 so it's in front of all the MeshDrawer particles.
+		self.textNode.setScale(0.6)
+		self.textNode.setPos(-0.3, 0, -0.075)
+		self.textNode.hide(BitMask32.bit(4)) # Don't cast shadows
+		self.textNode.hide()
+		self.identifiers = ["Q", "E"]
+	
+	def setTeamIndex(self, index):
+		self.teamIndex = index
+		if self.teamIndex == -1:
+			self.textNode.hide()
+		else:
+			self.text.setText(self.identifiers[self.teamIndex])
+			self.textNode.show()
 	
 	def setColor(self, color):
 		self.fg.setColor(Vec4(color.getX() + 0.4, color.getY() + 0.4, color.getZ() + 0.4, 0.5))
@@ -907,7 +937,11 @@ class HostList(DirectObject):
 		self.active = True
 		self.visible = False
 		visitorFont = loader.loadFont("menu/visitor2.ttf")
-		self.dialog = DirectFrame(text = "Choose server", text_pos = (0, .825), text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 0.1, frameColor = (0.0, 0.2, 0.3, 0.8), frameSize=(-.9, .9, -.9, .9), pos = (0, 0, 0))
+		self.dialog = DirectFrame(frameColor = (0.0, 0.0, 0.0, 0.0), frameSize=(-.9, .9, -.9, .9), pos = (0, 0, 0))
+		self.background = OnscreenImage(image = "menu/background.jpg", pos = (0, 0, 0), parent = self.dialog, scale = (0.9, 1, 0.9))
+		self.background.setTransparency(TransparencyAttrib.MAlpha)
+		self.background.setColor(1, 1, 1, 0.8)
+		self.label = OnscreenText(parent = self.dialog, text = "Choose server", pos = (0, .825), font = visitorFont, fg = (1, 1, 1, 1), scale = 0.1)
 		self.serverIpEntry = DirectEntry(parent = self.dialog, pos = (-0.55, 0, -0.7), scale = .08, entryFont = visitorFont, text_fg = Vec4(1, 1, 1, 1), frameColor = (0, 0, 0, 0.5), initialText = "Manual LAN IP", numLines = 1, rolloverSound = None, clickSound = None, focus = 0, focusInCommand = self.clearServerIp, command = self.go)
 		self.cancelButton = DirectButton(parent = self.dialog, text = "Cancel", pos = (0, 0, -0.8), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0, 0, 0, 0.5), frameSize = (-0.5, 0.5, -.15, .15), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.3, rolloverSound = None, clickSound = None, command = self.hide)
 		self.joinButton = DirectButton(parent = self.dialog, text = "Join", pos = (0.4, 0, -0.68), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0, 0, 0, 0.5), frameSize = (-0.4, 0.4, -.14, .14), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.3, rolloverSound = None, clickSound = None, command = self.go)
@@ -985,13 +1019,75 @@ class HostList(DirectObject):
 			self.dialog.destroy()
 		self.ignoreAll()
 
+class LoginDialog(DirectObject):
+	def __init__(self, callback):
+		self.callback = callback
+		self.active = True
+		self.visible = False
+		dejavuFont = loader.loadFont("menu/DejaVuSans.ttf")
+		visitorFont = loader.loadFont("menu/visitor2.ttf")
+		self.dialog = DirectFrame(frameColor = (0.0, 0.0, 0.0, 0.0), frameSize=(-.7, .7, -.15, .15), pos = (0, 0, 0))
+		self.background = OnscreenImage(image = "menu/background.jpg", pos = (0, 0, 0), parent = self.dialog, scale = (1, 1, .15 / .7), )
+		self.background.setTransparency(TransparencyAttrib.MAlpha)
+		self.background.setColor(1, 1, 1, 0.8)
+		self.label = OnscreenText(parent = self.dialog, text = "Enter a username", pos = (0, .07), font = visitorFont, fg = (1, 1, 1, 1), scale = 0.1)
+		self.usernameEntry = DirectEntry(parent = self.dialog, pos = (-0.6, 0, -0.06), scale = .08, entryFont = dejavuFont, text_fg = Vec4(1, 1, 1, 1), frameColor = (0, 0, 0, 0.5), initialText = engine.savedUsername, numLines = 1, rolloverSound = None, clickSound = None, focus = 1, command = self.go)
+		self.loginButton = DirectButton(parent = self.dialog, text = "Login", pos = (0.4, 0, -.03), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0, 0, 0, 0.5), frameSize = (-0.4, 0.4, -.14, .14), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.475, rolloverSound = None, clickSound = None, command = self.go)
+		self.dialog.setScale(0.0)
+		self.dialog.hide()
+		self.lastShow = -1
+		self.lastHide = -1
+		self.transitionTime = 0.15
+		
+	def update(self):
+		if self.lastShow != -1:
+			elapsedTime = engine.clock.getTime() - self.lastShow
+			if elapsedTime < self.transitionTime:
+				self.dialog.setScale(elapsedTime / self.transitionTime)
+			else:
+				self.lastShow = -1
+				self.dialog.setScale(1.0)
+		if self.lastHide != -1:
+			elapsedTime = engine.clock.getTime() - self.lastHide
+			if elapsedTime < self.transitionTime:
+				self.dialog.setScale(1 - (elapsedTime / self.transitionTime))
+			else:
+				self.lastHide = -1
+				self.dialog.hide()
+	
+	def show(self):
+		engine.Mouse.showCursor()
+		self.dialog.show()
+		self.visible = True
+		self.lastHide = -1
+		self.lastShow = engine.clock.getTime()
+	
+	def hide(self):
+		engine.Mouse.hideCursor()
+		self.lastShow = -1
+		self.lastHide = engine.clock.getTime()
+		self.visible = False
+	
+	def go(self, value = None):
+		self.callback(self.usernameEntry.get())
+		
+	def delete(self):
+		self.active = False
+		if self.dialog != None:
+			self.dialog.destroy()
+		self.ignoreAll()
+
 class MapList(DirectObject):
 	def __init__(self, callback):
 		self.callback = callback
 		self.active = True
 		self.visible = False
 		visitorFont = loader.loadFont("menu/visitor2.ttf")
-		self.dialog = DirectFrame(text = "Choose map", text_pos = (0, .825), text_font = visitorFont, text_fg = (1, 1, 1, 1), text_scale = 0.1, frameColor = (0.0, 0.2, 0.3, 0.8), frameSize=(-.9, .9, -.9, .9), pos = (0, 0, 0))
+		self.dialog = DirectFrame(frameColor = (0.0, 0.0, 0.0, 0.0), frameSize=(-.9, .9, -.9, .9), pos = (0, 0, 0))
+		self.background = OnscreenImage(image = "menu/background.jpg", pos = (0, 0, 0), parent = self.dialog, scale = (0.9, 1, 0.9))
+		self.background.setTransparency(TransparencyAttrib.MAlpha)
+		self.background.setColor(1, 1, 1, 0.8)
+		self.label = OnscreenText(parent = self.dialog, text = "Choose map", pos = (0, .825), font = visitorFont, fg = (1, 1, 1, 1), scale = 0.1)
 		self.cancelButton = DirectButton(parent = self.dialog, text = "Cancel", pos = (0, 0, -0.8), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0, 0, 0, 0.5), frameSize = (-0.5, 0.5, -.15, .15), text_fg = (1, 1, 1, 1), text_scale = 0.3, text_pos = (0, -0.04), scale = 0.3, rolloverSound = None, clickSound = None, command = self.hide)
 		self.serverList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.8, .8, 0, 0), frameSize = (-.8, .8, -0.7, 0.7), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.png", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.png", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.png", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
 		self.dialog.setScale(0.0)
@@ -999,7 +1095,7 @@ class MapList(DirectObject):
 		self.mapButtons = []
 		hover = None
 		click = None
-		maps = [("verdict", 0, "Verdict [2P]"), ("orbit", 0, "Orbit [3P]"), ("impact", 0, "Impact [4P]"), ("complex", 0, "Complex [2P]"), ("grid", 0, "Grid [2P]"), ("matrix", 1, "Matrix [4P Survival]")]
+		maps = [("impact", 0, "Impact [6P]"), ("arena", 0, "Arena [4P]"), ("orbit", 0, "Orbit [3P]"), ("verdict", 0, "Verdict [2P]"), ("complex", 0, "Complex [2P]"), ("grid", 0, "Grid [2P]"), ("matrix", 1, "Matrix [4P Survival]")]
 		height = len(maps) * 0.15
 		self.mapList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.8, .8, -height / 2, height / 2), frameSize = (-.8, .8, -0.7, 0.7), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.png", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.png", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.png", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
 		offset = (height / 2) - 0.1

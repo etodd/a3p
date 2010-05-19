@@ -848,6 +848,8 @@ class MainMenu(DirectObject):
 		self.logo.setColor(1, 1, 1, 0)
 		self.logo.setBin("transparent", 0)
 		
+		self.skipToEndOfTutorial = skipIntro
+		
 		self.introText = None
 		global firstBoot
 		self.introTime = 2
@@ -859,6 +861,8 @@ class MainMenu(DirectObject):
 		
 		self.hostList = ui.HostList(self.startClient)
 		self.mapList = ui.MapList(self.startServer)
+		self.loginDialog = ui.LoginDialog(self.setUsername)
+		self.loginDialogShown = False
 		
 		self.introSound = audio.FlatSound("menu/intro.ogg")
 		self.introSound.play()
@@ -867,6 +871,8 @@ class MainMenu(DirectObject):
 		self.serverMapName = None
 		self.serverMode = 0 # 0 for normal, 1 for tutorial
 		self.serverGameType = 0 # 0 for deathmatch, 1 for survival
+		
+		self.username = "Unnamed"
 		
 		self.startTime = -1
 	
@@ -882,6 +888,12 @@ class MainMenu(DirectObject):
 	def startServer(self, map, gametype):
 		self.serverMapName = map
 		self.serverGameType = gametype
+	
+	def setUsername(self, username):
+		self.username = username
+		engine.savedUsername = self.username
+		engine.saveConfigFile()
+		self.loginDialog.hide()
 
 	def update(self):
 		if not self.active:
@@ -911,11 +923,18 @@ class MainMenu(DirectObject):
 			self.overlay.setColor(Vec4(1, 1, 1, 1))
 			self.logo.setColor(1, 1, 1, 1)
 			self.skyBox.setColor(Vec4(1, 1, 1, 1))
+		
+		global firstBoot
+		if not self.loginDialogShown and firstBoot and elapsedTime > self.introTime:
+			self.loginDialog.show()
+			self.loginDialogShown = True
+		
 		self.uiAngle -= engine.clock.timeStep * 2
 		self.text.setR(self.uiAngle)
 
 		self.hostList.update()
 		self.mapList.update()
+		self.loginDialog.update()
 		self.mouse.update()
 		vector = Vec3(self.mouse.getX(), self.mouse.getY(), 0)
 		vector.normalize()
@@ -946,24 +965,24 @@ class MainMenu(DirectObject):
 		if self.clientConnectAddress != None:
 			self.delete()
 			online.connectTo(self.clientConnectAddress)
-			backend = ClientBackend(self.clientConnectAddress, "Unnamed")
+			backend = ClientBackend(self.clientConnectAddress, self.username)
 			game = Game(backend)
 		elif self.serverMapName != None:
 			if self.serverMode == 0:
 				# Normal server mode
 				self.delete()
 				if self.serverGameType == 0:
-					backend = PointControlBackend(True, "Unnamed") # Deathmatch
+					backend = PointControlBackend(True, self.username) # Deathmatch
 				else:
-					backend = SurvivalBackend(True, "Unnamed") # Survival
+					backend = SurvivalBackend(True, self.username) # Survival
 				game = Game(backend)
 				game.localStart(self.serverMapName)
 			elif self.serverMode == 1:
 				if self.serverGameType == 0: # No survival maps for tutorial mode
 					# Tutorial mode
 					self.delete()
-					backend = PointControlBackend(True, "Unnamed")
-					game = Tutorial(backend, 0)
+					backend = PointControlBackend(True, self.username)
+					game = Tutorial(backend, 2 if self.skipToEndOfTutorial else 0)
 					game.localStart(self.serverMapName)
 				else:
 					self.serverMapName = None
@@ -984,13 +1003,14 @@ class MainMenu(DirectObject):
 		return backend, game
 	
 	def click(self):
-		if engine.clock.getTime() - self.startTime < self.introTime + 1:
+		if engine.clock.getTime() - self.startTime < self.introTime + 0.5:
 			return
 		self.clickedItem = self.selectedItem
 	
 	def delete(self):
 		self.hostList.delete()
 		self.mapList.delete()
+		self.loginDialog.delete()
 		self.active = False
 		self.overlay.removeNode()
 		self.belt.delete()

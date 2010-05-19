@@ -36,6 +36,7 @@ enableDistortionEffects = True
 enableShaders = True
 enablePostProcessing = True
 enableShadows = True
+savedUsername = "Unnamed"
 reflectionEffectsNeeded = False # True if we're in a level with water
 windowWidth = 800
 windowHeight = 600
@@ -73,6 +74,7 @@ def loadConfigFile():
 	global enableShaders
 	global enablePostProcessing
 	global enableShadows
+	global savedUsername
 	global windowWidth
 	global windowHeight
 	global isFullscreen
@@ -95,6 +97,8 @@ def loadConfigFile():
 			enablePostProcessing = parts[1] == "#t"
 		elif parts[0] == "enable-shadows":
 			enableShadows = parts[1] == "#t"
+		elif parts[0] == "username":
+			savedUsername = " ".join(parts[1:])
 	if windowHeight > 0:
 		aspectRatio = float(windowWidth) / float(windowHeight)
 
@@ -103,6 +107,7 @@ def saveConfigFile():
 	global enableShaders
 	global enablePostProcessing
 	global enableShadows
+	global savedUsername
 	global windowWidth
 	global windowHeight
 	global aspectRatio
@@ -116,7 +121,8 @@ def saveConfigFile():
 	mapFile.write("enable-distortion-effects " + boolToStr(enableDistortionEffects) + "\n")
 	mapFile.write("enable-shaders " + boolToStr(enableShaders) + "\n")
 	mapFile.write("enable-post-processing " + boolToStr(enablePostProcessing) + "\n")
-	mapFile.write("enable-shadows " + boolToStr(enableShadows))
+	mapFile.write("enable-shadows " + boolToStr(enableShadows) + "\n")
+	mapFile.write("username " + savedUsername)
 	mapFile.close()
 
 def loadModel(filename):
