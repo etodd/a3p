@@ -552,7 +552,6 @@ class TeamEntity(Entity):
 		self.money = 600
 		self.score = 0
 		self.playerScore = 0
-		self.name = ""
 		self.player = None
 		self.matchScore = 0
 		self.purchasedTypes = []
