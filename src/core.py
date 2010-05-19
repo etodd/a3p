@@ -335,7 +335,7 @@ class SurvivalBackend(ServerBackend):
 		self.scoreLimit = self.zombieCounts[0] * 150
 		self.zombieTeam = entities.TeamEntity()
 		self.zombieTeam.color = Vec4(0, 0, 0, 1)
-		self.zombieTeam.name = "Zombies"
+		self.zombieTeam.username = "Zombies"
 		self.zombieTeam.isZombies = True
 		self.zombieTeam.setLocal(True)
 		self.zombieTeam.resetScore()
@@ -590,12 +590,12 @@ class Game(DirectObject):
 					if team.matchScore > highScore:
 						highScore = team.matchScore
 						winningTeam = team
-		self.promptText.setText(gameOverText + winningTeam.name + " wins the " + gameText + "! Spacebar to continue.")
+		self.promptText.setText(gameOverText + winningTeam.username + " wins the " + gameText + "! Spacebar to continue.")
 	
 	def updateScoreText(self):
 		text = ""
 		for team in self.backend.entityGroup.teams:
-			text += " " + team.name + ": " + str(team.matchScore) + " "
+			text += " " + team.username + ": " + str(team.matchScore) + " "
 		self.scoreText.setText(text)
 		self.scoreText.show()
 

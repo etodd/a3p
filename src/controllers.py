@@ -126,7 +126,6 @@ class TeamEntityController(Controller):
 	def buildSpawnPacket(self):
 		p = Controller.buildSpawnPacket(self)
 		p.add(net2.HighResVec4(self.entity.color))
-		p.add(net.String(self.entity.name))
 		if self.entity.dock != None:
 			p.add(net.Uint8(self.entity.dock.teamIndex))
 		else:
@@ -147,7 +146,6 @@ class TeamEntityController(Controller):
 		entity = entities.TeamEntity()
 		entity = Controller.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
 		entity.color = net2.HighResVec4.getFrom(iterator)
-		entity.name = net.String.getFrom(iterator)
 		dockIndex = net.Uint8.getFrom(iterator)
 		entity.dock = [x for x in aiWorld.docks if x.teamIndex == dockIndex][0]
 		numAllies = net.Uint8.getFrom(iterator)

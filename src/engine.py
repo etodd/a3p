@@ -416,14 +416,11 @@ class Map(DirectObject):
 				if net.netMode == net.MODE_SERVER:
 					if len(tokens) > 2: # x vs. y
 						colors = [Vec4(0.4, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.4, 1), Vec4(0.7, 0.3, 0.3, 1), Vec4(0.3, 0.3, 0.7, 1), Vec4(0.2, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.2, 1)]
-						colorNames = ["Red", "Blue", "Light Red", "Light Blue", "Dark Red", "Dark Blue"]
 					else:
 						colors = [Vec4(0.4, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.4, 1), Vec4(0, 0.4, 0, 1), Vec4(0.4, 0.4, 0, 1)]
-						colorNames = ["Red", "Blue", "Green", "Yellow"]
 					for i in range(numTeams):
 						team = entities.TeamEntity()
 						team.color = colors[i]
-						team.name = colorNames[i]
 						docks = [x for x in aiWorld.docks if x.teamIndex == i]
 						if len(docks) > 0:
 							team.setDock(docks[0])
@@ -445,12 +442,10 @@ class Map(DirectObject):
 				numTeams = 4
 				if net.netMode == net.MODE_SERVER:
 					colors = [Vec4(0.4, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.4, 1), Vec4(0, 0.4, 0, 1), Vec4(0.4, 0.4, 0, 1)]
-					colorNames = ["Red", "Blue", "Green", "Yellow"]
 					for i in range(4):
 						team = entities.TeamEntity()
 						team.money = 150 # 250 gets added when the score is reset. So the player starts with 400.
 						team.color = colors[i]
-						team.name = colorNames[i]
 						team.isSurvivors = True
 						entityGroup.spawnEntity(team)
 						entityGroup.addTeam(team)
