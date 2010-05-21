@@ -1,0 +1,14 @@
+world 130.0
+navmesh gold-nav
+dock 0 -112.625495911 77.8240737915 2.0000038147
+dock 2 114.060272217 -77.0982589722 2.0
+dock 1 118.015007019 78.3449020386 1.99999809265
+dock 3 -114.578216553 -77.342628479 2.00000095367
+teams 4
+geometry-scenery gold 0.0 0.0 0.0
+skybox skybox2/skybox
+sound ambient-cavern.ogg 0.20000000298
+light all ambient AmbientLight 0.3 0.3 0.3
+light all directional Light1 1.2 1.099999976158 1.00000011921 0.0 -100.0 0.0 shadow
+light all directional Light2 0.300000011921 0.40000000596 0.5 0.0 60.0 0.0
+scenery gold-scenery 0.0 0.0 0.0
