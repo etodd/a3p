@@ -1038,6 +1038,7 @@ class LoginDialog(DirectObject):
 		self.lastShow = -1
 		self.lastHide = -1
 		self.transitionTime = 0.15
+		self.goSound = audio.FlatSound("menu/click.ogg")
 		
 	def update(self):
 		if self.lastShow != -1:
@@ -1069,6 +1070,7 @@ class LoginDialog(DirectObject):
 		self.visible = False
 	
 	def go(self, value = None):
+		self.goSound.play()
 		self.callback(self.usernameEntry.get())
 		
 	def delete(self):

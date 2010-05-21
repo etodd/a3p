@@ -1,0 +1,3 @@
+packager.setHost("http://a3p.sourceforge.net/")
+class pkg(package):
+	dir("a3p-pkg")

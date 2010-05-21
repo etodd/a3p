@@ -381,6 +381,8 @@ class NavNode:
 	
 	def containerTest(self, p):
 		p2 = Vec3(p.getX(), p.getY(), 0)
+		if p.getZ() > self.highest + 2 or p.getZ() < self.lowest - 2:
+			return False
 		for i in range(len(self.edgeNormals)):
 			vector = p2 - self.edges[i].flatCenter
 			vector.normalize()
