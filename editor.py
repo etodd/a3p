@@ -19,7 +19,7 @@ engine.enableShaders = True
 # Setup window
 props = WindowProperties()
 props.setCursorHidden(True)
-props.setTitle("Stainless")
+props.setTitle("A3P Editor")
 base.win.requestProperties(props)
 base.setBackgroundColor(0, 0, 0)
 
@@ -39,12 +39,6 @@ map.load(filename, aiWorld, entityGroup)
 base.disableAllAudio()
 
 editor = controllers.EditController(aiWorld, entityGroup, map, ui)
-
-try:
-	import psyco
-	psyco.full()
-except ImportError:
-	pass
 
 def gameTask(task):
 	global aiWorld

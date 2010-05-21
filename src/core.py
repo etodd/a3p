@@ -857,6 +857,7 @@ class MainMenu(DirectObject):
 			self.introTime = 6
 			visitorFont = loader.loadFont("menu/visitor2.ttf")
 			self.introText = OnscreenText(pos = (0, 0), scale = 0.2, align = TextNode.ACenter, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True, text = "et1337 presents")
+		self.showLogin = firstBoot
 		firstBoot = False
 		
 		self.hostList = ui.HostList(self.startClient)
@@ -924,8 +925,7 @@ class MainMenu(DirectObject):
 			self.logo.setColor(1, 1, 1, 1)
 			self.skyBox.setColor(Vec4(1, 1, 1, 1))
 		
-		global firstBoot
-		if not self.loginDialogShown and firstBoot and elapsedTime > self.introTime:
+		if not self.loginDialogShown and self.showLogin and elapsedTime > self.introTime:
 			self.loginDialog.show()
 			self.loginDialogShown = True
 		

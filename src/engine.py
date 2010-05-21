@@ -400,7 +400,7 @@ class Map(DirectObject):
 			data = vfs.readFile(self.filename, 1)
 		else:
 			self.mf = Multifile()
-			self.mf.openRead(ExecutionEnvironment.getEnvironmentVariable("A3PMAPS_ROOT") + "/a3pmaps.mf")
+			self.mf.openRead(ExecutionEnvironment.getEnvironmentVariable("PKG_ROOT") + "/pkg.mf")
 			fileId = self.mf.findSubfile(self.filename)
 			data = self.mf.readSubfile(fileId)
 
