@@ -4,7 +4,6 @@ dock 0 -63.7972564697 60.2347869873 5.58313560486
 dock 1 -6.41475868225 -64.5416259766 -16.0168609619
 teams 2
 geometry-scenery concept1 0.0 0.0 0.0
-geometry concept1-geometry 0.0 0.0 0.0
 skybox skybox2/skybox
 sound ambient-windy.ogg 0.5
 light all ambient AmbientLight 0.5 0.5 0.5
