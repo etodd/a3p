@@ -1,0 +1,3 @@
+model pillar
+geometry cylinder 3.5 17
+mass 1.0 cylinder 3.5 17

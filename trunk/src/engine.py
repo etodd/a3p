@@ -178,7 +178,7 @@ def init(showFrameRate = False, daemon = False):
 	renderObjects = renderLit.attachNewNode("renderObjects")
 	renderEnvironment = renderLit.attachNewNode("renderEnvironment")
 	controllers.init()
-	audio.init(dropOffFactor = 1.5, distanceFactor = 6, dopplerFactor = 10.0)
+	audio.init(dropOffFactor = 1.5, distanceFactor = 6, dopplerFactor = 0.0)
 	numMaxDynamicLights = 0
 	if enableShaders and not daemon:
 		numMaxDynamicLights = 4
@@ -414,9 +414,12 @@ class Map(DirectObject):
 			elif tokens[0] == "teams":
 				numTeams = sum([int(token) for token in tokens[1:]])
 				if net.netMode == net.MODE_SERVER:
-					if len(tokens) > 2: # x vs. y
-						colors = [Vec4(0.4, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.4, 1), Vec4(0.7, 0.3, 0.3, 1), Vec4(0.3, 0.3, 0.7, 1), Vec4(0.2, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.2, 1)]
-					else:
+					if len(tokens) > 2: # 2v2 or 3v3
+						if tokens[1] == "3": # 3v3
+							colors = [Vec4(0.6, 0.0, 0.0, 1), Vec4(0.2, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.6, 1), Vec4(0.0, 0.0, 0.2, 1), Vec4(0.0, 0.6, 0.0, 1), Vec4(0.0, 0.2, 0.0, 1)]
+						else: # 2v2
+							colors = [Vec4(0.6, 0.0, 0.0, 1), Vec4(0.2, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.6, 1), Vec4(0.0, 0.0, 0.2, 1)]
+					else: # Free-for-all up to 4 players
 						colors = [Vec4(0.4, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.4, 1), Vec4(0, 0.4, 0, 1), Vec4(0.4, 0.4, 0, 1)]
 					for i in range(numTeams):
 						team = entities.TeamEntity()
@@ -652,7 +655,7 @@ class Map(DirectObject):
 			mapFile.write("survival\n")
 		else:
 			if len(entityGroup.teams[0].getAllies()) > 0:
-				mapFile.write("teams " + str(len(entityGroup.teams[0].getAllies())) + " " + str(len(entityGroup.teams[1].getAllies())) + "\n")
+				mapFile.write("teams " + str(len(entityGroup.teams[0].getAllies()) + 1) + " " + str(len(entityGroup.teams[1].getAllies()) + 1) + "\n")
 			else:
 				mapFile.write("teams " + str(len(entityGroup.teams)) + "\n")
 		for geom in self.staticGeometries.values():

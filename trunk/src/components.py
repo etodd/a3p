@@ -505,7 +505,7 @@ class SniperRifle(Gun):
 		self.fireTime = 0.8
 		self.reloadTime = 3.0
 		self.range = 300
-		self.accuracy = 0.7
+		self.accuracy = 0.4
 	
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
 		p = Gun.serverUpdate(self, aiWorld, entityGroup, packetUpdate)

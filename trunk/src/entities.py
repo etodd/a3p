@@ -527,6 +527,15 @@ class PhysicsEntity(ObjectEntity):
 					self.geometry = OdeSphereGeom(space, radius)
 					self.radius = radius
 					self.vradius = radius
+				elif tokens[1] == "cylinder":
+					radius = float(tokens[2])
+					length = float(tokens[3])
+					point1 = Point3(-radius / 2.0, -radius / 2.0, -length  / 2.0)
+					point2 = Point3(radius / 2.0, radius / 2.0, length  / 2.0)
+					self.radius = radius
+					self.vradius = length / 2.0
+					self.collisionNode.addSolid(CollisionBox(point1, point2))
+					self.geometry = OdeCylinderGeom(space, radius, length)
 				self.geometry.setCollideBits(BitMask32(0x00000001))
 				self.geometry.setCategoryBits(BitMask32(0x00000001))
 				self.geometry.setBody(self.body)
@@ -538,6 +547,8 @@ class PhysicsEntity(ObjectEntity):
 					m.setBox(density, float(tokens[3]), float(tokens[4]), float(tokens[5]))
 				elif tokens[2] == "sphere":
 					m.setSphere(density, float(tokens[3]))
+				elif tokens[2] == "cylinder":
+					m.setCylinder(density, 3, float(tokens[3]), float(tokens[4])) # 1 = X axis, 2 = Y axis, 3 = Z axis
 				self.body.setMass(m)
 
 SPECIAL_DELAY = 18
