@@ -346,7 +346,8 @@ class ObjectController(Controller):
 				p.add(net.Boolean(True))
 				self.lastSnapshot = snapshot
 				p.add(snapshot)
-			if self.entity.getPosition().getZ() < -30:
+			z = self.entity.getPosition().getZ()
+			if z < -30 or z > 30:
 				self.entity.killer = None
 				self.entity.kill(aiWorld, entityGroup)
 		return p
@@ -1156,7 +1157,7 @@ class PlayerController(DroidController):
 		if self.keyMap["jump"]:
 			if engine.clock.getTime() - self.lastJump > 0.25 and aiWorld.testCollisions(self.entity.collisionNodePath).getNumEntries() > 0:
 				self.lastJump = engine.clock.getTime()
-				self.entity.addForce(engine.impulseToForce(0, 0, 1000))
+				self.entity.setLinearVelocity(self.entity.getLinearVelocity() + Vec3(0, 0, 16))
 		if self.keyMap["switch-weapon"]:
 			self.keyMap["switch-weapon"] = False
 			if self.activeWeapon == 1:
@@ -1300,15 +1301,20 @@ class PlayerController(DroidController):
 			cmds = net.Uint8.getFrom(iterator)
 			for i in range(cmds):
 				id = net.Uint8.getFrom(iterator)
-				controller = entityGroup.getEntity(id).controller
-				if net.Boolean.getFrom(iterator):
-					controller.enableSpecial()
+				entity = entityGroup.getEntity(id)
+				if entity == None: # Do nothing
+					if net.Boolean.getFrom(iterator):
+						net.Uint8.getFrom(iterator)
 				else:
-					target = entityGroup.getEntity(net.Uint8.getFrom(iterator))
-					if target == self.entity:
-						controller.setTarget(None)
+					controller = entity.controller
+					if net.Boolean.getFrom(iterator):
+						controller.enableSpecial()
 					else:
-						controller.setTarget(target)
+						target = entityGroup.getEntity(net.Uint8.getFrom(iterator))
+						if target == self.entity:
+							controller.setTarget(None)
+						else:
+							controller.setTarget(target)
 		
 		particles.UnitHighlightParticleGroup.draw(self.entity.getPosition(), self.entity.team.color, self.entity.radius + 0.4)
 
@@ -1335,12 +1341,19 @@ class AIController(DroidController):
 		self.moving = False
 		self.path = ai.Path()
 		self.lastAiNode = None
+		self.aiNode = None
 		self.lastTargetAiNode = None
-		self.lastPathFind = engine.clock.getTime() + random()
+		self.targetAiNode = None
+		self.lastPathFind = engine.clock.getTime() + random() + 1
+		self.lastEnemySelection = engine.clock.getTime() + random() + 1
+		self.lastDirectionUpdate = engine.clock.getTime() + random() + 1
+		self.lastTargetCheck = 0
+		self.pathTarget = Vec3()
 		self.direction = Vec3()
 		self.lastShot = 0
-		self.lastTargetCheck = 0
 		self.enemyLastVisible = False
+		self.pathFindStep = 0
+		self.needClean = False
 	
 	def buildSpawnPacket(self):
 		p = DroidController.buildSpawnPacket(self)
@@ -1367,8 +1380,8 @@ class AIController(DroidController):
 		self.targetedEnemy = target
 
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
-		if engine.clock.getTime() - self.lastPathFind > 0.5:
-			self.lastPathFind = engine.clock.getTime()
+		if engine.clock.getTime() - self.lastEnemySelection > 0.5:
+			self.lastEnemySelection = engine.clock.getTime()
 			player = self.entity.team.getPlayer()
 			if player == None and (self.targetedEnemy == None or not self.targetedEnemy.active):
 				self.targetedEnemy = aiWorld.getNearestDropPod(entityGroup, self.entity.getPosition())
@@ -1379,7 +1392,7 @@ class AIController(DroidController):
 			elif self.nearestEnemy == None or not self.nearestEnemy.active or (self.nearestEnemy.getPosition() - self.entity.getPosition()).length() > 15:
 				self.nearestEnemy = aiWorld.getNearestEnemy(entityGroup, self.entity.getPosition(), self.entity.team)
 			self.pathFindUpdate(aiWorld, entityGroup)
-		
+
 		weapon = self.entity.components[self.activeWeapon]
 		if weapon.burstTimer == -1 and engine.clock.getTime() - weapon.burstDelayTimer >= weapon.burstDelay:
 			if self.nearestEnemy != None and self.nearestEnemy.active:
@@ -1432,7 +1445,7 @@ class AIController(DroidController):
 			vector = self.targetPos - self.entity.getPosition()
 			distance = vector.length()
 			vector /= distance
-			coefficient = uniform(weapon.accuracy - 1.0, 1.0 - weapon.accuracy) * 6.0
+			coefficient = uniform(weapon.accuracy - 1.0, 1.0 - weapon.accuracy) * 2.0
 			up = Vec3(0, 0, 1)
 			cross = vector.cross(up)
 			self.targetPos += up * coefficient

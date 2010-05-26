@@ -56,7 +56,6 @@ def init(dropOffFactor, distanceFactor, dopplerFactor):
 	manager = Audio3DManager(base.sfxManagerList[0], camera)
 	manager.setDropOffFactor(dropOffFactor)
 	manager.setDistanceFactor(distanceFactor)
-	manager.setListenerVelocityAuto()
 	addSoundGroup(SoundGroup("chaingun", ["sounds/chaingun.ogg"], volume = 0.5))
 	addSoundGroup(SoundGroup("shotgun", ["sounds/shotgun.ogg"], volume = 1.0))
 	addSoundGroup(SoundGroup("large-explosion", ["sounds/large-explosion.ogg", "sounds/large-explosion2.ogg", "sounds/large-explosion3.ogg", "sounds/large-explosion4.ogg", "sounds/large-explosion5.ogg"], volume = 1.0))

@@ -268,6 +268,20 @@ class NavMesh:
 				edge3 = self.addEdge(v3, v)
 				self.nodes.append(NavNode(edge1, edge2, edge3))
 
+	def addEdge(self, v1, v2):
+		edge = self._checkForEdge(v1, v2)
+		if edge == None:
+			edge = Edge(Vec3(v1), Vec3(v2))
+			self.edges.append(edge)
+		return edge
+	
+	def _checkForEdge(self, v1, v2):
+		epsilon = 0.1
+		for edge in self.edges:
+			if (edge.a.almostEqual(v1, epsilon) and edge.b.almostEqual(v2, epsilon)) or (edge.a.almostEqual(v2, epsilon) and edge.b.almostEqual(v1, epsilon)):
+				return edge
+		return None
+
 	def getNode(self, pos, lastKnownNode = None):
 		if lastKnownNode != None:
 			if lastKnownNode.containerTest(pos):
@@ -298,11 +312,7 @@ class NavMesh:
 		endNode = self.getNode(endPos)
 		return self.findPathFromNodes(startNode, endNode, startPos, endPos, radius)
 	
-	def findPathFromNodes(self, startNode, endNode, startPos, endPos, radius = 1):
-		def reconstructPath(path, currentEdge):
-			if currentEdge.cameFrom != None:
-				reconstructPath(path, currentEdge.cameFrom)
-				path.add(currentEdge)
+	def findPathFromNodes(self, startNode, endNode, startPos, endPos, radius = 1):	
 		# Clear pathfinding data
 		for edge in self.edges:
 			edge.closed = False
@@ -310,46 +320,42 @@ class NavMesh:
 			edge.gScore = 0
 			edge.hScore = 0
 			edge.fScore = 0
+			edge.open = False
 		path = Path(startPos, endPos, radius)
 		openEdges = startNode.edges[:]
 		for edge in startNode.edges:
 			edge.gScore = 0
 			edge.hScore = edge.cost(endNode.center)
 			edge.fScore = edge.hScore
+			edge.open = True
+		def compare(x, y):
+			return (x.fScore > y.fScore) - (x.fScore < y.fScore)
 		while len(openEdges) > 0:
-			openEdges.sort(lambda x, y: (x.fScore > y.fScore) - (x.fScore < y.fScore))
+			openEdges.sort(compare)
 			currentEdge = openEdges.pop(0)
 			if endNode in currentEdge.nodes:
-				reconstructPath(path, currentEdge)
+				c = currentEdge
+				path.add(currentEdge)
+				while c.cameFrom != None:
+					c = c.cameFrom
+					path.add(c)
 				return path
 			currentEdge.closed = True
-			for neighbor in (x for x in currentEdge.neighbors if x.navigable and not x.closed):
-				tentativeGScore = currentEdge.gScore + currentEdge.costToEdge(neighbor)
-				tentativeIsBetter = False
-				if not neighbor in openEdges:
-					openEdges.append(neighbor)
-					neighbor.hScore = neighbor.cost(endNode.center)
-					tentativeIsBetter = True
-				elif tentativeGScore < neighbor.gScore:
-					tentativeIsBetter = True
-				if tentativeIsBetter:
-					neighbor.cameFrom = currentEdge
-					neighbor.gScore = tentativeGScore
-					neighbor.fScore = neighbor.gScore + neighbor.hScore
-		return None
-	
-	def addEdge(self, v1, v2):
-		edge = self._checkForEdge(v1, v2)
-		if edge == None:
-			edge = Edge(Vec3(v1), Vec3(v2))
-			self.edges.append(edge)
-		return edge
-	
-	def _checkForEdge(self, v1, v2):
-		epsilon = 0.1
-		for edge in self.edges:
-			if (edge.a.almostEqual(v1, epsilon) and edge.b.almostEqual(v2, epsilon)) or (edge.a.almostEqual(v2, epsilon) and edge.b.almostEqual(v1, epsilon)):
-				return edge
+			for neighbor in currentEdge.neighbors:
+				if neighbor.navigable and not neighbor.closed:
+					tentativeGScore = currentEdge.gScore + currentEdge.costToEdge(neighbor)
+					tentativeIsBetter = False
+					if not neighbor.open:
+						neighbor.open = True
+						openEdges.append(neighbor)
+						neighbor.hScore = neighbor.cost(endNode.center)
+						tentativeIsBetter = True
+					elif tentativeGScore < neighbor.gScore:
+						tentativeIsBetter = True
+					if tentativeIsBetter:
+						neighbor.cameFrom = currentEdge
+						neighbor.gScore = tentativeGScore
+						neighbor.fScore = neighbor.gScore + neighbor.hScore
 		return None
 
 class NavNode:
@@ -419,6 +425,7 @@ class Edge:
 		self.nodes = []
 		# Temporary pathfinding data
 		self.closed = False
+		self.open = False
 		self.cameFrom = None
 		self.gScore = 0
 		self.hScore = 0
@@ -444,11 +451,7 @@ class Edge:
 	
 	def costToEdge(self, edge):
 		# The cost is the distance between the two closest corners of the two edges.
-		dist1 = (self.a - edge.a).length()
-		dist2 = (self.b - edge.b).length()
-		dist3 = (self.a - edge.b).length()
-		dist4 = (self.b - edge.a).length()
-		return min(dist1, dist2, dist3, dist4)
+		return (self.center - edge.center).length()
 	
 	def getNodes(self):
 		return self.nodes
@@ -479,11 +482,11 @@ class Path:
 				del self.edges[i]
 			i -= 1
 	def add(self, edge):
-		self.edges.append(edge)
+		self.edges.insert(0, edge)
 		if (edge.a - self.end).length() < (edge.b - self.end).length():
-			self.waypoints.append(edge.a + (edge.aToBVector * self.radius))
+			self.waypoints.insert(0, edge.a + (edge.aToBVector * self.radius))
 		else:
-			self.waypoints.append(edge.b - (edge.aToBVector * self.radius))
+			self.waypoints.insert(0, edge.b - (edge.aToBVector * self.radius))
 	def current(self):
 		if len(self.waypoints) > 0:
 			return self.waypoints[0]

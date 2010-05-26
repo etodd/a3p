@@ -441,7 +441,7 @@ class Game(DirectObject):
 		self.gameui = None
 		visitorFont = loader.loadFont("menu/visitor2.ttf")
 		self.promptText = OnscreenText(pos = (0, 0.85), scale = 0.1, fg = (0.7, 0.7, 0.7, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)
-		self.scoreText = OnscreenText(pos = (0, 0.92), scale = 0.1, fg = (0.7, 0.7, 0.7, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)			
+		self.scoreText = OnscreenText(pos = (0, 0.92), scale = 0.06, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)			
 		self.winSound = audio.FlatSound("sounds/win.ogg")
 		self.loseSound = audio.FlatSound("sounds/lose.ogg")
 		self.errorSound = audio.FlatSound("sounds/error.ogg")
@@ -656,6 +656,7 @@ class Tutorial(Game):
 		render.hide()
 		self.tutorialScreens[self.tutorialIndex].show()
 		self.enemyAiUnits = [(components.CHAINGUN, None), (components.SNIPER, None), (components.PISTOL, None)]
+		self.enemyTeam = None
 	
 	def reset(self):
 		Game.reset(self)
@@ -705,12 +706,12 @@ class Tutorial(Game):
 			self.scoreText.hide()
 
 		# Purchase AI units
-		team = self.backend.entityGroup.teams[1]
-		team.setLocal(True)
-		team.controller.tutorialMode = True
-		team.resetScore()
+		self.enemyTeam = self.backend.entityGroup.teams[1]
+		self.enemyTeam.setLocal(True)
+		self.enemyTeam.controller.tutorialMode = True
+		self.enemyTeam.resetScore()
 		for u in self.enemyAiUnits:
-			team.purchaseUnit(u[0], u[1])
+			self.enemyTeam.purchaseUnit(u[0], u[1])
 	
 	def endMatchCallback(self, winningTeam):
 		localTeam = self.localTeam
@@ -724,9 +725,8 @@ class Tutorial(Game):
 		self.tutorialScreens[self.tutorialIndex].show()
 		localTeam.controller.addMoney(1000)
 		self.unitSelector.hide()
-		team = self.backend.entityGroup.teams[1]
-		team.resetScore()
-		team.score = 0
+		self.enemyTeam.resetScore()
+		self.enemyTeam.score = 0
 	
 	def update(self):
 		noTeamYet = False
@@ -735,7 +735,8 @@ class Tutorial(Game):
 		Game.update(self)
 		if noTeamYet and self.localTeam != None and self.tutorialIndex > 0: # We have a team now!
 			self.localTeam.controller.addMoney(2000)
-		self.backend.entityGroup.teams[1].respawnUnits()
+		if self.enemyTeam != None:
+			self.enemyTeam.respawnUnits()
 
 	def hideTutorialScreen(self):
 		render.show()
@@ -774,6 +775,7 @@ class MainMenu(DirectObject):
 		self.overlay = camera.attachNewNode("overlay")
 		self.overlay.setTransparency(TransparencyAttrib.MAlpha)
 		self.overlay.setColor(Vec4(1, 1, 1, 0))
+		self.overlay.setPos(0, 0, 0)
 		self.overlay.setPos(0, self.cameraDistance, 0)
 		
 		self.overlay1 = loader.loadModel("menu/overlay1")
@@ -792,6 +794,8 @@ class MainMenu(DirectObject):
 		self.overlay3.setScale(4)
 		self.overlay3.setTwoSided(True)
 		self.overlay3.setRenderModeWireframe()
+		self.overlay3.setR(uniform(0, 360))
+		self.overlay3.setP(uniform(0, 360))
 		self.overlay3.setH(uniform(0, 360))
 		self.overlay3.reparentTo(self.overlay)
 		
@@ -799,6 +803,8 @@ class MainMenu(DirectObject):
 		self.overlay4.setScale(4)
 		self.overlay4.setTwoSided(True)
 		self.overlay4.setRenderModeWireframe()
+		self.overlay4.setH(uniform(0, 360))
+		self.overlay4.setR(uniform(0, 360))
 		self.overlay4.setP(uniform(0, 360))
 		self.overlay4.reparentTo(self.overlay)
 		
@@ -813,7 +819,6 @@ class MainMenu(DirectObject):
 		self.selector.reparentTo(self.overlay)
 		
 		self.selectedItem = 0
-		self.clickedItem = -1
 		
 		self.skyBox = loader.loadModel("menu/skybox")
 		self.skyBox.setScale(self.cameraDistance + 2)
@@ -848,6 +853,9 @@ class MainMenu(DirectObject):
 		self.logo.setColor(1, 1, 1, 0)
 		self.logo.setBin("transparent", 0)
 		
+		self.loadingScreen = OnscreenImage(image = "menu/loading.jpg", pos = (0, 0, 0), scale = (1680.0 / 988.0, 0, 1))
+		self.loadingScreen.hide()
+		
 		self.skipToEndOfTutorial = skipIntro
 		
 		self.introText = None
@@ -876,6 +884,7 @@ class MainMenu(DirectObject):
 		self.username = "Unnamed"
 		
 		self.startTime = -1
+		self.goTime = -1
 	
 	def escape(self):
 		if self.hostList.visible:
@@ -884,13 +893,22 @@ class MainMenu(DirectObject):
 			engine.exit()
 	
 	def startClient(self, host):
+		self.clickSound.play()
+		self.hostList.hide()
+		self.loadingScreen.show()
 		self.clientConnectAddress = host
+		self.goTime = engine.clock.getTime()
 	
 	def startServer(self, map, gametype):
+		self.clickSound.play()
+		self.mapList.hide()
+		self.loadingScreen.show()
 		self.serverMapName = map
 		self.serverGameType = gametype
+		self.goTime = engine.clock.getTime()
 	
 	def setUsername(self, username):
+		self.clickSound.play()
 		self.username = username
 		engine.savedUsername = self.username
 		engine.saveConfigFile()
@@ -912,6 +930,7 @@ class MainMenu(DirectObject):
 			self.angle += engine.clock.timeStep * (1 - blend)
 			self.cameraDistance = 20 + (1 - blend)**2 * 200
 		elif elapsedTime < self.introTime + 2:
+			self.cameraDistance = 20
 			blend = (elapsedTime - self.introTime) / 2
 			self.overlay.setColor(Vec4(1, 1, 1, blend))
 			self.logo.setColor(1, 1, 1, blend)
@@ -962,52 +981,52 @@ class MainMenu(DirectObject):
 		backend = None
 		game = None
 		
-		if self.clientConnectAddress != None:
-			self.delete()
-			online.connectTo(self.clientConnectAddress)
-			backend = ClientBackend(self.clientConnectAddress, self.username)
-			game = Game(backend)
-		elif self.serverMapName != None:
-			if self.serverMode == 0:
-				# Normal server mode
+		if self.goTime != -1 and engine.clock.getTime() - self.goTime > 0.25:
+			if self.clientConnectAddress != None:
 				self.delete()
-				if self.serverGameType == 0:
-					backend = PointControlBackend(True, self.username) # Deathmatch
-				else:
-					backend = SurvivalBackend(True, self.username) # Survival
+				online.connectTo(self.clientConnectAddress)
+				backend = ClientBackend(self.clientConnectAddress, self.username)
 				game = Game(backend)
-				game.localStart(self.serverMapName)
-			elif self.serverMode == 1:
-				if self.serverGameType == 0: # No survival maps for tutorial mode
-					# Tutorial mode
+			elif self.serverMapName != None:
+				if self.serverMode == 0:
+					# Normal server mode
 					self.delete()
-					backend = PointControlBackend(True, self.username)
-					game = Tutorial(backend, 2 if self.skipToEndOfTutorial else 0)
+					if self.serverGameType == 0:
+						backend = PointControlBackend(True, self.username) # Deathmatch
+					else:
+						backend = SurvivalBackend(True, self.username) # Survival
+					game = Game(backend)
 					game.localStart(self.serverMapName)
-				else:
-					self.serverMapName = None
-		elif self.clickedItem != -1:
-			self.clickSound.play()
-			if self.clickedItem == 0: # Join
-				self.hostList.show()
-			elif self.clickedItem == 1: # Tutorial
-				self.mapList.show()
-				self.serverMode = 1
-			elif self.clickedItem == 2: # Exit
-				engine.exit()
-			elif self.clickedItem == 3: # Host
-				self.mapList.show()
-				self.serverMode = 0
-			self.clickedItem = -1
+				elif self.serverMode == 1:
+					if self.serverGameType == 0: # No survival maps for tutorial mode
+						# Tutorial mode
+						self.delete()
+						backend = PointControlBackend(True, self.username)
+						game = Tutorial(backend, 2 if self.skipToEndOfTutorial else 0)
+						game.localStart(self.serverMapName)
+					else:
+						self.serverMapName = None
+
 		net.context.writeTick()
 		return backend, game
 	
 	def click(self):
-		if engine.clock.getTime() - self.startTime < self.introTime + 0.5:
+		if self.mapList.visible or self.hostList.visible or engine.clock.getTime() - self.startTime < self.introTime + 0.5:
 			return
-		self.clickedItem = self.selectedItem
+		self.clickSound.play()
+		if self.selectedItem == 0: # Join
+			self.hostList.show()
+		elif self.selectedItem == 1: # Tutorial
+			self.mapList.show()
+			self.serverMode = 1
+		elif self.selectedItem == 2: # Exit
+			engine.exit()
+		elif self.selectedItem == 3: # Host
+			self.mapList.show()
+			self.serverMode = 0
 	
 	def delete(self):
+		self.loadingScreen.destroy()
 		self.hostList.delete()
 		self.mapList.delete()
 		self.loginDialog.delete()

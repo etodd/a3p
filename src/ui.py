@@ -44,17 +44,19 @@ class GameUI(DirectObject):
 		self.teams = []
 		self.teamScores = []
 		font = loader.loadFont("menu/DejaVuSans.ttf")
+		
+		self.verticalOffset = -0.8
 
-		self.healthBar = StatusBar(range = 100, pos = (engine.aspectRatio - 0.02, 0, -0.94), hpr = (0, 0, -90), width = 0.075, height = 0.5)
+		self.healthBar = StatusBar(range = 100, pos = (engine.aspectRatio - 0.02, 0, self.verticalOffset - 0.04), hpr = (0, 0, -90), width = 0.075, height = 0.5)
 		
 		self.scoreChangeText = OnscreenText(pos = (0, 0.4), scale = 0.5, fg = (1, 1, 1, 0), font = visitorFont, mayChange = True)
 		self.scoreChangeTextAlpha = 0.0
 		self.scoreChangeTextSize = 0.1
 		self.lastTeamScore = 0
 		
-		self.moneyText = OnscreenText(pos = (engine.aspectRatio - 0.53, -0.95), scale = 0.075, align = TextNode.ARight, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)
+		self.moneyText = OnscreenText(pos = (engine.aspectRatio - 0.53, self.verticalOffset - 0.05), scale = 0.075, align = TextNode.ARight, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)
 		
-		self.specialBar = StatusBar(range = entities.SPECIAL_DELAY, pos = (engine.aspectRatio - 0.02, 0, -0.85), hpr = (0, 0, -90), width = 0.05, height = 0.25)
+		self.specialBar = StatusBar(range = entities.SPECIAL_DELAY, pos = (engine.aspectRatio - 0.02, 0, self.verticalOffset + 0.05), hpr = (0, 0, -90), width = 0.05, height = 0.25)
 		color = Vec3(0.6, 0.6, 0.6)
 		self.specialBar.setColors((color.getX() + 0.4, color.getY() + 0.4, color.getZ() + 0.4, 0.5), (color.getX(), color.getY(), color.getZ(), 0.5))
 		
@@ -79,7 +81,7 @@ class GameUI(DirectObject):
 		self.hidden = False
 		self.overrideUsernameHide = False
 		
-		self.chatLog = ChatLog()
+		self.chatLog = ChatLog(self.verticalOffset + 0.1)
 	
 	def setTeams(self, teams, team):
 		self.localTeam = team
@@ -101,10 +103,9 @@ class GameUI(DirectObject):
 		for t in self.teamScores:
 			t.delete()
 		del self.teamScores[:]
-		yOffsets = [-0.96, -0.91, -0.86, -0.81]
 		for i in range(len(self.teams)):
 			color = self.teams[i].color
-			yOffset = yOffsets[i]
+			yOffset = self.verticalOffset - 0.06 + (i * 0.05)
 			xOffset = -engine.aspectRatio + 0.02
 			bar = ScoreBar(range = 100, pos = (xOffset, 0, yOffset), hpr = (0, 0, 90), width = 0.04, height = 0.6)
 			bar.setColors(fg = (1, 1, 1, 1), bg = (color.getX(), color.getY(), color.getZ(), 0.5))
@@ -291,7 +292,7 @@ class Message:
 		self.time = time
 		
 class ChatLog(DirectObject):
-	def __init__(self):
+	def __init__(self, verticalOffset):
 		self.localTeam = None
 		self.displayTime = 15.0 # Fifteen seconds before chats disappear
 		font = loader.loadFont("menu/DejaVuSans.ttf")
@@ -300,10 +301,10 @@ class ChatLog(DirectObject):
 		# Chats start at 0 at the bottom and count up
 		# Maximum of 8 chats on screen at once
 		for i in range(8):
-			text = OnscreenText(pos = (-engine.aspectRatio + 0.02, -0.72 + (i * 0.05)), scale = 0.035, align = TextNode.ALeft, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = font, mayChange = True)
+			text = OnscreenText(pos = (-engine.aspectRatio + 0.02, verticalOffset + 0.18 + (i * 0.05)), scale = 0.035, align = TextNode.ALeft, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = font, mayChange = True)
 			text.setBin("fixed", 200)
 			self.chatTexts.append(text)
-		self.chatBox = DirectEntry(text = "", entryFont = font, pos = (-engine.aspectRatio + 0.02, 0, -0.77), scale = .035, text_fg = Vec4(1, 1, 1, 1), frameColor = (0, 0, 0, 0.5), width = 35, initialText="", numLines = 1, focus = 0, rolloverSound = None, clickSound = None,)
+		self.chatBox = DirectEntry(text = "", entryFont = font, pos = (-engine.aspectRatio + 0.02, 0, verticalOffset + 0.13), scale = .035, text_fg = Vec4(1, 1, 1, 1), frameColor = (0, 0, 0, 0.5), width = 35, initialText="", numLines = 1, focus = 0, rolloverSound = None, clickSound = None,)
 		self.chatBox.setTransparency(TransparencyAttrib.MAlpha)
 		self.chatBox.setBin("fixed", 200)
 		self.chatBox.hide()
@@ -1038,7 +1039,6 @@ class LoginDialog(DirectObject):
 		self.lastShow = -1
 		self.lastHide = -1
 		self.transitionTime = 0.15
-		self.goSound = audio.FlatSound("menu/click.ogg")
 		
 	def update(self):
 		if self.lastShow != -1:
@@ -1070,7 +1070,6 @@ class LoginDialog(DirectObject):
 		self.visible = False
 	
 	def go(self, value = None):
-		self.goSound.play()
 		self.callback(self.usernameEntry.get())
 		
 	def delete(self):
