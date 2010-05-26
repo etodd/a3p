@@ -292,35 +292,43 @@ class Message:
 		self.time = time
 		
 class ChatLog(DirectObject):
-	def __init__(self, verticalOffset):
+	def __init__(self, verticalOffset, displayTime = 15.0, maxChats = 8, chatBoxAlwaysVisible = False, showOwnChats = False):
 		self.localTeam = None
-		self.displayTime = 15.0 # Fifteen seconds before chats disappear
+		self.displayTime = displayTime # Time before chats disappear
 		font = loader.loadFont("menu/DejaVuSans.ttf")
 		self.chatTexts = []
 		self.messages = []
+		self.alwaysFocused = chatBoxAlwaysVisible
 		# Chats start at 0 at the bottom and count up
-		# Maximum of 8 chats on screen at once
-		for i in range(8):
+		for i in range(maxChats):
 			text = OnscreenText(pos = (-engine.aspectRatio + 0.02, verticalOffset + 0.18 + (i * 0.05)), scale = 0.035, align = TextNode.ALeft, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = font, mayChange = True)
 			text.setBin("fixed", 200)
 			self.chatTexts.append(text)
-		self.chatBox = DirectEntry(text = "", entryFont = font, pos = (-engine.aspectRatio + 0.02, 0, verticalOffset + 0.13), scale = .035, text_fg = Vec4(1, 1, 1, 1), frameColor = (0, 0, 0, 0.5), width = 35, initialText="", numLines = 1, focus = 0, rolloverSound = None, clickSound = None,)
+		self.chatBox = DirectEntry(text = "", entryFont = font, pos = (-engine.aspectRatio + 0.02, 0, verticalOffset + 0.13), scale = .035, text_fg = Vec4(1, 1, 1, 1), frameColor = (0, 0, 0, 0.5), width = 35, initialText="", numLines = 1, focus = 1 if self.alwaysFocused else 0, rolloverSound = None, clickSound = None,)
 		self.chatBox.setTransparency(TransparencyAttrib.MAlpha)
 		self.chatBox.setBin("fixed", 200)
-		self.chatBox.hide()
-		self.accept("t", self.focusChat)
+		if not self.alwaysFocused:
+			self.chatBox.hide()
+			self.accept("t", self.focusChat)
 		self.accept("chat-incoming", self.displayChat)
-		self.accept("chat-outgoing", self.displayChat)
+		if showOwnChats:
+			self.accept("chat-outgoing", self.displayChat)
 		self.accept("enter", self.submitChat)
 		self.hidden = False
+		self.username = None
 	
 	def setTeam(self, team):
 		self.localTeam = team
+	
+	def setUsername(self, username):
+		self.username = username
 	
 	def show(self):
 		self.hidden = False
 		for text in self.chatTexts:
 			text.show()
+		if self.alwaysFocused:
+			self.focusChat()
 	
 	def hide(self):
 		self.hidden = True
@@ -341,22 +349,28 @@ class ChatLog(DirectObject):
 		if not self.chatBox.isHidden() and not self.hidden:
 			# Submit chat message, hide chat box
 			username = "Unnamed"
-			player = self.localTeam.getPlayer()
-			if player != None and player.active:
-				username = player.username
+			if self.username != None:
+				username = self.username
+			else:
+				player = self.localTeam.getPlayer()
+				if player != None and player.active:
+					username = player.username
 			engine.Mouse.hideCursor()
 			message = self.chatBox.get()
 			if message != "":
 				messenger.send("chat-outgoing", [username, message])
 			if message[:9] == "changemap":
 				messenger.send("change-map", [message[10:]])
-			self.chatBox.hide()
-			self.chatBox["focus"] = 0
+			if not self.alwaysFocused:
+				self.chatBox.hide()
+				self.chatBox["focus"] = 0
+			else:
+				self.chatBox["focus"] = 1
 			self.chatBox.enterText("")
 		
 	def displayChat(self, username, message):
 		self.messages.insert(0, Message(username + ": " + message, engine.clock.getTime()))
-		self.updateChatLog()
+		self._updateChatLog()
 	
 	def update(self):
 		numMessages = len(self.messages)
@@ -364,9 +378,9 @@ class ChatLog(DirectObject):
 			message = self.messages[numMessages - 1]
 			if engine.clock.getTime() - message.time > self.displayTime:
 				del self.messages[numMessages - 1:]
-				self.updateChatLog()
+				self._updateChatLog()
 	
-	def updateChatLog(self):
+	def _updateChatLog(self):
 		self.messages = self.messages[0:len(self.chatTexts)]
 		index = 0
 		for index in range(len(self.messages)):

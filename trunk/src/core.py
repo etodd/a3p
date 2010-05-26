@@ -883,6 +883,10 @@ class MainMenu(DirectObject):
 		
 		self.username = "Unnamed"
 		
+		self.chatLog = ui.ChatLog(verticalOffset = -0.9, displayTime = 60.0, maxChats = 16, chatBoxAlwaysVisible = True)
+		self.chatLog.hide()
+		self.chatConnection = GlobalChatConnection()
+		
 		self.startTime = -1
 		self.goTime = -1
 	
@@ -913,6 +917,8 @@ class MainMenu(DirectObject):
 		engine.savedUsername = self.username
 		engine.saveConfigFile()
 		self.loginDialog.hide()
+		self.chatLog.setUsername(self.username)
+		self.chatLog.show()
 
 	def update(self):
 		if not self.active:
@@ -947,6 +953,9 @@ class MainMenu(DirectObject):
 		if not self.loginDialogShown and self.showLogin and elapsedTime > self.introTime:
 			self.loginDialog.show()
 			self.loginDialogShown = True
+		
+		self.chatConnection.update()
+		self.chatLog.update()
 		
 		self.uiAngle -= engine.clock.timeStep * 2
 		self.text.setR(self.uiAngle)
@@ -1044,8 +1053,9 @@ class MainMenu(DirectObject):
 			self.introText.destroy()
 		self.introSound.stop()
 		self.backgroundSound.stop()
+		self.chatLog.delete()
+		self.chatConnection.delete()
 
-from random import uniform, choice
 class JunkBelt:
 	def __init__(self, radius):
 		self.radius = radius
@@ -1083,3 +1093,68 @@ class JunkBelt:
 			instance.removeNode()
 		for model in self.models:
 			model.removeNode()
+
+def _urlEncode(s):
+		"""I don't want to depend on urllib."""
+		HexCharacters = "0123456789abcdef"
+		r = ""
+		for c in s:
+			if c in HexCharacters:
+				o = ord(c)
+				r += "%" + _cleanCharHex(c)
+			else:
+				r += c
+		return r
+
+def _cleanCharHex(c):
+	HexCharacters = "0123456789abcdef"
+	o = ord(c)
+	r = HexCharacters[o / 16]
+	r += HexCharacters[o % 16]
+	return r
+
+import time
+class GlobalChatConnection(DirectObject):
+	def __init__(self, host = "http://a3p.sourceforge.net/chat"):
+		self.accept("chat-outgoing", self.sendChat)
+		self.lastPoll = 0
+		self.lastReceivedId = 0
+		self.host = host
+		self.firstRequest = True
+	
+	def sendChat(self, username, message):
+		self.request(self.host + "/post.php", "user=" + _urlEncode(username) + "&msg=" + _urlEncode(message))
+	
+	def update(self):
+		if engine.clock.getTime() - self.lastPoll > 2.0:
+			self.lastPoll = engine.clock.getTime()
+			self.request(self.host + "/get.php", "i=" + str(self.lastReceivedId), self.chatCallback)
+	
+	def chatCallback(self, data):
+		lines = data.split("\n")
+		self.lastReceivedId = lines[0]
+		for line in lines[1:]:
+			parts = line.split("\t")
+			if len(parts) == 2:
+				messenger.send("chat-incoming", parts)
+
+	def request(self, url, params, callback = None):
+		http = HTTPClient()
+		channel = http.makeChannel(True)
+		channel.beginPostForm(DocumentSpec(url), params)
+		rf = Ramfile()
+		channel.downloadToRam(rf)
+		def downloadTask(channel, rf, downloadCallback, task):
+			if channel.run():
+				return task.cont
+			if not channel.isDownloadComplete():
+				if downloadCallback != None:
+					downloadCallback("")
+			else:
+				if downloadCallback != None:
+					downloadCallback(rf.getData())
+			return task.done
+		taskMgr.add(downloadTask, "urlRequest", appendTask = True, extraArgs = [channel, rf, callback])
+	
+	def delete(self):
+		self.ignoreAll()
