@@ -149,11 +149,12 @@ class ServerBackend(Backend):
 	def loadMap(self, mapFile):
 		Backend.loadMap(self, mapFile)
 		net.context.resetConnectionStatuses()
+		if self.game != None:
+			self.game.setLocalTeamID(self.entityGroup.teams[0].getId())
+			self.entityGroup.teams[0].setUsername(self.username)
 		for client in net.context.activeConnections:
 			net.context.activeConnections[client].ready = False
 			self.sendSetupPackets(client)
-		if self.game != None:
-			self.game.setLocalTeamID(self.entityGroup.teams[0].getId())
 	
 	def setGame(self, game):
 		Backend.setGame(self, game)
@@ -899,7 +900,7 @@ class MainMenu(DirectObject):
 		
 		self.username = "Unnamed"
 		
-		self.chatLog = ui.ChatLog(verticalOffset = -0.9, displayTime = 60.0, maxChats = 16, chatBoxAlwaysVisible = True)
+		self.chatLog = ui.ChatLog(verticalOffset = -0.9, displayTime = 60.0, maxChats = 16, chatBoxAlwaysVisible = True, showOwnChats = False)
 		self.chatLog.hide()
 		self.chatConnection = GlobalChatConnection()
 		
@@ -1145,7 +1146,7 @@ class GlobalChatConnection(DirectObject):
 		self.request(self.host + "/post.php", "user=" + _urlEncode(username) + "&msg=" + _urlEncode(message))
 	
 	def update(self):
-		if engine.clock.getTime() - self.lastPoll > 2.0:
+		if engine.clock.getTime() - self.lastPoll > 3.0:
 			self.lastPoll = engine.clock.getTime()
 			self.request(self.host + "/get.php", "i=" + str(self.lastReceivedId), self.chatCallback)
 	

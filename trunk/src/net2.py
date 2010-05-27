@@ -175,13 +175,13 @@ class NetManager(DirectObject):
 						entity.controller.clientUpdate(backend.aiWorld, backend.entityGroup, iterator)
 					else:
 						engine.log.warning("Received controller packet with no matching entity. ID: " + str(id) + " Last entity updated: " + lastId + " - controller: " + str(lastController))
-						#if sender != None and ((not id in self.requestedEntitySpawns.keys()) or (engine.clock.getTime() - self.requestedEntitySpawns[id] > 2.0)): # Only send a request once every two seconds
-						#	p = net.Packet()
-						#	p.add(net.Uint8(net.PACKET_REQUESTSPAWNPACKET))
-						#	p.add(net.Uint8(id))
-						#	net.context.send(p, sender)
-						#	self.requestedEntitySpawns[id] = engine.clock.getTime()
-						#	engine.log.info("Sending request for missing entity spawn packet. Entity ID: " + str(id))
+						if sender != None and ((not id in self.requestedEntitySpawns.keys()) or (engine.clock.getTime() - self.requestedEntitySpawns[id] > 2.0)): # Only send a request once every two seconds
+							p = net.Packet()
+							p.add(net.Uint8(net.PACKET_REQUESTSPAWNPACKET))
+							p.add(net.Uint8(id))
+							net.context.send(p, sender)
+							self.requestedEntitySpawns[id] = engine.clock.getTime()
+							engine.log.info("Sending request for missing entity spawn packet. Entity ID: " + str(id))
 						return rebroadcast
 				elif type == net.PACKET_SPAWN:
 					controllerType = net.Uint8.getFrom(iterator)
@@ -269,9 +269,9 @@ class NetManager(DirectObject):
 						if id not in backend.entityGroup.entities.keys():
 							missingEntities.append(id)
 						entities.append(id)
-					# Delete any extra entities
+					# Delete any extra entities, assuming they aren't ones that we just spawned on our end.
 					for entity in (x for x in backend.entityGroup.entities.values() if x.active and x.getId() < 256):
-						if entity.getId() not in entities:
+						if entity.getId() not in entities and engine.clock.getTime() - entity.spawnTime > 5.0:
 							entity.delete(backend.entityGroup, False, False)
 					if len(missingEntities) > 0:
 						# Request spawn packets for any missing entities
@@ -338,6 +338,7 @@ class NetManager(DirectObject):
 			outboundPacket.add(deletePacket)
 			for chat in self.chatPackets:
 				outboundPacket.add(chat)
+			sendChat = len(self.chatPackets) > 0
 			del self.chatPackets[:]
 			for request in self.clientSpawnPacketRequests:
 				entity = backend.entityGroup.getEntity(request[0])
@@ -360,7 +361,7 @@ class NetManager(DirectObject):
 				checkSumPacket.add(net.Uint8(len([x for x in entityList if x.active and x.getId() < 256])))
 				outboundPacket.add(checkSumPacket)
 				sendCheckSum = True
-			if sendSpawn or sendController or sendDelete or sendCheckSum:
+			if sendSpawn or sendController or sendDelete or sendCheckSum or sendChat:
 				net.context.broadcast(outboundPacket)
 
 		packets = net.context.readTick()

@@ -244,7 +244,7 @@ class TeamEntityController(Controller):
 			entityGroup.spawnEntity(u)
 			self.respawns.remove(purchase)
 		player = self.entity.getPlayer()
-		if player != None and player.active and player.spawned:
+		if player != None and player.active:
 			self.lastPlayerPosition = self.entity.getPlayer().getPosition()
 		return p
 	
@@ -480,7 +480,6 @@ class DropPodController(Controller):
 		self.inAirTime = 3.0
 		self.landed = False
 		self.landingSound = audio.SoundPlayer("pod-landing")
-		self.spawnTime = engine.clock.getTime()
 		self.particleGroup = None
 		self.finalPosition = None
 		self.startPosition = None
@@ -512,7 +511,7 @@ class DropPodController(Controller):
 		"""Builds a packet instructing client(s) to spawn the correct Entity with the correct ID."""
 		p = Controller.buildSpawnPacket(self)
 		p.add(net2.HighResVec3(self.finalPosition))
-		p.add(net.StandardFloat(engine.clock.getTime() - self.spawnTime))
+		p.add(net.StandardFloat(engine.clock.getTime() - self.entity.spawnTime))
 		return p
 	
 	@staticmethod
@@ -521,7 +520,7 @@ class DropPodController(Controller):
 		entity = entities.DropPod(aiWorld.space, DropPodController(), False)
 		entity = Controller.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
 		entity.controller.setFinalPosition(net2.HighResVec3.getFrom(iterator))
-		entity.controller.spawnTime = engine.clock.getTime() - net.StandardFloat.getFrom(iterator)
+		entity.spawnTime = engine.clock.getTime() - net.StandardFloat.getFrom(iterator)
 		return entity
 	
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
@@ -563,7 +562,7 @@ class DropPodController(Controller):
 				self.particleGroup = particles.SmokeParticleGroup(self.entity.getPosition())
 				particles.add(self.particleGroup)
 			self.particleGroup.setPosition(self.entity.getPosition())
-			aliveTime = engine.clock.getTime() - self.spawnTime
+			aliveTime = engine.clock.getTime() - self.entity.spawnTime
 			self.entity.setPosition(self.startPosition + (self.finalPosition - self.startPosition) * min(1, (aliveTime / self.inAirTime)))
 			if aliveTime >= self.inAirTime and not self.landed:
 				self.landed = True
@@ -581,7 +580,6 @@ class GrenadeController(ObjectController):
 	"GrenadeController handles particles, and also trigger the detonation (unless the grenade is triggered by being damaged)."
 	def __init__(self):
 		ObjectController.__init__(self)
-		self.spawnTime = engine.clock.getTime()
 		self.bounceTime = -1
 		self.bounceSound = audio.SoundPlayer("grenade-bounce")
 		self.lastPosition = None
@@ -607,7 +605,7 @@ class GrenadeController(ObjectController):
 	
 	def trigger(self):
 		"Starts the (short) fuse to explode the grenade."
-		if self.bounceTime == -1 and engine.clock.getTime() > self.spawnTime + 0.5:
+		if self.bounceTime == -1 and engine.clock.getTime() > self.entity.spawnTime + 0.5:
 			self.bounceTime = engine.clock.getTime()
 			self.bounceSound.play(position = self.entity.getPosition())
 	
@@ -652,7 +650,7 @@ class GrenadeController(ObjectController):
 		if self.bounceTime == -1:
 			if aiWorld.testCollisions(self.entity.collisionNodePath).getNumEntries() > 0:
 				self.trigger()
-		if (self.bounceTime != -1 and engine.clock.getTime() > self.bounceTime + 0.6) or (engine.clock.getTime() > self.spawnTime + 5) or not self.entity.grenadeAlive:
+		if (self.bounceTime != -1 and engine.clock.getTime() > self.bounceTime + 0.6) or (engine.clock.getTime() > self.entity.spawnTime + 5) or not self.entity.grenadeAlive:
 			self.entity.kill(aiWorld, entityGroup)
 		return p
 	
@@ -664,7 +662,6 @@ class MolotovController(ObjectController):
 	"MolotovController handles particles and fire damage."
 	def __init__(self):
 		ObjectController.__init__(self)
-		self.spawnTime = engine.clock.getTime()
 		self.lastPosition = None
 		self.particleGroup = None
 		self.light = engine.Light(color = Vec4(1.0, 0.6, 0.2, 1), attenuation = Vec3(0, 0, 0.005))
@@ -714,7 +711,7 @@ class MolotovController(ObjectController):
 	
 		p = ObjectController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
 		
-		if engine.clock.getTime() - self.spawnTime > self.lifeTime:
+		if engine.clock.getTime() - self.entity.spawnTime > self.lifeTime:
 			self.entity.delete(entityGroup)
 
 		return p
@@ -817,7 +814,6 @@ class DroidController(ActorController):
 		self.targetPos = Vec3(0, 0, 0)
 		self.torque = 300
 		self.maxSpeed = 1
-		self.spawnTime = None
 		self.lastDamage = 0
 		self.alarmSound = audio.SoundPlayer("alarm")
 		self.lastSentTargetPos = Vec3()
@@ -940,12 +936,6 @@ class DroidController(ActorController):
 			elif engine.clock.getTime() - self.lastFireDamage > 0.5:
 				self.lastFireDamage = engine.clock.getTime()
 				self.entity.damage(self.fireEntity, 8, ranged = False)
-		
-		if self.entity.components[self.activeWeapon].reloadActive:
-			self.entity.crosshairNode.show()
-			self.entity.crosshairNode.setR(engine.clock.getTime() * 30)
-		else:
-			self.entity.crosshairNode.hide()
 
 		p = ActorController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
 		
@@ -991,10 +981,14 @@ class DroidController(ActorController):
 				self.fireParticles = particles.FireParticleGroup(self.entity.getPosition())
 				particles.add(self.fireParticles)
 			self.fireParticles.setPosition(self.entity.getPosition())
+			
+		if self.entity.components[self.activeWeapon].reloadActive:
+			self.entity.crosshairNode.show()
+			self.entity.crosshairNode.setR(engine.clock.getTime() * 30)
+		else:
+			self.entity.crosshairNode.hide()
 
-		if self.spawnTime == None:
-			self.spawnTime = engine.clock.getTime()
-		if engine.clock.getTime() - self.spawnTime < 4.0:
+		if engine.clock.getTime() - self.entity.spawnTime < 4.0:
 			self.entity.setShielded(True)
 			self.entity.initialSpawnShieldEnabled = True
 		elif self.entity.initialSpawnShieldEnabled:
@@ -1103,8 +1097,9 @@ class PlayerController(DroidController):
 			self.commandSound = audio.FlatSound("sounds/command.ogg", 0.5)
 		
 	def sprint(self):
-		self.setKey("sprint", True)
-		self.sprintSound.play()
+		if engine.inputEnabled:
+			self.setKey("sprint", True)
+			self.sprintSound.play()
 	
 	def toggleZoom(self):
 		if self.zoomTime == -1 and not self.isPlatformMode:
@@ -1131,21 +1126,22 @@ class PlayerController(DroidController):
 		self.isPlatformMode = mode
 	
 	def issueCommand(self, id):
-		actors = [x for x in self.entity.team.actors if x.teamIndex == id]
-		if len(actors) > 0:
-			actor = actors[0]
-			if engine.clock.getTime() - self.lastCommandTimes[id] < 0.4:
-				# Player double-tapped the key. Special attack.
-				self.commands.append((actor.getId(), -1)) # -1 means special attack
-			elif self.targetedEnemy != None and self.targetedEnemy.active:
-				self.commands.append((actor.getId(), self.targetedEnemy.getId())) # Set the bot's target entity
-			else:
-				self.commands.append((actor.getId(), self.entity.getId())) # No target. Return to the player.
-			self.commandSound.play()
-			self.lastCommandTimes[id] = engine.clock.getTime()
+		if engine.inputEnabled:
+			actors = [x for x in self.entity.team.actors if x.teamIndex == id]
+			if len(actors) > 0:
+				actor = actors[0]
+				if engine.clock.getTime() - self.lastCommandTimes[id] < 0.4:
+					# Player double-tapped the key. Special attack.
+					self.commands.append((actor.getId(), -1)) # -1 means special attack
+				elif self.targetedEnemy != None and self.targetedEnemy.active:
+					self.commands.append((actor.getId(), self.targetedEnemy.getId())) # Set the bot's target entity
+				else:
+					self.commands.append((actor.getId(), self.entity.getId())) # No target. Return to the player.
+				self.commandSound.play()
+				self.lastCommandTimes[id] = engine.clock.getTime()
 
 	def setKey(self, key, value):
-		self.keyMap[key] = value and engine.Mouse.enabled
+		self.keyMap[key] = value and engine.inputEnabled
 	
 	def melee(self):
 		self.entity.components[0].show()
@@ -1565,8 +1561,6 @@ class Special(DirectObject):
 			if net.Boolean.getFrom(iterator):
 				self.timer = net.HighResFloat.getFrom(iterator)
 				if self.passive:
-					print self.actor.controller.lastTargetedEnemy
-					print self.actor.controller.targetedEnemy
 					self.actor.controller.targetedEnemy = self.actor.controller.lastTargetedEnemy # Cancel the target setting
 
 	def delete(self):
@@ -1622,17 +1616,17 @@ class ShieldSpecial(Special):
 		self.lastEnabled = self.enabled
 		self.actor.setShielded(True)
 		player = self.actor.team.getPlayer()
-		if player != None and player != self.actor and player.spawned:
+		if player != None and player != self.actor:
 			player.setShielded(self.enabled or player.initialSpawnShieldEnabled or isinstance(player.special, ShieldSpecial))
-		for actor in (x for x in self.actor.team.actors if x != self.actor and x.spawned):
+		for actor in (x for x in self.actor.team.actors if x != self.actor):
 			actor.setShielded(self.enabled or actor.initialSpawnShieldEnabled or isinstance(actor.special, ShieldSpecial))
 
 	def delete(self):
 		Special.delete(self)
-		for actor in (x for x in self.actor.team.actors if x != self.actor and x.spawned):
+		for actor in (x for x in self.actor.team.actors if x != self.actor):
 			actor.setShielded(False or actor.initialSpawnShieldEnabled or isinstance(actor.special, ShieldSpecial))
 		player = self.actor.team.getPlayer()
-		if player != None and player.spawned:
+		if player != None:
 			player.setShielded(False or player.initialSpawnShieldEnabled or isinstance(player.special, ShieldSpecial))
 
 CLOAK_SPECIAL = 130
