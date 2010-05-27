@@ -505,7 +505,7 @@ class SniperRifle(Gun):
 		self.fireTime = 0.8
 		self.reloadTime = 3.0
 		self.range = 300
-		self.accuracy = 0.4
+		self.accuracy = 0.3
 	
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
 		p = Gun.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
@@ -835,15 +835,15 @@ class Pistol(Gun):
 			direction = self.actor.controller.targetPos - origin
 			direction.normalize()
 			
-			if not self.zoomed:
-				angleX = uniform(-1, 1)
-				angleY = uniform(-1, 1)
-				mat = Mat3()
-				mat.setRotateMatNormaxis(angleX, render.getRelativeVector(self.node, Vec3(0, 0, 1)))
-				direction = mat.xformVec(direction)
-				mat = Mat3()
-				mat.setRotateMatNormaxis(angleY, render.getRelativeVector(self.node, Vec3(1, 0, 0)))
-				direction = mat.xformVec(direction)
+			inaccuracy = 0.5 if self.zoomed else 1.5
+			angleX = uniform(-inaccuracy, inaccuracy)
+			angleY = uniform(-inaccuracy, inaccuracy)
+			mat = Mat3()
+			mat.setRotateMatNormaxis(angleX, render.getRelativeVector(self.node, Vec3(0, 0, 1)))
+			direction = mat.xformVec(direction)
+			mat = Mat3()
+			mat.setRotateMatNormaxis(angleY, render.getRelativeVector(self.node, Vec3(1, 0, 0)))
+			direction = mat.xformVec(direction)
 			
 			#self.actor.body.addForce(engine.impulseToForce(direction.getX() * -self.force, direction.getY() * -self.force, direction.getZ() * -self.force))
 			

@@ -75,7 +75,7 @@
   <Scalar> shininess {12.5}
 }
 <Texture> texture_11.001_02_lightmap {
-  "./concept1-lightmap.png"
+  "./concept1-lightmap.jpg"
   <Scalar> uv-name { lightmap }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
@@ -92,7 +92,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> texture_9_02_lightmap {
-  "./concept1-lightmap.png"
+  "./concept1-lightmap.jpg"
   <Scalar> uv-name { lightmap }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
@@ -101,7 +101,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> texture_9.001_02_lightmap {
-  "./concept1-lightmap.png"
+  "./concept1-lightmap.jpg"
   <Scalar> uv-name { lightmap }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
@@ -110,7 +110,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> texture_3_02_lightmap {
-  "./concept1-lightmap.png"
+  "./concept1-lightmap.jpg"
   <Scalar> uv-name { lightmap }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
@@ -119,7 +119,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> texture_6_02_lightmap {
-  "./concept1-lightmap.png"
+  "./concept1-lightmap.jpg"
   <Scalar> uv-name { lightmap }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
@@ -192,7 +192,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> texture_5.001_02_lightmap {
-  "./concept1-lightmap.png"
+  "./concept1-lightmap.jpg"
   <Scalar> uv-name { lightmap }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
@@ -201,7 +201,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> texture_1.002_02_lightmap {
-  "./concept1-lightmap.png"
+  "./concept1-lightmap.jpg"
   <Scalar> uv-name { lightmap }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
@@ -250,7 +250,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> texture_7_02_lightmap {
-  "./concept1-lightmap.png"
+  "./concept1-lightmap.jpg"
   <Scalar> uv-name { lightmap }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }

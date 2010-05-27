@@ -8,8 +8,8 @@ teams 4
 geometry-scenery gold 0.0 0.0 0.0
 skybox skybox2/skybox
 sound ambient-cavern.ogg 0.20000000298
-light all ambient AmbientLight 0.300000011921 0.300000011921 0.300000011921
-light all directional Light1 1.20000004768 1.10000002384 1.00000011921 0.0 -100.0 0.0 shadow
+light all ambient AmbientLight 0.500000011921 0.500000011921 0.500000011921
+light all directional Light1 1.10000004768 1.00000002384 0.90000011921 0.0 -100.0 0.0 shadow
 light all directional Light2 0.300000011921 0.40000000596 0.5 0.0 60.0 0.0
 scenery gold-scenery 0.0 0.0 0.0
 physicsentity block1 12.5882663727 -44.4292755127 4.03677845001 135.53263855 5.12250153406e-06 -5.00522023827e-09

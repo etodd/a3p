@@ -1,6 +1,6 @@
 <CoordinateSystem> { Z-up }
 
-<Comment> { "Egg laid by Chicken for Blender, version R76b" }
+<Comment> { "Egg laid by Chicken for Blender, version R85" }
 
 <Material> Material.001 {
   <Scalar> diffr {1.0}
@@ -12,7 +12,7 @@
   <Scalar> shininess {0.25}
 }
 <Texture> Material.001_00_Tex.001 {
-  "./arena-normal.png"
+  "./arena-normal.jpg"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { NORMAL }
   <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
@@ -20,7 +20,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> Material.001_01_Tex.003 {
-  "./arena-diffuse.png"
+  "./arena-diffuse.jpg"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
   <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
@@ -6802,1680 +6802,1920 @@
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.357933 0.864127 -0.353792 }
+    <Normal> { -0.357933 0.864127 -0.353792
+    }
     <VertexRef> { 0 1 2 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.357933 -0.864127 -0.353792 }
+    <Normal> { -0.357933 -0.864127 -0.353792
+    }
     <VertexRef> { 3 4 5 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.357933 0.864127 -0.353792 }
+    <Normal> { 0.357933 0.864127 -0.353792
+    }
     <VertexRef> { 6 7 8 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.357933 -0.864127 -0.353792 }
+    <Normal> { 0.357933 -0.864127 -0.353792
+    }
     <VertexRef> { 9 10 11 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.661374 0.661374 -0.353792 }
+    <Normal> { -0.661374 0.661374 -0.353792
+    }
     <VertexRef> { 12 13 14 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.661374 -0.661374 -0.353792 }
+    <Normal> { -0.661374 -0.661374 -0.353792
+    }
     <VertexRef> { 15 16 17 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.661374 0.661374 -0.353792 }
+    <Normal> { 0.661374 0.661374 -0.353792
+    }
     <VertexRef> { 18 19 20 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.661374 -0.661374 -0.353792 }
+    <Normal> { 0.661374 -0.661374 -0.353792
+    }
     <VertexRef> { 21 22 23 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.864127 0.357933 -0.353792 }
+    <Normal> { -0.864127 0.357933 -0.353792
+    }
     <VertexRef> { 24 25 26 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.864127 -0.357933 -0.353792 }
+    <Normal> { -0.864127 -0.357933 -0.353792
+    }
     <VertexRef> { 27 28 29 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.864127 0.357933 -0.353792 }
+    <Normal> { 0.864127 0.357933 -0.353792
+    }
     <VertexRef> { 30 31 32 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.864127 -0.357933 -0.353792 }
+    <Normal> { 0.864127 -0.357933 -0.353792
+    }
     <VertexRef> { 33 34 35 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.887425 0.388425 -0.248197 }
+    <Normal> { -0.887425 0.388425 -0.248197
+    }
     <VertexRef> { 36 37 38 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.887425 -0.388425 -0.248197 }
+    <Normal> { -0.887425 -0.388425 -0.248197
+    }
     <VertexRef> { 39 40 41 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.887425 0.388425 -0.248197 }
+    <Normal> { 0.887425 0.388425 -0.248197
+    }
     <VertexRef> { 42 43 44 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.887425 -0.388425 -0.248197 }
+    <Normal> { 0.887425 -0.388425 -0.248197
+    }
     <VertexRef> { 45 46 47 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.377304 0.891865 -0.249438 }
+    <Normal> { -0.377304 0.891865 -0.249438
+    }
     <VertexRef> { 48 49 50 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.377304 -0.891865 -0.249438 }
+    <Normal> { -0.377304 -0.891865 -0.249438
+    }
     <VertexRef> { 51 52 53 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.377304 0.891865 -0.249438 }
+    <Normal> { 0.377304 0.891865 -0.249438
+    }
     <VertexRef> { 54 55 56 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.377304 -0.891865 -0.249438 }
+    <Normal> { 0.377304 -0.891865 -0.249438
+    }
     <VertexRef> { 57 58 59 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.224156 0.705893 -0.671915 }
+    <Normal> { -0.224156 0.705893 -0.671915
+    }
     <VertexRef> { 60 61 62 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.224156 -0.705893 -0.671915 }
+    <Normal> { -0.224156 -0.705893 -0.671915
+    }
     <VertexRef> { 63 64 65 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.224156 0.705893 -0.671915 }
+    <Normal> { 0.224156 0.705893 -0.671915
+    }
     <VertexRef> { 66 67 68 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.224156 -0.705893 -0.671915 }
+    <Normal> { 0.224156 -0.705893 -0.671915
+    }
     <VertexRef> { 69 70 71 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.399770 0.598297 -0.694424 }
+    <Normal> { -0.399770 0.598297 -0.694424
+    }
     <VertexRef> { 72 73 74 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.399770 -0.598297 -0.694424 }
+    <Normal> { -0.399770 -0.598297 -0.694424
+    }
     <VertexRef> { 75 76 77 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.399770 0.598297 -0.694424 }
+    <Normal> { 0.399770 0.598297 -0.694424
+    }
     <VertexRef> { 78 79 80 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.399770 -0.598297 -0.694424 }
+    <Normal> { 0.399770 -0.598297 -0.694424
+    }
     <VertexRef> { 81 82 83 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.598297 0.399770 -0.694424 }
+    <Normal> { -0.598297 0.399770 -0.694424
+    }
     <VertexRef> { 84 85 86 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.598297 -0.399770 -0.694424 }
+    <Normal> { -0.598297 -0.399770 -0.694424
+    }
     <VertexRef> { 87 88 89 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.598297 0.399770 -0.694424 }
+    <Normal> { 0.598297 0.399770 -0.694424
+    }
     <VertexRef> { 90 91 92 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.598297 -0.399770 -0.694424 }
+    <Normal> { 0.598297 -0.399770 -0.694424
+    }
     <VertexRef> { 93 94 95 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.696163 0.017751 -0.717664 }
+    <Normal> { -0.696163 0.017751 -0.717664
+    }
     <VertexRef> { 96 97 98 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.696163 -0.017751 -0.717664 }
+    <Normal> { -0.696163 -0.017751 -0.717664
+    }
     <VertexRef> { 99 100 101 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.696163 0.017751 -0.717664 }
+    <Normal> { 0.696163 0.017751 -0.717664
+    }
     <VertexRef> { 102 103 104 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.696163 -0.017751 -0.717664 }
+    <Normal> { 0.696163 -0.017751 -0.717664
+    }
     <VertexRef> { 105 106 107 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -1.000000 -0.000000 0.000000 }
+    <Normal> { -1.000000 -0.000000 0.000000
+    }
     <VertexRef> { 108 109 110 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -1.000000 0.000000 0.000000 }
+    <Normal> { -1.000000 0.000000 0.000000
+    }
     <VertexRef> { 111 112 113 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.174176 0.322419 -0.930434 }
+    <Normal> { -0.174176 0.322419 -0.930434
+    }
     <VertexRef> { 114 115 116 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.174176 -0.322419 -0.930434 }
+    <Normal> { -0.174176 -0.322419 -0.930434
+    }
     <VertexRef> { 117 118 119 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.174176 0.322419 -0.930434 }
+    <Normal> { 0.174176 0.322419 -0.930434
+    }
     <VertexRef> { 120 121 122 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.174176 -0.322419 -0.930434 }
+    <Normal> { 0.174176 -0.322419 -0.930434
+    }
     <VertexRef> { 123 124 125 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.253303 0.253303 -0.933635 }
+    <Normal> { -0.253303 0.253303 -0.933635
+    }
     <VertexRef> { 126 127 128 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.253303 -0.253303 -0.933635 }
+    <Normal> { -0.253303 -0.253303 -0.933635
+    }
     <VertexRef> { 129 130 131 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.253303 0.253303 -0.933635 }
+    <Normal> { 0.253303 0.253303 -0.933635
+    }
     <VertexRef> { 132 133 134 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.253303 -0.253303 -0.933635 }
+    <Normal> { 0.253303 -0.253303 -0.933635
+    }
     <VertexRef> { 135 136 137 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.321286 0.178932 -0.929924 }
+    <Normal> { -0.321286 0.178932 -0.929924
+    }
     <VertexRef> { 138 139 140 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.321286 -0.178932 -0.929924 }
+    <Normal> { -0.321286 -0.178932 -0.929924
+    }
     <VertexRef> { 141 142 143 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.321286 0.178932 -0.929924 }
+    <Normal> { 0.321286 0.178932 -0.929924
+    }
     <VertexRef> { 144 145 146 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.321286 -0.178932 -0.929924 }
+    <Normal> { 0.321286 -0.178932 -0.929924
+    }
     <VertexRef> { 147 148 149 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.000000 1.000000 0.000000 }
+    <Normal> { 0.000000 1.000000 0.000000
+    }
     <VertexRef> { 150 151 152 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.000000 1.000000 -0.000000 }
+    <Normal> { 0.000000 1.000000 -0.000000
+    }
     <VertexRef> { 153 154 155 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.000000 1.000000 0.000000 }
+    <Normal> { 0.000000 1.000000 0.000000
+    }
     <VertexRef> { 156 157 158 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.000000 1.000000 -0.000000 }
+    <Normal> { 0.000000 1.000000 -0.000000
+    }
     <VertexRef> { 159 160 161 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.449623 -0.888298 0.093626 }
+    <Normal> { -0.449623 -0.888298 0.093626
+    }
     <VertexRef> { 162 163 164 165 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.449623 0.888298 0.093626 }
+    <Normal> { -0.449623 0.888298 0.093626
+    }
     <VertexRef> { 166 167 168 169 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.449623 -0.888298 0.093626 }
+    <Normal> { 0.449623 -0.888298 0.093626
+    }
     <VertexRef> { 170 171 172 173 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.449623 0.888298 0.093626 }
+    <Normal> { 0.449623 0.888298 0.093626
+    }
     <VertexRef> { 174 175 176 177 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.244213 0.960328 0.134646 }
+    <Normal> { 0.244213 0.960328 0.134646
+    }
     <VertexRef> { 178 179 180 181 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.244213 -0.960328 0.134646 }
+    <Normal> { 0.244213 -0.960328 0.134646
+    }
     <VertexRef> { 182 183 184 185 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.244213 0.960328 0.134646 }
+    <Normal> { -0.244213 0.960328 0.134646
+    }
     <VertexRef> { 186 187 188 189 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.244213 -0.960328 0.134646 }
+    <Normal> { -0.244213 -0.960328 0.134646
+    }
     <VertexRef> { 190 191 192 193 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.819682 -0.569181 0.064449 }
+    <Normal> { -0.819682 -0.569181 0.064449
+    }
     <VertexRef> { 194 195 196 197 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.819682 0.569181 0.064449 }
+    <Normal> { -0.819682 0.569181 0.064449
+    }
     <VertexRef> { 198 199 200 201 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.819682 -0.569181 0.064449 }
+    <Normal> { 0.819682 -0.569181 0.064449
+    }
     <VertexRef> { 202 203 204 205 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.819682 0.569181 0.064449 }
+    <Normal> { 0.819682 0.569181 0.064449
+    }
     <VertexRef> { 206 207 208 209 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.569193 0.819670 0.064494 }
+    <Normal> { 0.569193 0.819670 0.064494
+    }
     <VertexRef> { 210 211 212 213 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.569193 -0.819670 0.064494 }
+    <Normal> { 0.569193 -0.819670 0.064494
+    }
     <VertexRef> { 214 215 216 217 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.569193 0.819670 0.064494 }
+    <Normal> { -0.569193 0.819670 0.064494
+    }
     <VertexRef> { 218 219 220 221 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.569193 -0.819670 0.064494 }
+    <Normal> { -0.569193 -0.819670 0.064494
+    }
     <VertexRef> { 222 223 224 225 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.960369 -0.244161 0.134449 }
+    <Normal> { -0.960369 -0.244161 0.134449
+    }
     <VertexRef> { 226 227 228 229 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.960369 0.244161 0.134449 }
+    <Normal> { -0.960369 0.244161 0.134449
+    }
     <VertexRef> { 230 231 232 233 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.960369 -0.244161 0.134449 }
+    <Normal> { 0.960369 -0.244161 0.134449
+    }
     <VertexRef> { 234 235 236 237 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.960369 0.244161 0.134449 }
+    <Normal> { 0.960369 0.244161 0.134449
+    }
     <VertexRef> { 238 239 240 241 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.884661 0.456610 0.094247 }
+    <Normal> { 0.884661 0.456610 0.094247
+    }
     <VertexRef> { 242 243 244 245 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.884661 -0.456610 0.094247 }
+    <Normal> { 0.884661 -0.456610 0.094247
+    }
     <VertexRef> { 246 247 248 249 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.884661 0.456610 0.094247 }
+    <Normal> { -0.884661 0.456610 0.094247
+    }
     <VertexRef> { 250 251 252 253 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.884661 -0.456610 0.094247 }
+    <Normal> { -0.884661 -0.456610 0.094247
+    }
     <VertexRef> { 254 255 256 257 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -1.000000 0.000000 0.000000 }
+    <Normal> { -1.000000 0.000000 0.000000
+    }
     <VertexRef> { 258 259 260 261 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -1.000000 -0.000000 -0.000000 }
+    <Normal> { -1.000000 -0.000000 -0.000000
+    }
     <VertexRef> { 262 263 264 265 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.462664 -0.852772 -0.242324 }
+    <Normal> { 0.462664 -0.852772 -0.242324
+    }
     <VertexRef> { 266 267 268 269 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.462664 0.852772 -0.242324 }
+    <Normal> { 0.462664 0.852772 -0.242324
+    }
     <VertexRef> { 270 271 272 273 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.462664 -0.852772 -0.242324 }
+    <Normal> { -0.462664 -0.852772 -0.242324
+    }
     <VertexRef> { 274 275 276 277 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.462664 0.852772 -0.242324 }
+    <Normal> { -0.462664 0.852772 -0.242324
+    }
     <VertexRef> { 278 279 280 281 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.846313 -0.472391 -0.246173 }
+    <Normal> { 0.846313 -0.472391 -0.246173
+    }
     <VertexRef> { 282 283 284 285 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.846313 0.472391 -0.246173 }
+    <Normal> { 0.846313 0.472391 -0.246173
+    }
     <VertexRef> { 286 287 288 289 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.846313 -0.472391 -0.246173 }
+    <Normal> { -0.846313 -0.472391 -0.246173
+    }
     <VertexRef> { 290 291 292 293 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.846313 0.472391 -0.246173 }
+    <Normal> { -0.846313 0.472391 -0.246173
+    }
     <VertexRef> { 294 295 296 297 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.371599 -0.924911 -0.080332 }
+    <Normal> { -0.371599 -0.924911 -0.080332
+    }
     <VertexRef> { 298 299 300 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.371599 0.924911 -0.080332 }
+    <Normal> { -0.371599 0.924911 -0.080332
+    }
     <VertexRef> { 301 302 303 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.371599 -0.924911 -0.080332 }
+    <Normal> { 0.371599 -0.924911 -0.080332
+    }
     <VertexRef> { 304 305 306 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.371599 0.924911 -0.080332 }
+    <Normal> { 0.371599 0.924911 -0.080332
+    }
     <VertexRef> { 307 308 309 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.003279 0.963862 0.266382 }
+    <Normal> { 0.003279 0.963862 0.266382
+    }
     <VertexRef> { 310 311 312 313 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.003279 -0.963862 0.266382 }
+    <Normal> { 0.003279 -0.963862 0.266382
+    }
     <VertexRef> { 314 315 316 317 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.003279 0.963862 0.266382 }
+    <Normal> { -0.003279 0.963862 0.266382
+    }
     <VertexRef> { 318 319 320 321 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.003279 -0.963862 0.266382 }
+    <Normal> { -0.003279 -0.963862 0.266382
+    }
     <VertexRef> { 322 323 324 325 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.681014 -0.682987 0.264099 }
+    <Normal> { -0.681014 -0.682987 0.264099
+    }
     <VertexRef> { 326 327 328 329 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.681014 0.682987 0.264099 }
+    <Normal> { -0.681014 0.682987 0.264099
+    }
     <VertexRef> { 330 331 332 333 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.681014 -0.682987 0.264099 }
+    <Normal> { 0.681014 -0.682987 0.264099
+    }
     <VertexRef> { 334 335 336 337 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.681014 0.682987 0.264099 }
+    <Normal> { 0.681014 0.682987 0.264099
+    }
     <VertexRef> { 338 339 340 341 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.376067 0.885983 0.271306 }
+    <Normal> { 0.376067 0.885983 0.271306
+    }
     <VertexRef> { 342 343 344 345 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.376067 -0.885983 0.271306 }
+    <Normal> { 0.376067 -0.885983 0.271306
+    }
     <VertexRef> { 346 347 348 349 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.376067 0.885983 0.271306 }
+    <Normal> { -0.376067 0.885983 0.271306
+    }
     <VertexRef> { 350 351 352 353 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.376067 -0.885983 0.271306 }
+    <Normal> { -0.376067 -0.885983 0.271306
+    }
     <VertexRef> { 354 355 356 357 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.887316 -0.374504 0.269104 }
+    <Normal> { -0.887316 -0.374504 0.269104
+    }
     <VertexRef> { 358 359 360 361 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.887316 0.374504 0.269104 }
+    <Normal> { -0.887316 0.374504 0.269104
+    }
     <VertexRef> { 362 363 364 365 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.887316 -0.374504 0.269104 }
+    <Normal> { 0.887316 -0.374504 0.269104
+    }
     <VertexRef> { 366 367 368 369 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.887316 0.374504 0.269104 }
+    <Normal> { 0.887316 0.374504 0.269104
+    }
     <VertexRef> { 370 371 372 373 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.683961 0.679047 0.266633 }
+    <Normal> { 0.683961 0.679047 0.266633
+    }
     <VertexRef> { 374 375 376 377 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.683961 -0.679047 0.266633 }
+    <Normal> { 0.683961 -0.679047 0.266633
+    }
     <VertexRef> { 378 379 380 381 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.683961 0.679047 0.266633 }
+    <Normal> { -0.683961 0.679047 0.266633
+    }
     <VertexRef> { 382 383 384 385 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.683961 -0.679047 0.266633 }
+    <Normal> { -0.683961 -0.679047 0.266633
+    }
     <VertexRef> { 386 387 388 389 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.957706 -0.021428 0.286951 }
+    <Normal> { -0.957706 -0.021428 0.286951
+    }
     <VertexRef> { 390 391 392 393 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.957706 0.021428 0.286951 }
+    <Normal> { -0.957706 0.021428 0.286951
+    }
     <VertexRef> { 394 395 396 397 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.957706 -0.021428 0.286951 }
+    <Normal> { 0.957706 -0.021428 0.286951
+    }
     <VertexRef> { 398 399 400 401 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.957706 0.021428 0.286951 }
+    <Normal> { 0.957706 0.021428 0.286951
+    }
     <VertexRef> { 402 403 404 405 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.968265 0.234791 0.085648 }
+    <Normal> { 0.968265 0.234791 0.085648
+    }
     <VertexRef> { 406 407 408 409 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.968265 -0.234791 0.085648 }
+    <Normal> { 0.968265 -0.234791 0.085648
+    }
     <VertexRef> { 410 411 412 413 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.968265 0.234791 0.085648 }
+    <Normal> { -0.968265 0.234791 0.085648
+    }
     <VertexRef> { 414 415 416 417 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.968265 -0.234791 0.085648 }
+    <Normal> { -0.968265 -0.234791 0.085648
+    }
     <VertexRef> { 418 419 420 421 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.795293 -0.245043 -0.554493 }
+    <Normal> { 0.795293 -0.245043 -0.554493
+    }
     <VertexRef> { 422 423 424 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.795293 0.245043 -0.554493 }
+    <Normal> { 0.795293 0.245043 -0.554493
+    }
     <VertexRef> { 425 426 427 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.795293 -0.245043 -0.554493 }
+    <Normal> { -0.795293 -0.245043 -0.554493
+    }
     <VertexRef> { 428 429 430 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.795293 0.245043 -0.554493 }
+    <Normal> { -0.795293 0.245043 -0.554493
+    }
     <VertexRef> { 431 432 433 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.691393 -0.463067 -0.554567 }
+    <Normal> { 0.691393 -0.463067 -0.554567
+    }
     <VertexRef> { 434 435 436 437 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.691393 0.463067 -0.554567 }
+    <Normal> { 0.691393 0.463067 -0.554567
+    }
     <VertexRef> { 438 439 440 441 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.691393 -0.463067 -0.554567 }
+    <Normal> { -0.691393 -0.463067 -0.554567
+    }
     <VertexRef> { 442 443 444 445 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.691393 0.463067 -0.554567 }
+    <Normal> { -0.691393 0.463067 -0.554567
+    }
     <VertexRef> { 446 447 448 449 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.463662 -0.691952 -0.553372 }
+    <Normal> { 0.463662 -0.691952 -0.553372
+    }
     <VertexRef> { 450 451 452 453 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.463662 0.691952 -0.553372 }
+    <Normal> { 0.463662 0.691952 -0.553372
+    }
     <VertexRef> { 454 455 456 457 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.463662 -0.691952 -0.553372 }
+    <Normal> { -0.463662 -0.691952 -0.553372
+    }
     <VertexRef> { 458 459 460 461 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.463662 0.691952 -0.553372 }
+    <Normal> { -0.463662 0.691952 -0.553372
+    }
     <VertexRef> { 462 463 464 465 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.247913 -0.788719 -0.562549 }
+    <Normal> { 0.247913 -0.788719 -0.562549
+    }
     <VertexRef> { 466 467 468 469 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.247913 0.788719 -0.562549 }
+    <Normal> { 0.247913 0.788719 -0.562549
+    }
     <VertexRef> { 470 471 472 473 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.247913 -0.788719 -0.562549 }
+    <Normal> { -0.247913 -0.788719 -0.562549
+    }
     <VertexRef> { 474 475 476 477 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.247913 0.788719 -0.562549 }
+    <Normal> { -0.247913 0.788719 -0.562549
+    }
     <VertexRef> { 478 479 480 481 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.032639 0.973155 0.227826 }
+    <Normal> { 0.032639 0.973155 0.227826
+    }
     <VertexRef> { 482 483 484 485 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.032639 -0.973155 0.227826 }
+    <Normal> { 0.032639 -0.973155 0.227826
+    }
     <VertexRef> { 486 487 488 489 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.032639 0.973155 0.227826 }
+    <Normal> { -0.032639 0.973155 0.227826
+    }
     <VertexRef> { 490 491 492 493 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.032639 -0.973155 0.227826 }
+    <Normal> { -0.032639 -0.973155 0.227826
+    }
     <VertexRef> { 494 495 496 497 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.595179 -0.719225 0.358436 }
+    <Normal> { -0.595179 -0.719225 0.358436
+    }
     <VertexRef> { 498 499 500 501 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.595179 0.719225 0.358436 }
+    <Normal> { -0.595179 0.719225 0.358436
+    }
     <VertexRef> { 502 503 504 505 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.595179 -0.719225 0.358436 }
+    <Normal> { 0.595179 -0.719225 0.358436
+    }
     <VertexRef> { 506 507 508 509 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.595179 0.719225 0.358436 }
+    <Normal> { 0.595179 0.719225 0.358436
+    }
     <VertexRef> { 510 511 512 513 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.650375 -0.292215 -0.701158 }
+    <Normal> { 0.650375 -0.292215 -0.701158
+    }
     <VertexRef> { 514 515 516 517 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.650375 0.292215 -0.701158 }
+    <Normal> { 0.650375 0.292215 -0.701158
+    }
     <VertexRef> { 518 519 520 521 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.650375 -0.292215 -0.701158 }
+    <Normal> { -0.650375 -0.292215 -0.701158
+    }
     <VertexRef> { 522 523 524 525 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.650375 0.292215 -0.701158 }
+    <Normal> { -0.650375 0.292215 -0.701158
+    }
     <VertexRef> { 526 527 528 529 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.307890 0.846486 0.434357 }
+    <Normal> { 0.307890 0.846486 0.434357
+    }
     <VertexRef> { 530 531 532 533 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.307890 -0.846486 0.434357 }
+    <Normal> { 0.307890 -0.846486 0.434357
+    }
     <VertexRef> { 534 535 536 537 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.307890 0.846486 0.434357 }
+    <Normal> { -0.307890 0.846486 0.434357
+    }
     <VertexRef> { 538 539 540 541 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.307890 -0.846486 0.434357 }
+    <Normal> { -0.307890 -0.846486 0.434357
+    }
     <VertexRef> { 542 543 544 545 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.663911 -0.608031 0.435340 }
+    <Normal> { -0.663911 -0.608031 0.435340
+    }
     <VertexRef> { 546 547 548 549 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.663911 0.608031 0.435340 }
+    <Normal> { -0.663911 0.608031 0.435340
+    }
     <VertexRef> { 550 551 552 553 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.663911 -0.608031 0.435340 }
+    <Normal> { 0.663911 -0.608031 0.435340
+    }
     <VertexRef> { 554 555 556 557 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.663911 0.608031 0.435340 }
+    <Normal> { 0.663911 0.608031 0.435340
+    }
     <VertexRef> { 558 559 560 561 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.372882 -0.373047 -0.849585 }
+    <Normal> { 0.372882 -0.373047 -0.849585
+    }
     <VertexRef> { 562 563 564 565 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.372882 0.373047 -0.849585 }
+    <Normal> { 0.372882 0.373047 -0.849585
+    }
     <VertexRef> { 566 567 568 569 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.372882 -0.373047 -0.849585 }
+    <Normal> { -0.372882 -0.373047 -0.849585
+    }
     <VertexRef> { 570 571 572 573 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.372882 0.373047 -0.849585 }
+    <Normal> { -0.372882 0.373047 -0.849585
+    }
     <VertexRef> { 574 575 576 577 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.608947 0.663157 0.435209 }
+    <Normal> { 0.608947 0.663157 0.435209
+    }
     <VertexRef> { 578 579 580 581 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.608947 -0.663157 0.435209 }
+    <Normal> { 0.608947 -0.663157 0.435209
+    }
     <VertexRef> { 582 583 584 585 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.608947 0.663157 0.435209 }
+    <Normal> { -0.608947 0.663157 0.435209
+    }
     <VertexRef> { 586 587 588 589 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.608947 -0.663157 0.435209 }
+    <Normal> { -0.608947 -0.663157 0.435209
+    }
     <VertexRef> { 590 591 592 593 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.845734 -0.308800 0.435175 }
+    <Normal> { -0.845734 -0.308800 0.435175
+    }
     <VertexRef> { 594 595 596 597 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.845734 0.308800 0.435175 }
+    <Normal> { -0.845734 0.308800 0.435175
+    }
     <VertexRef> { 598 599 600 601 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.845734 -0.308800 0.435175 }
+    <Normal> { 0.845734 -0.308800 0.435175
+    }
     <VertexRef> { 602 603 604 605 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.845734 0.308800 0.435175 }
+    <Normal> { 0.845734 0.308800 0.435175
+    }
     <VertexRef> { 606 607 608 609 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.201380 -0.486210 -0.850321 }
+    <Normal> { 0.201380 -0.486210 -0.850321
+    }
     <VertexRef> { 610 611 612 613 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.201380 0.486210 -0.850321 }
+    <Normal> { 0.201380 0.486210 -0.850321
+    }
     <VertexRef> { 614 615 616 617 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.201380 -0.486210 -0.850321 }
+    <Normal> { -0.201380 -0.486210 -0.850321
+    }
     <VertexRef> { 618 619 620 621 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.201380 0.486210 -0.850321 }
+    <Normal> { -0.201380 0.486210 -0.850321
+    }
     <VertexRef> { 622 623 624 625 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.807941 0.404042 0.428931 }
+    <Normal> { 0.807941 0.404042 0.428931
+    }
     <VertexRef> { 626 627 628 629 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.807941 -0.404042 0.428931 }
+    <Normal> { 0.807941 -0.404042 0.428931
+    }
     <VertexRef> { 630 631 632 633 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.807941 0.404042 0.428931 }
+    <Normal> { -0.807941 0.404042 0.428931
+    }
     <VertexRef> { 634 635 636 637 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.807941 -0.404042 0.428931 }
+    <Normal> { -0.807941 -0.404042 0.428931
+    }
     <VertexRef> { 638 639 640 641 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.969616 -0.048871 0.239701 }
+    <Normal> { -0.969616 -0.048871 0.239701
+    }
     <VertexRef> { 642 643 644 645 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.969616 0.048871 0.239701 }
+    <Normal> { -0.969616 0.048871 0.239701
+    }
     <VertexRef> { 646 647 648 649 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.969616 -0.048871 0.239701 }
+    <Normal> { 0.969616 -0.048871 0.239701
+    }
     <VertexRef> { 650 651 652 653 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.969616 0.048871 0.239701 }
+    <Normal> { 0.969616 0.048871 0.239701
+    }
     <VertexRef> { 654 655 656 657 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.793418 -0.361320 -0.489832 }
+    <Normal> { 0.793418 -0.361320 -0.489832
+    }
     <VertexRef> { 658 659 660 661 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.793418 0.361320 -0.489832 }
+    <Normal> { 0.793418 0.361320 -0.489832
+    }
     <VertexRef> { 662 663 664 665 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.793418 -0.361320 -0.489832 }
+    <Normal> { -0.793418 -0.361320 -0.489832
+    }
     <VertexRef> { 666 667 668 669 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.793418 0.361320 -0.489832 }
+    <Normal> { -0.793418 0.361320 -0.489832
+    }
     <VertexRef> { 670 671 672 673 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.228296 -0.508104 -0.830489 }
+    <Normal> { 0.228296 -0.508104 -0.830489
+    }
     <VertexRef> { 674 675 676 677 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.228296 0.508104 -0.830489 }
+    <Normal> { 0.228296 0.508104 -0.830489
+    }
     <VertexRef> { 678 679 680 681 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.228296 -0.508104 -0.830489 }
+    <Normal> { -0.228296 -0.508104 -0.830489
+    }
     <VertexRef> { 682 683 684 685 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.228296 0.508104 -0.830489 }
+    <Normal> { -0.228296 0.508104 -0.830489
+    }
     <VertexRef> { 686 687 688 689 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.349291 0.119852 -0.929318 }
+    <Normal> { -0.349291 0.119852 -0.929318
+    }
     <VertexRef> { 690 691 692 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.349291 -0.119852 -0.929318 }
+    <Normal> { -0.349291 -0.119852 -0.929318
+    }
     <VertexRef> { 693 694 695 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.349291 0.119852 -0.929318 }
+    <Normal> { 0.349291 0.119852 -0.929318
+    }
     <VertexRef> { 696 697 698 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.349291 -0.119852 -0.929318 }
+    <Normal> { 0.349291 -0.119852 -0.929318
+    }
     <VertexRef> { 699 700 701 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.311239 0.208096 -0.927268 }
+    <Normal> { -0.311239 0.208096 -0.927268
+    }
     <VertexRef> { 702 703 704 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.311239 -0.208096 -0.927268 }
+    <Normal> { -0.311239 -0.208096 -0.927268
+    }
     <VertexRef> { 705 706 707 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.311239 0.208096 -0.927268 }
+    <Normal> { 0.311239 0.208096 -0.927268
+    }
     <VertexRef> { 708 709 710 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.311239 -0.208096 -0.927268 }
+    <Normal> { 0.311239 -0.208096 -0.927268
+    }
     <VertexRef> { 711 712 713 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.208114 0.311218 -0.927271 }
+    <Normal> { -0.208114 0.311218 -0.927271
+    }
     <VertexRef> { 714 715 716 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.208114 -0.311218 -0.927271 }
+    <Normal> { -0.208114 -0.311218 -0.927271
+    }
     <VertexRef> { 717 718 719 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.208114 0.311218 -0.927271 }
+    <Normal> { 0.208114 0.311218 -0.927271
+    }
     <VertexRef> { 720 721 722 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.208114 -0.311218 -0.927271 }
+    <Normal> { 0.208114 -0.311218 -0.927271
+    }
     <VertexRef> { 723 724 725 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.116975 0.350705 -0.929152 }
+    <Normal> { -0.116975 0.350705 -0.929152
+    }
     <VertexRef> { 726 727 728 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.116975 -0.350705 -0.929152 }
+    <Normal> { -0.116975 -0.350705 -0.929152
+    }
     <VertexRef> { 729 730 731 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.116975 0.350705 -0.929152 }
+    <Normal> { 0.116975 0.350705 -0.929152
+    }
     <VertexRef> { 732 733 734 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.116975 -0.350705 -0.929152 }
+    <Normal> { 0.116975 -0.350705 -0.929152
+    }
     <VertexRef> { 735 736 737 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.679342 0.304673 -0.667584 }
+    <Normal> { -0.679342 0.304673 -0.667584
+    }
     <VertexRef> { 738 739 740 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.679342 -0.304673 -0.667584 }
+    <Normal> { -0.679342 -0.304673 -0.667584
+    }
     <VertexRef> { 741 742 743 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.679342 0.304673 -0.667584 }
+    <Normal> { 0.679342 0.304673 -0.667584
+    }
     <VertexRef> { 744 745 746 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.679342 -0.304673 -0.667584 }
+    <Normal> { 0.679342 -0.304673 -0.667584
+    }
     <VertexRef> { 747 748 749 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.701944 0.291448 -0.649872 }
+    <Normal> { -0.701944 0.291448 -0.649872
+    }
     <VertexRef> { 750 751 752 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.701944 -0.291448 -0.649872 }
+    <Normal> { -0.701944 -0.291448 -0.649872
+    }
     <VertexRef> { 753 754 755 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.701944 0.291448 -0.649872 }
+    <Normal> { 0.701944 0.291448 -0.649872
+    }
     <VertexRef> { 756 757 758 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.701944 -0.291448 -0.649872 }
+    <Normal> { 0.701944 -0.291448 -0.649872
+    }
     <VertexRef> { 759 760 761 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.537388 0.537262 -0.650049 }
+    <Normal> { -0.537388 0.537262 -0.650049
+    }
     <VertexRef> { 762 763 764 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.537388 -0.537262 -0.650049 }
+    <Normal> { -0.537388 -0.537262 -0.650049
+    }
     <VertexRef> { 765 766 767 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.537388 0.537262 -0.650049 }
+    <Normal> { 0.537388 0.537262 -0.650049
+    }
     <VertexRef> { 768 769 770 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.537388 -0.537262 -0.650049 }
+    <Normal> { 0.537388 -0.537262 -0.650049
+    }
     <VertexRef> { 771 772 773 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.290256 0.703169 -0.649080 }
+    <Normal> { -0.290256 0.703169 -0.649080
+    }
     <VertexRef> { 774 775 776 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.290256 -0.703169 -0.649080 }
+    <Normal> { -0.290256 -0.703169 -0.649080
+    }
     <VertexRef> { 777 778 779 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.290256 0.703169 -0.649080 }
+    <Normal> { 0.290256 0.703169 -0.649080
+    }
     <VertexRef> { 780 781 782 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.290256 -0.703169 -0.649080 }
+    <Normal> { 0.290256 -0.703169 -0.649080
+    }
     <VertexRef> { 783 784 785 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.263438 0.694105 -0.669939 }
+    <Normal> { -0.263438 0.694105 -0.669939
+    }
     <VertexRef> { 786 787 788 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.263438 -0.694105 -0.669939 }
+    <Normal> { -0.263438 -0.694105 -0.669939
+    }
     <VertexRef> { 789 790 791 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.263438 0.694105 -0.669939 }
+    <Normal> { 0.263438 0.694105 -0.669939
+    }
     <VertexRef> { 792 793 794 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.263438 -0.694105 -0.669939 }
+    <Normal> { 0.263438 -0.694105 -0.669939
+    }
     <VertexRef> { 795 796 797 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.933029 0.223109 -0.282274 }
+    <Normal> { -0.933029 0.223109 -0.282274
+    }
     <VertexRef> { 798 799 800 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.933029 -0.223109 -0.282274 }
+    <Normal> { -0.933029 -0.223109 -0.282274
+    }
     <VertexRef> { 801 802 803 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.933029 0.223109 -0.282274 }
+    <Normal> { 0.933029 0.223109 -0.282274
+    }
     <VertexRef> { 804 805 806 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.933029 -0.223109 -0.282274 }
+    <Normal> { 0.933029 -0.223109 -0.282274
+    }
     <VertexRef> { 807 808 809 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.790884 0.546766 -0.274862 }
+    <Normal> { -0.790884 0.546766 -0.274862
+    }
     <VertexRef> { 810 811 812 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.790884 -0.546766 -0.274862 }
+    <Normal> { -0.790884 -0.546766 -0.274862
+    }
     <VertexRef> { 813 814 815 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.790884 0.546766 -0.274862 }
+    <Normal> { 0.790884 0.546766 -0.274862
+    }
     <VertexRef> { 816 817 818 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.790884 -0.546766 -0.274862 }
+    <Normal> { 0.790884 -0.546766 -0.274862
+    }
     <VertexRef> { 819 820 821 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.535531 0.801142 -0.267168 }
+    <Normal> { -0.535531 0.801142 -0.267168
+    }
     <VertexRef> { 822 823 824 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.535531 -0.801142 -0.267168 }
+    <Normal> { -0.535531 -0.801142 -0.267168
+    }
     <VertexRef> { 825 826 827 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.535531 0.801142 -0.267168 }
+    <Normal> { 0.535531 0.801142 -0.267168
+    }
     <VertexRef> { 828 829 830 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.535531 -0.801142 -0.267168 }
+    <Normal> { 0.535531 -0.801142 -0.267168
+    }
     <VertexRef> { 831 832 833 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.238628 0.925158 -0.295194 }
+    <Normal> { -0.238628 0.925158 -0.295194
+    }
     <VertexRef> { 834 835 836 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { -0.238628 -0.925158 -0.295194 }
+    <Normal> { -0.238628 -0.925158 -0.295194
+    }
     <VertexRef> { 837 838 839 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.238628 0.925158 -0.295194 }
+    <Normal> { 0.238628 0.925158 -0.295194
+    }
     <VertexRef> { 840 841 842 <Ref> { Sphere } }
   }
   <Polygon> {
     <TRef> { Material.001_00_Tex.001 }
     <TRef> { Material.001_01_Tex.003 }
     <MRef> { Material.001 }
-    <Normal> { 0.238628 -0.925158 -0.295194 }
+    <Normal> { 0.238628 -0.925158 -0.295194
+    }
     <VertexRef> { 843 844 845 <Ref> { Sphere } }
   }
 }

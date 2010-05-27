@@ -215,6 +215,7 @@ def init(showFrameRate = False, daemon = False):
 def preloadModels():
 	def preloadModel(filename):
 		node = loadModel(filename)
+		node.reparentTo(renderLit)
 		deleteModel(node, filename)
 	preloadModel("models/basicdroid/BasicDroid")
 	preloadModel("models/basicdroid/chaingun")
@@ -476,7 +477,7 @@ class Map(DirectObject):
 				self.waterNode.setPos(0, 0, float(tokens[1])) # Second token is water height
 				self.waterNode.setShader(loader.loadShader("images/water.sha"))
 				self.waterNode.setTransparency(TransparencyAttrib.MAlpha)
-				self.waterNode.setShaderInput("watermap", loader.loadTexture("images/water-normal.png"))
+				self.waterNode.setShaderInput("watermap", loader.loadTexture("images/water-normal.jpg"))
 				self.waterNode.setShaderInput("time", clock.getTime())
 				self.waterNode.hide(BitMask32.bit(4))
 				self.waterPlane = Plane(Vec3(0, 0, 1), Point3(0, 0, float(tokens[1])))
