@@ -13,27 +13,30 @@ connection = None
 initialized = False
 context = None
 
-# Packet types
-PACKET_SETUP = 0
-PACKET_CONTROLLER = 1
-PACKET_SPAWN = 2
-PACKET_DELETE = 3
-PACKET_ENDMATCH = 4
+# In-game packets
+PACKET_SETUP = 0 # Load a new map
+PACKET_CONTROLLER = 1 # Controller update
+PACKET_SPAWN = 2 # Spawn an entity
+PACKET_DELETE = 3 # Delete an entity
+PACKET_ENDMATCH = 4 # Sent by the backend
 PACKET_NEWCLIENT = 5 # New client is connecting
-PACKET_CLIENTREQUESTSPAWNPACKET = 6 # Client missed a spawn packet.
+PACKET_REQUESTSPAWNPACKET = 6 # Client missed a spawn packet
 PACKET_DISCONNECT = 7 # Server or client disconnect
 PACKET_SERVERFULL = 8 # Server can't take any more clients
 PACKET_CHAT = 9 # Chat data
-PACKET_EMPTY = 10 # No data. Used for establishing and maintaining connections.
-PACKET_CLIENTREADY = 11
+PACKET_EMPTY = 10 # No data. Used for establishing and maintaining connections
+PACKET_CLIENTREADY = 11 # Client is done loading
+PACKET_ENTITYCHECKSUM = 12 # Packet contains the number of currently active entities
+PACKET_REQUESTENTITYLIST = 13 # Client has the wrong number of active entities, so it needs a full list of IDs
+PACKET_ENTITYLIST = 14 # Packet contains a list of active entity IDs
 
 # For communication with lobby server
-PACKET_REQUESTHOSTLIST = 13 # Client requesting the host list from the lobby server
-PACKET_HOSTLIST = 14 # Packet contains host list
-PACKET_REGISTERHOST = 15 # A host is notifying the lobby server of its existence
-PACKET_NEWCLIENTNOTIFICATION = 16 # Lobby server notifying the server that a new client wishes to connect
-PACKET_CLIENTCONNECTNOTIFICATION = 17 # Client notifying lobby server of its intention to connect to a host
-PACKET_CONFIRMREGISTER = 18 # Lobby server confirms host registration
+PACKET_REQUESTHOSTLIST = 15 # Client requesting the host list from the lobby server
+PACKET_HOSTLIST = 16 # Packet contains host list
+PACKET_REGISTERHOST = 17 # A host is notifying the lobby server of its existence
+PACKET_NEWCLIENTNOTIFICATION = 18 # Lobby server notifying the server that a new client wishes to connect
+PACKET_CLIENTCONNECTNOTIFICATION = 19 # Client notifying lobby server of its intention to connect to a host
+PACKET_CONFIRMREGISTER = 20 # Lobby server confirms host registration
 
 # Spawn types
 SPAWN_PLAYER = 0
@@ -252,7 +255,9 @@ class PythonNetContext(NetworkContext):
 					port = Uint16.getFrom(iterator)
 					user = String.getFrom(iterator)
 					map = String.getFrom(iterator)
-					hosts.append((user + " - " + map, ip + ":" + str(port)))
+					activePlayers = Uint8.getFrom(iterator)
+					playerSlots = Uint8.getFrom(iterator)
+					hosts.append((user, map, ip + ":" + str(port), activePlayers, playerSlots))
 				#engine.log.debug("Received " + str(numHosts) + " hosts from lobby server.")
 				if self.hostListCallback != None:
 					self.hostListCallback(hosts)

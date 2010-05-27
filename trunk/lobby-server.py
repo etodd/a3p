@@ -33,6 +33,8 @@ class Host:
 		self.lastPing = 0
 		self.user = ""
 		self.map = ""
+		self.players = 0
+		self.playerSlots = 0
 
 hosts = dict()
 
@@ -64,16 +66,6 @@ def updateHosts():
 			deletedHosts.append(key)
 	for key in deletedHosts:
 		del hosts[key]
-	try:
-		a = open("/var/www/hosts.html", "w")
-		a.write('<html><head><meta http-equiv="Pragma" content="no-cache"/><link href="http://a3p.sourceforge.net/style.css" rel="stylesheet" type="text/css"/></head><body style="background-image: none;"><ul>\n')
-		for x in hosts.values():
-			a.write('<li><a href="http://' + HOST_ADDRESS + '/connect.php?x=' + x.ip + ':' + str(x.port) + '">' + x.user + ' - ' + x.map + '</a></li>')
-		a.write('</ul></body></html>\n')
-		a.write('\n')
-		a.close()
-	except:
-		print "Failed to open hosts file for writing."
 
 def processPacket(originalData):
 	data, address = originalData
@@ -91,16 +83,24 @@ def processPacket(originalData):
 			packet.add(net.Uint16(host.port))
 			packet.add(net.String(host.user))
 			packet.add(net.String(host.map))
+			packet.add(net.Uint8(host.players))
+			packet.add(net.Uint8(host.playerSlots))
 		packet.addTo(data)
 		net.context.sendDatagram(data, address)
 	elif code == net.PACKET_REGISTERHOST:
 		user = net.String.getFrom(iterator)
 		map = net.String.getFrom(iterator)
+		players = net.Uint8.getFrom(iterator)
+		playerSlots = net.Uint8.getFrom(iterator)
 		key = net.addressToString(address)
 		if key in hosts.keys():
-			hosts[key].lastPing = time.time()
-			hosts[key].map = map
-			hosts[key].user = user
+			host = hosts[key]
+			host.lastPing = time.time()
+			host.map = map
+			host.user = user
+			host.players = players
+			host.playerSlots = playerSlots
+			hosts[key] = host
 			print "Refreshed host at " + net.addressToString(address)
 		else:
 			host = Host()
@@ -109,6 +109,8 @@ def processPacket(originalData):
 			host.lastPing = time.time()
 			host.map = map
 			host.user = user
+			host.players = players
+			host.playerSlots = playerSlots
 			hosts[key] = host
 			print "Registered new host at " + net.addressToString(address)
 			log("host\t" + user + "\t" + map + "\t" + net.addressToString(address) + "\n")

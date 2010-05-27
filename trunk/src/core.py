@@ -172,7 +172,7 @@ class ServerBackend(Backend):
 				registerDelay = 15.0 if self.registrationConfirmed else 2.0
 				if engine.clock.getRealTime() - self.lastRegister > registerDelay:
 					self.registrationConfirmed = False
-					online.registerHost(self.username, self.map.name)
+					online.registerHost(self.username, self.map.name, self.numClients, len(self.entityGroup.teams))
 					self.lastRegister = engine.clock.getRealTime()
 			if self.endOnReachingScoreLimit:
 				for team in self.entityGroup.teams:
@@ -305,7 +305,7 @@ class PointControlBackend(ServerBackend):
 					break
 			if pos == None or self.aiWorld.navMesh.getNode(pos) == None:
 				queue = None
-		pod = entities.DropPod(controllers.DropPodController())
+		pod = entities.DropPod(self.aiWorld.space, controllers.DropPodController())
 		pod.controller.setFinalPosition(pos)
 		self.entityGroup.spawnEntity(pod)
 		self.lastPodSpawn = engine.clock.getTime()
@@ -721,6 +721,7 @@ class Tutorial(Game):
 		# Purchase AI units
 		self.enemyTeam = self.backend.entityGroup.teams[1]
 		self.enemyTeam.setLocal(True)
+		self.enemyTeam.setUsername("Computer")
 		self.enemyTeam.controller.tutorialMode = True
 		self.enemyTeam.resetScore()
 		for u in self.enemyAiUnits:

@@ -231,6 +231,8 @@ class NavMesh:
 			self._processGeomNode(geomNode)
 		for edge in self.edges:
 			if len(edge.nodes) <= 1:
+				# This edge isn't between two nodes, so we don't need to worry about it when pathfinding. 
+				# But we still need it for determining which node an agent is in. 
 				edge.navigable = False
 
 	def _processGeomNode(self, geomNode):
