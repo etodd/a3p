@@ -161,8 +161,6 @@ class ServerBackend(Backend):
 		self.clients.append(("127.0.0.1", 0)) # Reserve a spot here; we are our own client.
 	
 	def lobbyServerRegistrationCallback(self):
-		if not self.registrationConfirmed:
-			engine.log.info("Lobby server registration succeeded!")
 		self.registrationConfirmed = True
 	
 	def update(self):
@@ -173,8 +171,6 @@ class ServerBackend(Backend):
 			if self.registerHost:
 				registerDelay = 15.0 if self.registrationConfirmed else 2.0
 				if engine.clock.getRealTime() - self.lastRegister > registerDelay:
-					if not self.registrationConfirmed:
-						engine.log.info("Lobby server registration failed.")
 					self.registrationConfirmed = False
 					online.registerHost(self.username, self.map.name)
 					self.lastRegister = engine.clock.getRealTime()
@@ -305,7 +301,7 @@ class PointControlBackend(ServerBackend):
 			for i in range(queue.getNumEntries()):
 				entry = queue.getEntry(i)
 				if entry.getSurfaceNormal(render).getZ() >= 0:
-					pos = entry.getSurfacePoint(render) + Vec3(0, 0, 1.0)
+					pos = entry.getSurfacePoint(render)
 					break
 			if pos == None or self.aiWorld.navMesh.getNode(pos) == None:
 				queue = None
@@ -446,6 +442,8 @@ class Game(DirectObject):
 		self.loseSound = audio.FlatSound("sounds/lose.ogg")
 		self.errorSound = audio.FlatSound("sounds/error.ogg")
 		
+		self.playerLastActive = -1 # -1 means the player is currently active
+		
 		self.localTeam = None
 		self.localTeamID = 0
 
@@ -536,6 +534,9 @@ class Game(DirectObject):
 			pos = self.backend.map.platforms[0].getPosition()
 			base.camera.setPos(pos - Vec3(3, 22, 0))
 			base.camera.lookAt(pos)
+		else:
+			base.camera.setPos(Vec3(3, 22, 15))
+			base.camera.lookAt(Point3(0, 0, 12))
 		self.gameui.hide()
 		self.matchInProgress = False
 		self.localTeam = None
@@ -614,11 +615,15 @@ class Game(DirectObject):
 			self.localTeam.respawnUnits()
 			player = self.localTeam.getPlayer()
 			if player == None or not player.active:
-				if self.unitSelector.hidden:
+				if self.playerLastActive == -1:
+					self.playerLastActive = engine.clock.getTime()
+				if self.unitSelector.hidden and engine.clock.getTime() - self.playerLastActive > 1.0:
 					self.spectatorController.serverUpdate(self.backend.aiWorld, self.backend.entityGroup, None)
 				if self.matchInProgress and (self.backend.enableRespawn or not self.spawnedOnce):
 					self.spawnedOnce = True
 					self.localTeam.respawnPlayer()
+			else:
+				self.playerLastActive = -1
 			if self.gameui != None:
 				self.gameui.update(self.backend.scoreLimit)
 				self.unitSelector.update()
@@ -649,7 +654,7 @@ class Tutorial(Game):
 		self.unitSelector.hide()
 		self.tutorialScreens = []
 		for i in range(4):
-			image = OnscreenImage(image = "images/part" + str(i + 1) + ".png", pos = (0, 0, 0), scale = (1.25, 1, 1))
+			image = OnscreenImage(image = "images/part" + str(i + 1) + ".jpg", pos = (0, 0, 0), scale = (1.25, 1, 1))
 			image.hide()
 			self.tutorialScreens.append(image)
 		self.tutorialIndex = index

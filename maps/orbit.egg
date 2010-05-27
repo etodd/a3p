@@ -63,7 +63,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> Material.002_02_Tex {
-  "./orbit-lightmap.png"
+  "./orbit-lightmap.jpg"
   <Scalar> uv-name { uvlightmap }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
@@ -96,7 +96,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> Material_02_Tex {
-  "./orbit-lightmap.png"
+  "./orbit-lightmap.jpg"
   <Scalar> uv-name { uvlightmap }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
@@ -105,7 +105,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> Material.003_02_Tex {
-  "./orbit-lightmap.png"
+  "./orbit-lightmap.jpg"
   <Scalar> uv-name { uvlightmap }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
@@ -122,7 +122,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> Material.001_02_Tex {
-  "./orbit-lightmap.png"
+  "./orbit-lightmap.jpg"
   <Scalar> uv-name { uvlightmap }
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }

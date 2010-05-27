@@ -116,7 +116,7 @@ class TeamEntityController(Controller):
 		self.spawnSound = audio.SoundPlayer("spawn")
 		self.lastSpawn = 0
 		self.light = engine.Light(color = Vec4(0.4, 0.7, 1.0, 1), attenuation = Vec3(0, 0, 0.003))
-		self.spawnDelay = 2.0
+		self.spawnDelay = 3.0
 		self.tutorialMode = False
 		self.oldUsername = "Unnamed"
 		self.scoreAdditions = 0
@@ -829,6 +829,7 @@ class DroidController(ActorController):
 		self.lastFireDamage = -1
 		self.fireEntity = None
 		self.fireParticles = None
+		self.clipCheckCount = 0
 	
 	def buildSpawnPacket(self):
 		p = ActorController.buildSpawnPacket(self)
@@ -907,20 +908,27 @@ class DroidController(ActorController):
 		if self.lastPosition == None:
 			self.lastPosition = pos
 		else:
-			# Check to make sure we didn't go through a wall
-			vector = self.entity.getPosition() - self.lastPosition
-			distance = vector.length()
-			if distance > self.entity.radius * 0.75:
-				vector.normalize()
-				queue = aiWorld.getCollisionQueue(self.lastPosition, vector, engine.renderEnvironment)
-				for i in range(queue.getNumEntries()):
-					entry = queue.getEntry(i)
-					collision = entry.getSurfacePoint(render)
-					v = collision - self.lastPosition
-					if v.length() < distance:
-						self.entity.setPosition(collision - (vector * self.entity.radius))
-						self.entity.commitChanges()
-						break
+			clipped = False
+			if self.clipCheckCount < 10:
+				# Check to make sure we didn't go through a wall
+				vector = self.entity.getPosition() - self.lastPosition
+				distance = vector.length()
+				if distance > self.entity.radius * 0.75:
+					vector.normalize()
+					queue = aiWorld.getCollisionQueue(self.lastPosition, vector, engine.renderEnvironment)
+					for i in range(queue.getNumEntries()):
+						entry = queue.getEntry(i)
+						collision = entry.getSurfacePoint(render)
+						v = collision - self.lastPosition
+						if v.length() < distance:
+							clipped = True
+							self.entity.setPosition(collision - (vector * self.entity.radius))
+							self.entity.commitChanges()
+							break
+			if clipped:
+				self.clipCheckCount += 1
+			else:
+				self.clipCheckCount = 0 # We didn't clip this time, so reset the count.
 		
 		self.lastPosition = self.entity.getPosition()
 		

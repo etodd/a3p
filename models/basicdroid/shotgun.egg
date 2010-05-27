@@ -1,6 +1,6 @@
 <CoordinateSystem> { Z-up }
 
-<Comment> { "Egg laid by Chicken for Blender, version R76b" }
+<Comment> { "Egg laid by Chicken for Blender, version R85" }
 
 <Material> Material.001 {
   <Scalar> diffr {0.452269166708}
@@ -30,7 +30,7 @@
   <Scalar> shininess {12.5}
 }
 <Texture> Material.002_00_Tex {
-  "./brushed-normal.png"
+  "./brushed-normal.jpg"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { NORMAL }
   <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
@@ -38,7 +38,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> Material_00_Tex {
-  "./brushed-normal.png"
+  "./brushed-normal.jpg"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { NORMAL }
   <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
@@ -46,7 +46,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> Material.001_00_Tex.001 {
-  "./shotgun-pattern.png"
+  "./shotgun-pattern.jpg"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { MODULATE }
   <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
@@ -54,7 +54,7 @@
   <Scalar> wrap { REPEAT }
 }
 <Texture> Material.001_01_Tex.002 {
-  "./shotgun-normal.png"
+  "./shotgun-normal.jpg"
   <Scalar> saved-result { 1 }
   <Scalar> envtype { NORMAL }
   <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
@@ -62259,37 +62259,43 @@
     <Polygon> {
       <TRef> { Material.002_00_Tex }
       <MRef> { Material.002 }
-      <Normal> { 0.000000 -1.000000 0.000000 }
+      <Normal> { 0.000000 -1.000000 0.000000
+      }
       <VertexRef> { 6022 6023 6024 <Ref> { Cube } }
     }
     <Polygon> {
       <TRef> { Material.002_00_Tex }
       <MRef> { Material.002 }
-      <Normal> { 0.000000 -1.000000 0.000000 }
+      <Normal> { 0.000000 -1.000000 0.000000
+      }
       <VertexRef> { 6025 6026 6027 <Ref> { Cube } }
     }
     <Polygon> {
       <TRef> { Material.002_00_Tex }
       <MRef> { Material.002 }
-      <Normal> { 0.000000 -1.000000 0.000000 }
+      <Normal> { 0.000000 -1.000000 0.000000
+      }
       <VertexRef> { 6028 6029 6030 <Ref> { Cube } }
     }
     <Polygon> {
       <TRef> { Material.002_00_Tex }
       <MRef> { Material.002 }
-      <Normal> { 0.000000 -1.000000 -0.000000 }
+      <Normal> { 0.000000 -1.000000 -0.000000
+      }
       <VertexRef> { 6031 6032 6033 <Ref> { Cube } }
     }
     <Polygon> {
       <TRef> { Material.002_00_Tex }
       <MRef> { Material.002 }
-      <Normal> { 0.000000 -1.000000 0.000000 }
+      <Normal> { 0.000000 -1.000000 0.000000
+      }
       <VertexRef> { 6034 6035 6036 <Ref> { Cube } }
     }
     <Polygon> {
       <TRef> { Material.002_00_Tex }
       <MRef> { Material.002 }
-      <Normal> { 0.000000 -1.000000 0.000000 }
+      <Normal> { 0.000000 -1.000000 0.000000
+      }
       <VertexRef> { 6037 6038 6039 <Ref> { Cube } }
     }
   }
