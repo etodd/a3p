@@ -171,12 +171,12 @@ class GameUI(DirectObject):
 		allyList = []
 		for i in range(len(self.teams)):
 			team = self.teams[i]
-			for bot in (x for x in team.actors if x.spawned and x.active):
+			for bot in (x for x in team.actors if x.active):
 				if bot.team.isAlly(self.localTeam):
 					allyList.append(bot)
 			player = team.getPlayer()
 			if team != self.localTeam:
-				if player != None and player.active and player.spawned:
+				if player != None and player.active:
 					self.playerUsernames[i].node().setTextColor(team.color.getX() + 0.25, team.color.getY() + 0.25, team.color.getZ() + 0.25, 1)
 					self.playerUsernames[i].node().setText(player.username)
 					self.playerUsernames[i].setPos(player.getPosition() + Vec3(0, 0, player.radius + 0.5))
@@ -292,7 +292,7 @@ class Message:
 		self.time = time
 		
 class ChatLog(DirectObject):
-	def __init__(self, verticalOffset, displayTime = 15.0, maxChats = 8, chatBoxAlwaysVisible = False, showOwnChats = False):
+	def __init__(self, verticalOffset, displayTime = 15.0, maxChats = 8, chatBoxAlwaysVisible = False, showOwnChats = True):
 		self.localTeam = None
 		self.displayTime = displayTime # Time before chats disappear
 		font = loader.loadFont("menu/DejaVuSans.ttf")
@@ -333,6 +333,7 @@ class ChatLog(DirectObject):
 	def hide(self):
 		self.hidden = True
 		self.chatBox.hide()
+		engine.inputEnabled = True
 		for text in self.chatTexts:
 			text.hide()
 	
@@ -343,6 +344,7 @@ class ChatLog(DirectObject):
 			self.chatBox.enterText("")
 			self.chatBox.show()
 			self.chatBox["focus"] = 1
+			engine.inputEnabled = False
 	
 	def submitChat(self):
 		if not self.chatBox.isHidden() and not self.hidden:
@@ -365,6 +367,7 @@ class ChatLog(DirectObject):
 			else:
 				self.chatBox["focus"] = 1
 			self.chatBox.enterText("")
+		engine.inputEnabled = True
 		
 	def displayChat(self, username, message):
 		self.messages.insert(0, Message(username + ": " + message, engine.clock.getTime()))
@@ -395,6 +398,7 @@ class ChatLog(DirectObject):
 		for text in self.chatTexts:
 			text.removeNode()
 		self.chatBox.destroy()
+		engine.inputEnabled = True
 
 class UnitSelectorScreen(DirectObject):
 	def __init__(self, startCallback):

@@ -49,6 +49,7 @@ shadowMapWidth = 1024
 shadowMapHeight = 1024
 
 map = None
+inputEnabled = True
 
 def exit():
 	if net.context != None:

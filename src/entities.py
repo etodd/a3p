@@ -72,7 +72,6 @@ class EntityGroup(DirectObject):
 	def addEntity(self, entity):
 		"Sets the ObjectEntity active and adds it to the list."
 		entity.active = True
-		entity.spawned = True
 		if isinstance(entity, ObjectEntity):
 			entity.node.reparentTo(engine.renderObjects)
 		self.entities[entity.getId()] = entity
@@ -190,12 +189,12 @@ class Entity(DirectObject):
 	"""Entity is a generic data object that has a controller."""
 	def __init__(self, controller, local = net.netMode == net.MODE_SERVER):
 		self.active = True
-		self.spawned = False
 		self.id = -1
 		self.isLocal = local
 		self.controller = controller
 		self.controller.setEntity(self)
 		self.killed = False
+		self.spawnTime = engine.clock.getTime()
 
 	def getId(self):
 		return self.id
