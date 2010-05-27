@@ -163,7 +163,7 @@ def init(showFrameRate = False, daemon = False):
 	isDaemon = daemon
 	
 	if not daemon:
-		base.setBackgroundColor(16.0/255.0, 25.0/255.0, 32.0/255.0)
+		base.setBackgroundColor(2.0/255.0, 28.0/255.0, 53.0/255.0)
 	
 	log = Logger()
 	
