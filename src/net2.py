@@ -139,6 +139,7 @@ class NetManager(DirectObject):
 		self.outgoingPackets = 0
 		self.totalOutgoingPacketSize = 0
 		self.requestedEntitySpawns = dict()
+		self.lastCheckSumSent = 0
 		self.accept("chat-outgoing", self.chatHandler)
 	
 	def spawnEntity(self, entity):
@@ -165,6 +166,7 @@ class NetManager(DirectObject):
 			while iterator.getRemainingSize() > 0:
 				type = net.Uint8.getFrom(iterator)
 				if type == net.PACKET_CONTROLLER:
+					rebroadcast = True
 					id = net.Uint8.getFrom(iterator)
 					entity = backend.entityGroup.getEntity(id)
 					if entity != None:
@@ -173,13 +175,13 @@ class NetManager(DirectObject):
 						entity.controller.clientUpdate(backend.aiWorld, backend.entityGroup, iterator)
 					else:
 						engine.log.warning("Received controller packet with no matching entity. ID: " + str(id) + " Last entity updated: " + lastId + " - controller: " + str(lastController))
-						if sender != None and ((not id in self.requestedEntitySpawns.keys()) or (engine.clock.getTime() - self.requestedEntitySpawns[id] > 2.0)): # Only send a request once every two seconds
-							p = net.Packet()
-							p.add(net.Uint8(net.PACKET_CLIENTREQUESTSPAWNPACKET))
-							p.add(net.Uint8(id))
-							net.context.send(p, sender)
-							self.requestedEntitySpawns[id] = engine.clock.getTime()
-							engine.log.info("Sending request for missing entity spawn packet. ObjectEntity ID: " + str(id))
+						#if sender != None and ((not id in self.requestedEntitySpawns.keys()) or (engine.clock.getTime() - self.requestedEntitySpawns[id] > 2.0)): # Only send a request once every two seconds
+						#	p = net.Packet()
+						#	p.add(net.Uint8(net.PACKET_REQUESTSPAWNPACKET))
+						#	p.add(net.Uint8(id))
+						#	net.context.send(p, sender)
+						#	self.requestedEntitySpawns[id] = engine.clock.getTime()
+						#	engine.log.info("Sending request for missing entity spawn packet. Entity ID: " + str(id))
 						return rebroadcast
 				elif type == net.PACKET_SPAWN:
 					controllerType = net.Uint8.getFrom(iterator)
@@ -191,6 +193,7 @@ class NetManager(DirectObject):
 					elif entity != None:
 						engine.log.warning("Spawned entity " + str(entity.getId()) + " already exists. Cancelling spawn.")
 						entity.delete(backend.entityGroup, killed = False, localDelete = False)
+					rebroadcast = True
 				elif type == net.PACKET_DELETE:
 					id = net.Uint8.getFrom(iterator)
 					entity = backend.entityGroup.getEntity(id)
@@ -200,16 +203,21 @@ class NetManager(DirectObject):
 							entity.kill(backend.aiWorld, backend.entityGroup, False)
 						else:
 							entity.delete(backend.entityGroup, False, False)
-				elif type == net.PACKET_CLIENTREQUESTSPAWNPACKET:
+					rebroadcast = True
+				elif type == net.PACKET_REQUESTSPAWNPACKET:
 					self.clientSpawnPacketRequests.append((net.Uint8.getFrom(iterator), sender))
 					rebroadcast = False
 				elif type == net.PACKET_SETUP:
-					messenger.send("client-setup", [iterator])
+					if net.netMode == net.MODE_CLIENT:
+						messenger.send("client-setup", [iterator])
+					rebroadcast = False
 				elif type == net.PACKET_CHAT:
 					messenger.send("chat-incoming", [net.String.getFrom(iterator), net.String.getFrom(iterator)]) # Username and message
+					rebroadcast = True
 				elif type == net.PACKET_ENDMATCH:
 					engine.log.info("Received match end packet.")
 					messenger.send("end-match", [iterator])
+					rebroadcast = True
 				elif type == net.PACKET_NEWCLIENT:
 					messenger.send("server-new-connection", [sender, net.String.getFrom(iterator)]) # Sender address and username
 					rebroadcast = False
@@ -232,6 +240,49 @@ class NetManager(DirectObject):
 					port = net.Uint16.getFrom(iterator)
 					# Make sure we get all the data out of the packet to ensure proper processing.
 					# This packet has already been handled by the NetContext.
+					rebroadcast = False
+				elif type == net.PACKET_ENTITYCHECKSUM:
+					checksum = net.Uint8.getFrom(iterator) # Number of active entities we're supposed to have
+					if net.netMode == net.MODE_CLIENT and checksum != len([x for x in backend.entityGroup.entities.values() if x.active and x.getId() < 256]):
+						# We don't have the right number of entities
+						p = net.Packet()
+						p.add(net.Uint8(net.PACKET_REQUESTENTITYLIST))
+						net.context.send(p, sender)
+						engine.log.info("Entity checksum failed. Requesting full entity list.")
+					rebroadcast = False
+				elif type == net.PACKET_REQUESTENTITYLIST:
+					p = net.Packet()
+					p.add(net.Uint8(net.PACKET_ENTITYLIST))
+					entityList = [x for x in backend.entityGroup.entities.values() if x.active and x.getId() < 256]
+					p.add(net.Uint8(len(entityList)))
+					for entity in entityList:
+						p.add(net.Uint8(entity.getId()))
+					net.context.send(p, sender)
+					engine.log.info("Sending entity list to " + net.addressToString(sender))
+					rebroadcast = False
+				elif type == net.PACKET_ENTITYLIST:
+					total = net.Uint8.getFrom(iterator)
+					entities = []
+					missingEntities = []
+					for _ in range(total):
+						id = net.Uint8.getFrom(iterator)
+						if id not in backend.entityGroup.entities.keys():
+							missingEntities.append(id)
+						entities.append(id)
+					# Delete any extra entities
+					for entity in (x for x in backend.entityGroup.entities.values() if x.active and x.getId() < 256):
+						if entity.getId() not in entities:
+							entity.delete(backend.entityGroup, False, False)
+					if len(missingEntities) > 0:
+						# Request spawn packets for any missing entities
+						p = net.Packet()
+						for id in missingEntities:
+							p.add(net.Uint8(net.PACKET_REQUESTSPAWNPACKET))
+							p.add(net.Uint8(id))
+							self.requestedEntitySpawns[id] = engine.clock.getTime()
+							engine.log.info("Sending request for missing entity spawn packet. Entity ID: " + str(id))
+						net.context.send(p, sender)
+					rebroadcast = False
 				else:
 					rebroadcast = False
 		except AssertionError:
@@ -301,7 +352,15 @@ class NetManager(DirectObject):
 				else:
 					engine.log.warning("Client requested spawn packet for non-existent entity.")
 			del self.clientSpawnPacketRequests[:]
-			if sendSpawn or sendController or sendDelete:
+			sendCheckSum = False
+			if net.netMode == net.MODE_SERVER and engine.clock.getTime() - self.lastCheckSumSent > 5.0:
+				self.lastCheckSumSent = engine.clock.getTime()
+				checkSumPacket = net.Packet()
+				checkSumPacket.add(net.Uint8(net.PACKET_ENTITYCHECKSUM))
+				checkSumPacket.add(net.Uint8(len([x for x in entityList if x.active and x.getId() < 256])))
+				outboundPacket.add(checkSumPacket)
+				sendCheckSum = True
+			if sendSpawn or sendController or sendDelete or sendCheckSum:
 				net.context.broadcast(outboundPacket)
 
 		packets = net.context.readTick()

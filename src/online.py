@@ -8,11 +8,13 @@ LOBBY_SERVER_ADDRESS = "et1337.ath.cx"
 LOBBY_SERVER_PORT = 1337
 address = (LOBBY_SERVER_ADDRESS, LOBBY_SERVER_PORT)
 	
-def registerHost(username, map):
+def registerHost(username, map, players, playerSlots):
 	p = net.Packet()
 	p.add(net.Uint8(net.PACKET_REGISTERHOST))
 	p.add(net.String(username))
 	p.add(net.String(map))
+	p.add(net.Uint8(players))
+	p.add(net.Uint8(playerSlots))
 	net.context.send(p, address)
 
 def getHosts():

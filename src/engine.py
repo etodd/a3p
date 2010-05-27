@@ -19,6 +19,7 @@ from direct.stdpy.file import *
 import sys
 import time
 import math
+import os
 from random import uniform
 
 clock = None # Global clock
@@ -80,11 +81,11 @@ def loadConfigFile():
 	global isFullscreen
 	global aspectRatio
 	try:
-		mapFile = open("config", "r")
+		configFile = open(os.path.join(os.path.expanduser("~"), "a3p-config"), "r")
 	except IOError:
 		return
-	lines = mapFile.read().split('\n')
-	mapFile.close()
+	lines = configFile.read().split('\n')
+	configFile.close()
 	for line in lines:
 		parts = line.split()
 		if len(parts) == 0:
@@ -112,18 +113,18 @@ def saveConfigFile():
 	global windowHeight
 	global aspectRatio
 	aspectRatio = float(windowWidth) / float(windowHeight)
-	mapFile = open("config", "w")
+	configFile = open(os.path.join(os.path.expanduser("~"), "a3p-config"), "w")
 	def boolToStr(a):
 		if a:
 			return "#t"
 		else:
 			return "#f"
-	mapFile.write("enable-distortion-effects " + boolToStr(enableDistortionEffects) + "\n")
-	mapFile.write("enable-shaders " + boolToStr(enableShaders) + "\n")
-	mapFile.write("enable-post-processing " + boolToStr(enablePostProcessing) + "\n")
-	mapFile.write("enable-shadows " + boolToStr(enableShadows) + "\n")
-	mapFile.write("username " + savedUsername)
-	mapFile.close()
+	configFile.write("enable-distortion-effects " + boolToStr(enableDistortionEffects) + "\n")
+	configFile.write("enable-shaders " + boolToStr(enableShaders) + "\n")
+	configFile.write("enable-post-processing " + boolToStr(enablePostProcessing) + "\n")
+	configFile.write("enable-shadows " + boolToStr(enableShadows) + "\n")
+	configFile.write("username " + savedUsername)
+	configFile.close()
 
 def loadModel(filename):
 	if not filename in cache:
@@ -415,13 +416,10 @@ class Map(DirectObject):
 			elif tokens[0] == "teams":
 				numTeams = sum([int(token) for token in tokens[1:]])
 				if net.netMode == net.MODE_SERVER:
-					if len(tokens) > 2: # 2v2 or 3v3
-						if tokens[1] == "3": # 3v3
-							colors = [Vec4(0.6, 0.0, 0.0, 1), Vec4(0.2, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.6, 1), Vec4(0.0, 0.0, 0.2, 1), Vec4(0.0, 0.6, 0.0, 1), Vec4(0.0, 0.2, 0.0, 1)]
-						else: # 2v2
-							colors = [Vec4(0.6, 0.0, 0.0, 1), Vec4(0.2, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.6, 1), Vec4(0.0, 0.0, 0.2, 1)]
+					if len(tokens) > 2: # 2v2
+						colors = [Vec4(0.7, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.7, 1), Vec4(0.2, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.2, 1)]
 					else: # Free-for-all up to 4 players
-						colors = [Vec4(0.4, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.4, 1), Vec4(0, 0.4, 0, 1), Vec4(0.4, 0.4, 0, 1)]
+						colors = [Vec4(0.5, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.5, 1), Vec4(0, 0.5, 0, 1), Vec4(0.5, 0.5, 0, 1)]
 					for i in range(numTeams):
 						team = entities.TeamEntity()
 						team.color = colors[i]
@@ -431,6 +429,7 @@ class Map(DirectObject):
 						entityGroup.spawnEntity(team)
 						entityGroup.addTeam(team)
 					if len(tokens) > 2: # x vs. y
+						# Set up allies. First team is allied with even teams, second team with odd.
 						i = 2
 						while i < len(entityGroup.teams):
 							entityGroup.teams[0].addAlly(entityGroup.teams[i].getId())
@@ -865,6 +864,7 @@ class Dock(SpawnPoint):
 		self.shieldNode.reparentTo(self.node)
 		self.shieldNode.setScale(self.radius)
 		self.shieldNode.setTwoSided(True)
+		self.shieldNode.setShaderOff(True)
 		self.shieldNode.setColor(0.8, 0.9, 1.0, 0.6)
 		self.shieldNode.setTransparency(TransparencyAttrib.MAlpha)
 		self.shieldNode.hide(BitMask32.bit(4)) # Don't cast shadows

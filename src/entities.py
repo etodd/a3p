@@ -317,10 +317,24 @@ class ObjectEntity(Entity):
 		engine.deleteModel(self.node, self.filename)
 
 class DropPod(Entity):
-	def __init__(self, controller, local = net.netMode == net.MODE_SERVER):
+	def __init__(self, space, controller, local = net.netMode == net.MODE_SERVER):
 		Entity.__init__(self, controller, local)
 		self.node = loader.loadModel("models/pod/pod")
 		self.node.reparentTo(engine.renderLit)
+		self.collisionNode = CollisionNode("cnode")
+		self.collisionNodePath = self.node.attachNewNode(self.collisionNode)
+		sizex = 3
+		sizey = 3
+		sizez = 7
+		point1 = Point3(-sizex / 2.0, -sizey / 2.0, -sizez / 2.0)
+		point2 = Point3(sizex / 2.0, sizey / 2.0, sizez / 2.0)
+		self.radius = max(sizez, max(sizex, sizey)) / 2.0
+		self.vradius = sizez / 2.0
+		self.collisionNode.addSolid(CollisionBox(point1, point2))
+		self.geometry = OdeBoxGeom(space, sizex, sizey, sizez)
+		self.geometry.setCollideBits(BitMask32(0x00000001))
+		self.geometry.setCategoryBits(BitMask32(0x00000001))
+		space.setSurfaceType(self.geometry, 1)
 		visitorFont = loader.loadFont("menu/visitor2.ttf")
 		self.amountIndicator = TextNode("dropPodAmountIndicator")
 		self.amountIndicator.setText("")
@@ -345,9 +359,11 @@ class DropPod(Entity):
 	
 	def setPosition(self, pos):
 		self.node.setPos(pos)
+		self.geometry.setPosition(pos)
 	
 	def setRotation(self, hpr):
 		self.node.setHpr(hpr)
+		self.geometry.setQuat(self.node.getQuat(render))
 	
 	def getRotation(self):
 		return self.node.getHpr()
@@ -366,6 +382,7 @@ class DropPod(Entity):
 	def clear(self, entityGroup):
 		Entity.clear(self, entityGroup)
 		self.node.removeNode()
+		self.geometry.destroy()
 
 class Fragment(ObjectEntity):
 	def __init__(self, world, space, pos, velocity):
@@ -766,6 +783,7 @@ class BasicDroid(Actor):
 		self.shieldNode.reparentTo(self.node)
 		self.shieldNode.setTwoSided(True)
 		self.shieldNode.setColor(1.0, 0.9, 0.8, 0.6)
+		self.shieldNode.setShaderOff(True)
 		self.shieldNode.setTransparency(TransparencyAttrib.MAlpha)
 		self.shieldNode.hide()
 		self.shieldNode.hide(BitMask32.bit(4)) # Don't cast shadows

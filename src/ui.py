@@ -867,7 +867,7 @@ class EditorUI(DirectObject):
 		self.crosshairs.setBin("transparent", 0)
 		self.cursorX = 0
 		self.cursorY = 0
-		self.currentPhysicsEntityFile = "block/block"
+		self.currentPhysicsEntityFile = "block1"
 		font = loader.loadFont("menu/DejaVuSans.ttf")
 		self.entry = DirectEntry(text = "", entryFont = font, pos = (-engine.aspectRatio + 0.02, 0, -0.77), scale = .035, text_fg = Vec4(1, 1, 1, 1), frameColor = (0, 0, 0, 0.5), width = 35, initialText="", numLines = 1, focus = 0, rolloverSound = None, clickSound = None,)
 		self.entry.setTransparency(TransparencyAttrib.MAlpha)
@@ -1009,8 +1009,8 @@ class HostList(DirectObject):
 		height = len(hosts) * 0.15
 		self.serverList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.8, .8, -height / 2, height / 2), frameSize = (-.8, .8, -0.7, 0.7), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.jpg", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.jpg", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.jpg", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
 		offset = (height / 2) - 0.1
-		for (name, host) in hosts:
-			self.hostButtons.append(DirectButton(parent = self.serverList.getCanvas(), text = name, text_align = TextNode.ALeft, pos = (0, 0, offset), relief = DGG.FLAT, text_font = dejavuFont, frameColor = (0.1, 0.4, 0.6, 0.6), frameSize = (-0.95, 0.9, -.075, .075), text_fg = (1, 1, 1, 1), text_scale = 0.05, text_pos = (-0.9, -0.02), scale = 0.8, rolloverSound = None, clickSound = None, command = self.go, extraArgs = [host]))
+		for (user, map, host, players, playerSlots) in hosts:
+			self.hostButtons.append(DirectButton(parent = self.serverList.getCanvas(), text = user + " - " + map + " (" + str(players) + "/" + str(playerSlots) + ")", text_align = TextNode.ALeft, pos = (0, 0, offset), relief = DGG.FLAT, text_font = dejavuFont, frameColor = (0.1, 0.4, 0.6, 0.6), frameSize = (-0.95, 0.9, -.075, .075), text_fg = (1, 1, 1, 1), text_scale = 0.05, text_pos = (-0.9, -0.02), scale = 0.8, rolloverSound = None, clickSound = None, command = self.go, extraArgs = [host]))
 			offset -= 0.15
 	
 	def hide(self):
@@ -1110,7 +1110,7 @@ class MapList(DirectObject):
 		self.mapButtons = []
 		hover = None
 		click = None
-		maps = [("impact", 0, "Impact [6P]"), ("arena", 0, "Arena [4P]"), ("gold", 0, "Gold [4P]"), ("orbit", 0, "Orbit [3P]"), ("verdict", 0, "Verdict [2P]"), ("complex", 0, "Complex [2P]"), ("grid", 0, "Grid [2P]"), ("matrix", 1, "Matrix [4P Survival]")]
+		maps = [("impact", 0, "Impact [2v2]"), ("arena", 0, "Arena [4P]"), ("gold", 0, "Gold [4P]"), ("orbit", 0, "Orbit [3P]"), ("verdict", 0, "Verdict [2P]"), ("complex", 0, "Complex [2P]"), ("grid", 0, "Grid [2P]"), ("matrix", 1, "Matrix [4P Survival]")]
 		height = len(maps) * 0.15
 		self.mapList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.8, .8, -height / 2, height / 2), frameSize = (-.8, .8, -0.7, 0.7), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.jpg", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.jpg", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.jpg", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
 		offset = (height / 2) - 0.1

@@ -518,7 +518,7 @@ class DropPodController(Controller):
 	@staticmethod
 	def readSpawnPacket(aiWorld, entityGroup, iterator, entity = None, isPhysicsEntity = False):
 		"Static method called by descendants. Assumes entity has already been initialized by the descendant."
-		entity = entities.DropPod(DropPodController(), False)
+		entity = entities.DropPod(aiWorld.space, DropPodController(), False)
 		entity = Controller.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
 		entity.controller.setFinalPosition(net2.HighResVec3.getFrom(iterator))
 		entity.controller.spawnTime = engine.clock.getTime() - net.StandardFloat.getFrom(iterator)

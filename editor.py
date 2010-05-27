@@ -14,7 +14,6 @@ import src.controllers as controllers
 import sys
 
 engine.loadConfigFile()
-engine.enableShaders = True
 
 # Setup window
 props = WindowProperties()
@@ -22,9 +21,6 @@ props.setCursorHidden(True)
 props.setTitle("A3P Editor")
 base.win.requestProperties(props)
 base.setBackgroundColor(0, 0, 0)
-
-allyTeam = None
-enemyTeam = None
 
 filename = sys.argv[1]
 
@@ -43,8 +39,6 @@ editor = controllers.EditController(aiWorld, entityGroup, map, ui)
 def gameTask(task):
 	global aiWorld
 	global entityGroup
-	global allyTeam
-	global enemyTeam
 	global map
 	global ui
 	global editor
@@ -56,7 +50,7 @@ def gameTask(task):
 	engine.endUpdate()
 
 	return task.cont
-	
+
 taskMgr.add(gameTask, "Game Task")
 
 run()
