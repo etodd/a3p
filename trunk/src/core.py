@@ -653,13 +653,17 @@ class Tutorial(Game):
 		self.scoreText.hide()
 		self.unitSelector.hide()
 		self.tutorialScreens = []
+		self.messages = ["Find and capture the drop pods to earn money!", "Use your units to help defeat the enemy.", "Try using your special abilities."]
+		visitorFont = loader.loadFont("menu/visitor2.ttf")
+		self.messageText = OnscreenText(pos = (-1.25, 0.92), align = TextNode.ALeft, scale = 0.06, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)	
 		for i in range(4):
-			image = OnscreenImage(image = "images/part" + str(i + 1) + ".jpg", pos = (0, 0, 0), scale = (1.25, 1, 1))
+			image = OnscreenImage(image = "images/part" + str(i + 1) + ".jpg", pos = (0, 0, 0), scale = (1680.0/1050.0, 1, 1))
 			image.hide()
 			self.tutorialScreens.append(image)
 		self.tutorialIndex = index
 		render.hide()
 		self.tutorialScreens[self.tutorialIndex].show()
+		self.messageText.hide()
 		self.enemyAiUnits = [(components.CHAINGUN, None), (components.SNIPER, None), (components.PISTOL, None)]
 		self.enemyTeam = None
 	
@@ -698,6 +702,10 @@ class Tutorial(Game):
 		elif self.tutorialIndex == 2:
 			self.enemyAiUnits = [(components.SHOTGUN, controllers.CLOAK_SPECIAL), (components.SNIPER, controllers.SHIELD_SPECIAL), (components.PISTOL, None)]
 			self.backend.scoreLimit = 1000
+
+		if self.tutorialIndex <= 2:
+			self.messageText.setText(self.messages[self.tutorialIndex])
+			self.messageText.show()
 		
 		if self.tutorialIndex == 2:
 			Game.startMatch(self)
@@ -725,6 +733,7 @@ class Tutorial(Game):
 		if player != None and player.active:
 			player.delete(self.backend.entityGroup)
 		localTeam.setPlayer(None)
+		self.messageText.hide()
 		render.hide()
 		self.tutorialIndex += 1
 		self.tutorialScreens[self.tutorialIndex].show()
@@ -750,6 +759,7 @@ class Tutorial(Game):
 	def delete(self):
 		engine.log.info("Ending tutorial.")
 		Game.delete(self)
+		self.messageText.destroy()
 		for screen in self.tutorialScreens:
 			screen.removeNode()
 
