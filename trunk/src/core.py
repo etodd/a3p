@@ -955,9 +955,12 @@ class MainMenu(DirectObject):
 			self.logo.setColor(1, 1, 1, 1)
 			self.skyBox.setColor(Vec4(1, 1, 1, 1))
 		
-		if not self.loginDialogShown and self.showLogin and elapsedTime > self.introTime:
-			self.loginDialog.show()
-			self.loginDialogShown = True
+		if elapsedTime > self.introTime:
+			if not self.loginDialogShown and self.showLogin:
+				self.loginDialog.show()
+				self.loginDialogShown = True
+			elif self.chatLog.hidden and not self.showLogin:
+				self.chatLog.show()
 		
 		self.chatConnection.update()
 		self.chatLog.update()
