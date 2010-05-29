@@ -165,6 +165,7 @@ class Gun(Weapon):
 		Weapon.show(self)
 		self.showTime = engine.clock.time
 		self.showSound.play(entity = self.actor)
+		self._updatePosition(1.0, 90)
 	
 	def hide(self):
 		Weapon.hide(self)
@@ -249,12 +250,7 @@ class Gun(Weapon):
 				else:
 					self.showTime = -1
 			if self.selected:
-				vector = self.actor.controller.targetPos - self.actor.getPosition()
-				pos = vector.cross(Vec3(0, 0, 1))
-				pos.normalize()
-				self.setPosition(self.actor.getPosition() + (pos * (self.actor.radius + 0.1)) + Vec3(0, 0, offset))
-				self.node.lookAt(Point3(self.actor.controller.targetPos))
-				self.node.setP(self.node.getP() + angleOffset)
+				self._updatePosition(offset, angleOffset)
 			if self.activeSound == 1: # Reload beep sound
 				self.reloadActive = True # So clients also have an accurate reloadActive value
 				if not self.reloadBeepSound.isPlaying():
@@ -265,6 +261,14 @@ class Gun(Weapon):
 					self.reloadBeepSound.stop()
 				self.reloadSound.play(entity = self.actor)
 				self.activeSound = 0 # Only play once
+	
+	def _updatePosition(self, offset, angleOffset):
+		vector = self.actor.controller.targetPos - self.actor.getPosition()
+		pos = vector.cross(Vec3(0, 0, 1))
+		pos.normalize()
+		self.setPosition(self.actor.getPosition() + (pos * (self.actor.radius + 0.1)) + Vec3(0, 0, offset))
+		self.node.lookAt(Point3(self.actor.controller.targetPos))
+		self.node.setP(self.node.getP() + angleOffset)
 	
 	def delete(self):
 		self.ricochetSound.delete()

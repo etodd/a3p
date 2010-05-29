@@ -142,29 +142,28 @@ class World:
 				returnValue = point
 		return returnValue.getPosition()
 	
-	def getOpenSpawnPoint(self, team, entityGroup):
-		largestSmallestDistance = -1
-		returnValue = None
+	def getNearestOpenSpawnPoint(self, team, entityGroup, pos, minRadius = 50):
+		dockList = [team.dock] if team.dock != None else []
+		points = sorted(dockList + self.spawnPoints, key = lambda x: (x.getPosition() - pos).length())
 		enemies = [x for x in entityGroup.entities.values() if isinstance(x, entities.Actor) and x.team != team]
-		dockpos = []
-		if team.dock != None:
-			dockpos = [team.dock.getPosition()]
-		for point in dockpos + [x.getPosition() for x in self.spawnPoints]:
-			smallestDistance = 10000000
+		for point in points:
+			p = point.getPosition()
+			open = True
 			for enemy in enemies:
-				dist = (point - enemy.getPosition()).length()
-				if dist < smallestDistance:
-					smallestDistance = dist
-			if smallestDistance > largestSmallestDistance or returnValue == None:
-				largestSmallestDistance = smallestDistance
-				returnValue = point
-		return returnValue
+				if (enemy.getPosition() - p).length() < minRadius:
+					open = False
+					break
+			if open:
+				return p
+		return points[0].getPosition()
 
-	def getRandomSpawnPoint(self, zombieSpawnsOnly = False):
+	def getRandomSpawnPoint(self, zombieSpawnsOnly = False, team = None):
 		if zombieSpawnsOnly:
 			spawns = self.spawnPoints[1:]
 		else:
-			spawns = self.spawnPoints
+			spawns = self.spawnPoints[:]
+		if team != None and team.dock != None:
+			spawns.append(team.dock)
 		return choice(spawns).getPosition()
 	
 	def getRayCollisionQueue(self, rayNP, node = None):

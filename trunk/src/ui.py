@@ -232,11 +232,13 @@ class GameUI(DirectObject):
 
 		player = self.localTeam.getPlayer()
 		if player != None and player.active:
+			self.healthBar.show()
 			if player.controller.targetedEnemy != None and player.controller.targetedEnemy.active:
 				particles.EnemySelectorParticleGroup.draw(player.controller.targetedEnemy.getPosition())
 			self.healthBar.setValue(player.health, player.maxHealth)
 			weapon = player.components[player.controller.activeWeapon]
 			if isinstance(weapon, components.Gun) and weapon.selected:
+				self.ammoTextNode.show()
 				self.ammoTextNode.setQuat(weapon.node.getQuat())
 				self.ammoTextNode.setPos(render.getRelativePoint(weapon.node, Vec3(0.5, 0, 0.6)))
 				self.ammoTextNode.setH(self.ammoTextNode.getH() - 15) # Angle the text toward the camera
@@ -247,7 +249,7 @@ class GameUI(DirectObject):
 					val = 0
 				self.ammoText.setTextColor(1, val, val, 1)
 			else:
-				self.ammoText.setText("")
+				self.ammoTextNode.hide()
 			if player.health < self.lastPlayerHealth:
 				self.damageTransparency += (self.lastPlayerHealth - player.health) / (.2 * player.maxHealth)
 				self.damageTransparency = min(self.damageTransparency, 0.8)
@@ -258,6 +260,12 @@ class GameUI(DirectObject):
 				self.currentCrosshair = player.controller.currentCrosshair
 				if self.crosshairs[self.currentCrosshair] != None:
 					self.crosshairs[self.currentCrosshair].show()
+		else:
+			self.damageTransparency = 0
+			self.healthBar.hide()
+			self.ammoTextNode.hide()
+			if self.crosshairs[self.currentCrosshair] != None:
+				self.crosshairs[self.currentCrosshair].hide()
 
 		if self.damageTransparency > 0.0:
 			self.damageImage.show()
@@ -1114,12 +1122,15 @@ class MapList(DirectObject):
 		self.mapButtons = []
 		hover = None
 		click = None
-		maps = [("impact", 0, "Impact [2v2]"), ("sectorx", 0, "Sector X [2v2]"), ("arena", 0, "Arena [4P]"), ("gold", 0, "Gold [4P]"), ("orbit", 0, "Orbit [3P]"), ("verdict", 0, "Verdict [2P]"), ("complex", 0, "Complex [2P]"), ("grid", 0, "Grid [2P]"), ("matrix", 1, "Matrix [4P Survival]")]
+		maps = engine.readFile("maps/maps.txt").split("\n")
 		height = len(maps) * 0.15
 		self.mapList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.8, .8, -height / 2, height / 2), frameSize = (-.8, .8, -0.7, 0.7), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.jpg", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.jpg", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.jpg", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
 		offset = (height / 2) - 0.1
+		mapTypes = ["dm", "zs"]
 		for map in maps:
-			self.mapButtons.append(DirectButton(parent = self.mapList.getCanvas(), text = map[2], text_align = TextNode.ALeft, pos = (0, 0, offset), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0.1, 0.4, 0.6, 0.6), frameSize = (-0.95, 0.9, -.075, .075), text_fg = (1, 1, 1, 1), text_scale = 0.1, text_pos = (-0.9, -0.02), scale = 0.8, rolloverSound = None, clickSound = None, command = self.callback, extraArgs = [map[0], map[1]]))
+			mapType, name, title = map.split("\t")
+			mapType = mapTypes.index(mapType)
+			self.mapButtons.append(DirectButton(parent = self.mapList.getCanvas(), text = title, text_align = TextNode.ALeft, pos = (0, 0, offset), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0.1, 0.4, 0.6, 0.6), frameSize = (-0.95, 0.9, -.075, .075), text_fg = (1, 1, 1, 1), text_scale = 0.1, text_pos = (-0.9, -0.02), scale = 0.8, rolloverSound = None, clickSound = None, command = self.callback, extraArgs = [name, mapType]))
 			offset -= 0.15
 		self.lastShow = -1
 		self.lastHide = -1

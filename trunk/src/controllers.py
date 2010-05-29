@@ -210,16 +210,16 @@ class TeamEntityController(Controller):
 			elif self.entity.isSurvivors:
 				pos = aiWorld.spawnPoints[0].getPosition() # Survivors always spawn at the first defined spawn point.
 			else:
-				pos = aiWorld.getOpenSpawnPoint(self.entity, entityGroup) + Vec3(uniform(-2, 2), uniform(-2, 2), 0)
-			pos.setZ(0)
-			queue = aiWorld.getCollisionQueue(pos + Vec3(0, 0, 100), Vec3(0, 0, -1))
-			for i in range(queue.getNumEntries()):
-				entry = queue.getEntry(i)
-				if entry.getSurfaceNormal(render).getZ() > -0.5:
-					pos.setZ(entry.getSurfacePoint(render).getZ())
-					break
-			if queue.getNumEntries() == 0:
-				pos = self.entity.dock.getPosition()
+				target = None
+				player = self.entity.getPlayer()
+				if player != None and player.active:
+					target = player.getPosition()
+				elif len(self.entity.actors) > 0:
+					target = self.entity.actors[0].getPosition()
+				if target == None:
+					pos = aiWorld.getRandomSpawnPoint(team = self.entity)
+				else:
+					pos = aiWorld.getNearestOpenSpawnPoint(self.entity, entityGroup, target) + Vec3(uniform(-2, 2), uniform(-2, 2), 0)
 			if isLocalPlayer:
 				isPlatformSpawn = purchase[5] != None
 				if isPlatformSpawn:
@@ -243,9 +243,6 @@ class TeamEntityController(Controller):
 			self.addCriticalPacket(p, packetUpdate)
 			entityGroup.spawnEntity(u)
 			self.respawns.remove(purchase)
-		player = self.entity.getPlayer()
-		if player != None and player.active:
-			self.lastPlayerPosition = self.entity.getPlayer().getPosition()
 		return p
 	
 	def clientUpdate(self, aiWorld, entityGroup, data = None):
@@ -311,7 +308,7 @@ class ObjectController(Controller):
 		if isPhysicsEntity:
 			directory = net.String.getFrom(iterator)
 			dataFile = net.String.getFrom(iterator)
-			entity.loadDataFile(aiWorld.world, aiWorld.space, engine.map.readPhysicsEntityFile(dataFile + ".txt"), directory, dataFile)
+			entity.loadDataFile(aiWorld.world, aiWorld.space, engine.readPhysicsEntityFile(dataFile + ".txt"), directory, dataFile)
 		pos = net2.HighResVec3.getFrom(iterator)
 		vel = net2.StandardVec3.getFrom(iterator)
 		rot = net2.StandardVec3.getFrom(iterator)
@@ -487,7 +484,7 @@ class DropPodController(Controller):
 		self.payoutAmount = 10
 		self.payoutDelay = 0.7
 		self.captureDistance = 20
-		self.money = 250
+		self.money = 300
 		self.warningSound = audio.SoundPlayer("kamikaze-special")
 		self.warningTime = -1
 		self.entrySound = audio.FlatSound("sounds/pod-entry.ogg", volume = 0.5)
@@ -512,6 +509,7 @@ class DropPodController(Controller):
 		p = Controller.buildSpawnPacket(self)
 		p.add(net2.HighResVec3(self.finalPosition))
 		p.add(net.StandardFloat(engine.clock.time - self.entity.spawnTime))
+		p.add(net.Uint16(self.money))
 		return p
 	
 	@staticmethod
@@ -521,6 +519,7 @@ class DropPodController(Controller):
 		entity = Controller.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
 		entity.controller.setFinalPosition(net2.HighResVec3.getFrom(iterator))
 		entity.spawnTime = engine.clock.time - net.StandardFloat.getFrom(iterator)
+		self.money = net.Uint16.getFrom(iterator)
 		return entity
 	
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
@@ -537,7 +536,7 @@ class DropPodController(Controller):
 				self.addCriticalPacket(p, packetUpdate)
 		if not paid:
 			p.add(net.Boolean(False))
-		p.add(net.Uint8(max(self.money, 0)))
+		p.add(net.Uint16(max(self.money, 0)))
 		if self.warningTime != -1 and engine.clock.time - self.warningTime > 3.0:
 			self.entity.killer = None
 			self.entity.kill(aiWorld, entityGroup)
@@ -550,7 +549,7 @@ class DropPodController(Controller):
 				team = entityGroup.getEntity(net.Uint8.getFrom(data))
 				if team != None:
 					team.controller.addMoney(self.payoutAmount)
-			self.money = net.Uint8.getFrom(data)
+			self.money = net.Uint16.getFrom(data)
 		self.entity.amountIndicator.setText("$" + str(self.money))
 		if base.camera != None:
 			self.entity.amountIndicatorNode.setScale((self.entity.getPosition() - base.camera.getPos()).length() * 0.04)
@@ -1241,12 +1240,13 @@ class PlayerController(DroidController):
 		
 		target = None
 		queue = aiWorld.getRayCollisionQueue(self.pickRayNP)
-		camDistance = (camera.getPos() - self.entity.getPosition()).length()
+		camDistance = (camera.getPos() - self.entity.getPosition()).length() + self.entity.radius
 		for i in range(queue.getNumEntries()):
 			entry = queue.getEntry(i)
-			target = entry.getSurfacePoint(render)
-			targetVector = camera.getPos() - target
+			t = entry.getSurfacePoint(render)
+			targetVector = camera.getPos() - t
 			if camDistance < targetVector.length():
+				target = t
 				break
 		if target == None:
 			self.targetPos = self.pickRay.getOrigin() + (render.getRelativeVector(self.pickRayNP, self.pickRay.getDirection()) * 5)
@@ -1481,6 +1481,8 @@ class AIController(DroidController):
 		else:
 			weapon.burstTimer = -1
 
+		if self.nearestEnemy != None and self.nearestEnemy.active:
+			self.targetPos = self.nearestEnemy.getPosition()
 		if weapon.firing:
 			vector = self.targetPos - self.entity.getPosition()
 			distance = vector.length()
@@ -1839,7 +1841,6 @@ class EditController(Controller):
 		self.selectedTool = 1
 		self.rotating = False
 		# Aspect ratio corrects for horizontal scaling when calculating the cursor position / picking ray.
-		self.aspectRatio = float(base.win.getProperties().getXSize()) / float(base.win.getProperties().getYSize())
 		self.mouseDown = False
 		self.spawnedObjects = []
 		self.clickTime = 0
@@ -1950,7 +1951,8 @@ class EditController(Controller):
 	def serverUpdate(self, aiWorld, entityGroup, data):
 		p = Controller.serverUpdate(self, aiWorld, entityGroup, data)
 		"Updates the camera position, cursor position, and picking ray."
-		self.pickRay.setFromLens(base.camNode, self.ui.cursorX / self.aspectRatio, self.ui.cursorY)
+		aspectRatio = float(base.win.getProperties().getXSize()) / float(base.win.getProperties().getYSize())
+		self.pickRay.setFromLens(base.camNode, self.ui.cursorX / aspectRatio, self.ui.cursorY)
 		if self.mouseDown and len(self.spawnedObjects) > 0 and engine.clock.time - self.clickTime > 0.25:
 			entry = aiWorld.getRayFirstCollision(self.pickRayNP)
 			if entry == None:
