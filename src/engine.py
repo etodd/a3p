@@ -47,6 +47,8 @@ cache = dict()
 defaultFov = 70
 shadowMapWidth = 1024
 shadowMapHeight = 1024
+mf = None
+physicsEntityFileCache = dict()
 
 map = None
 inputEnabled = True
@@ -161,6 +163,13 @@ def init(showFrameRate = False, daemon = False):
 	global enableDistortionEffects
 	global filters
 	global isDaemon
+	global mf
+	
+	mf = None
+	
+	if not vfs.isDirectory("maps"):
+		mf = Multifile()
+		self.mf.openRead(ExecutionEnvironment.getEnvironmentVariable("PKG_ROOT") + "/pkg.mf")
 	
 	isDaemon = daemon
 	
@@ -314,6 +323,24 @@ class Clock:
 	def time(self):
 		return self._time
 
+def readFile(file):
+	data = ""
+	if vfs.exists(file):
+		data = vfs.readFile(file, 1)
+	elif mf != None: # We're reading from a multifile
+		fileId = mf.findSubfile(file)
+		data = mf.readSubfile(fileId)
+	return data
+
+def readPhysicsEntityFile(file):
+	global physicsEntityFileCache
+	if file in physicsEntityFileCache:
+		data = physicsEntityFileCache[file]
+	else:
+		data = readFile("maps/" + file)
+	physicsEntityFileCache[file] = data
+	return data
+
 class Map(DirectObject):
 	"""A Map loads all environment resources from a map file.
 	Maps also keep track of the custom lights, skybox textures, sounds, etc, and can save this data back to a map file."""
@@ -333,9 +360,6 @@ class Map(DirectObject):
 		self.mapDirectory = ""
 		self.isSurvival = False
 		self.ambientSound = None
-		self.physicsEntityFileCache = dict()
-		self.rain = None
-		self.mf = None
 		self.platforms = []
 	
 	def addSoundGroup(self, soundGroup):
@@ -358,18 +382,7 @@ class Map(DirectObject):
 	def hidePlatforms(self):
 		for p in self.platforms:
 			p.hide()
-	
-	def readPhysicsEntityFile(self, file):
-		if file in self.physicsEntityFileCache:
-			data = self.physicsEntityFileCache[file]
-		elif vfs.exists(self.mapDirectory + "/" + file):
-			data = vfs.readFile(self.mapDirectory + "/" + file, 1)
-		elif self.mf != None: # We're reading from a multifile
-			fileId = self.mf.findSubfile(self.mapDirectory + "/" + file)
-			data = self.mf.readSubfile(fileId)
-		self.physicsEntityFileCache[file] = data
-		return data
-	
+
 	def disableShadows(self):
 		for light in self.lights:
 			if isinstance(light.getNode(0), Spotlight) and light.node().isShadowCaster():
@@ -387,16 +400,9 @@ class Map(DirectObject):
 
 		self.name = name
 		self.filename = "maps/" + self.name + ".txt"
-		self.mapDirectory = "maps"
-		mapDirectory = self.mapDirectory
-
-		if vfs.exists(self.filename):
-			data = vfs.readFile(self.filename, 1)
-		else:
-			self.mf = Multifile()
-			self.mf.openRead(ExecutionEnvironment.getEnvironmentVariable("PKG_ROOT") + "/pkg.mf")
-			fileId = self.mf.findSubfile(self.filename)
-			data = self.mf.readSubfile(fileId)
+		mapDirectory = "maps"
+		
+		data = readFile(self.filename)
 
 		lines = data.split('\n')
 		for line in lines:
@@ -513,9 +519,6 @@ class Map(DirectObject):
 					self.ambientSound = audio.FlatSound(mapDirectory + "/" + tokens[1], float(tokens[2]))
 					self.ambientSound.setLoop(True)
 					self.ambientSound.play()
-			elif tokens[0] == "rain":
-				if not isDaemon:
-					self.rain = Rain()
 			elif tokens[0] == "light":
 				if tokens[1] == "objects":
 					parentNode = renderObjects
@@ -591,7 +594,7 @@ class Map(DirectObject):
 			elif tokens[0] == "physicsentity":
 				if net.netMode == net.MODE_SERVER:
 					file = tokens[1] + ".txt"
-					data = self.readPhysicsEntityFile(file)
+					data = readPhysicsEntityFile(file)
 					parts = tokens[1].rpartition("/")
 					directory = mapDirectory + "/" + parts[0]
 					obj = entities.PhysicsEntity(aiWorld.world, aiWorld.space, data, directory, tokens[1])
@@ -660,8 +663,6 @@ class Map(DirectObject):
 			mapFile.write("skybox " + self.skyBoxFilename + "\n")
 		if self.ambientSound != None:
 			mapFile.write("sound " + self.ambientSound.filename.replace(self.mapDirectory + "/", "") + " " + str(self.ambientSound.getVolume()) + "\n")
-		if self.rain != None:
-			mapFile.write("rain\n")
 		if self.waterNode != None:
 			mapFile.write("water " + str(self.waterNode.getZ()) + "\n")
 		for light in self.lights:
@@ -718,8 +719,6 @@ class Map(DirectObject):
 			self.waterNode.setShaderInput("time", clock.time)
 			if reflectionCamera != None:
 				reflectionCamera.setMat(base.camera.getMat() * self.waterPlane.getReflectionMat())
-		if self.rain != None:
-			self.rain.update()
 	
 	def delete(self):
 		"Releases all resources, including scenery, physics geometries, and environment sounds and lights."
@@ -747,45 +746,6 @@ class Map(DirectObject):
 		if self.ambientSound != None:
 			self.ambientSound.stop()
 			del self.ambientSound
-		if self.rain != None:
-			self.rain.delete()
-			del self.rain
-		if self.mf != None:
-			self.mf.close()
-
-class Rain:
-	def __init__(self):
-		self.particles = []
-		self.lastCameraPos = base.camera.getPos()
-		self.base = loader.loadModel("models/rain/rain")
-		self.base.setTwoSided(True)
-		self.base.setBillboardAxis()
-		self.base.setScale(4)
-		for _ in range(50):
-			self.spawnParticle(uniform(0, 20))
-	def spawnParticle(self, height):
-		rain = render.attachNewNode("rain")
-		self.base.instanceTo(rain)
-		rain.setPos(base.camera.getPos() + Vec3(uniform(-40, 40), uniform(-40, 40), height))
-		self.particles.append(rain)
-	def update(self):
-		for _ in range(5):
-			self.spawnParticle(20)
-		deleted = []
-		snap = False
-		if (base.camera.getPos() - self.lastCameraPos).length() > 3:
-			snap = True
-		for particle in self.particles:
-			if particle.getZ() < -5:
-				deleted.append(particle)
-			else:
-				if snap:
-					particle.setPos((particle.getPos() - self.lastCameraPos) + base.camera.getPos())
-				particle.setZ(particle.getZ() - (35.0 * clock.timeStep))
-		for d in deleted:
-			d.removeNode()
-			self.particles.remove(d)
-		self.lastCameraPos = base.camera.getPos()
 
 class StaticGeometry(DirectObject):
 	"A StaticGeometry is a potentially invisible, immovable physics object, modeled as a trimesh."

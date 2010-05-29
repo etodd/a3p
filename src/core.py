@@ -922,12 +922,13 @@ class MainMenu(DirectObject):
 		self.goTime = engine.clock.time
 	
 	def startServer(self, map, gametype):
-		self.clickSound.play()
-		self.mapList.hide()
-		self.loadingScreen.show()
-		self.serverMapName = map
-		self.serverGameType = gametype
-		self.goTime = engine.clock.time
+		if not (self.serverMode == 1 and gametype == 1): # Tutorial works on Point Control maps.
+			self.clickSound.play()
+			self.mapList.hide()
+			self.loadingScreen.show()
+			self.serverMapName = map
+			self.serverGameType = gametype
+			self.goTime = engine.clock.time
 	
 	def setUsername(self, username):
 		self.clickSound.play()
@@ -1029,14 +1030,11 @@ class MainMenu(DirectObject):
 					game = Game(backend)
 					game.localStart(self.serverMapName)
 				elif self.serverMode == 1:
-					if self.serverGameType == 0: # No survival maps for tutorial mode
-						# Tutorial mode
-						self.delete()
-						backend = PointControlBackend(False, self.username)
-						game = Tutorial(backend, 2 if self.skipToEndOfTutorial else 0)
-						game.localStart(self.serverMapName)
-					else:
-						self.serverMapName = None
+					# Tutorial mode
+					self.delete()
+					backend = PointControlBackend(False, self.username)
+					game = Tutorial(backend, 2 if self.skipToEndOfTutorial else 0)
+					game.localStart(self.serverMapName)
 
 		net.context.writeTick()
 		return backend, game
