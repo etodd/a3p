@@ -1,0 +1,5 @@
+model bone
+geometry box 4 10 4
+geometry box 8 5 8 0 -7 0
+geometry box 8 5 8 0 7 0
+mass 1.0 box 8 20 8

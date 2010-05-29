@@ -9,14 +9,52 @@ import entities
 import net
 import components
 import controllers
+import threading
+import time
 
 ACCURACY = 0.7 # Relative probability of an AI droid hitting its target.
+
+currentWorld = None
+pathRequests = []
+pathFindThread = None
+
+class PathRequest:
+	def __init__(self, callback, aiNode, targetAiNode, position, targetPosition, radius):
+		self.callback = callback
+		self.aiNode = aiNode
+		self.targetAiNode = targetAiNode
+		self.position = position
+		self.targetPosition = targetPosition
+		self.radius = radius
+
+def init():
+	global pathFindThread
+	pathFindThread = threading.Thread(target = pathWorker)
+	pathFindThread.setDaemon(True)
+	pathFindThread.start()
+
+def pathWorker():
+	global pathRequests, currentWorld
+	while True:
+		if len(pathRequests) > 0:
+			req = pathRequests.pop(0)
+			req.callback(currentWorld.navMesh.findPathFromNodes(req.aiNode, req.targetAiNode, req.position, req.targetPosition, req.radius))
+			del req
+		if len(pathRequests) > 5:
+			del pathRequests[:]
+		time.sleep(0.01)
+
+def requestPath(callback, aiNode, targetAiNode, position, targetPosition, radius):
+	request = PathRequest(callback, aiNode, targetAiNode, position, targetPosition, radius)
+	pathRequests.append(request)
 
 class World:
 	"""The AI world models the physics world as a series of grids, where each cell has a traversal cost associated with it.
 	Portals can be created between grids, and AI entities navigate through the grids using an A* search algorithm.
 	The AI world also contains the ODE world and space, and includes functions to test for collisions."""
 	def __init__(self):
+		global currentWorld
+		currentWorld = self
 		"Initializes the ODE world and space."
 		self.grids = dict()
 		self.navMesh = None
@@ -323,7 +361,7 @@ class NavMesh:
 			edge.hScore = 0
 			edge.fScore = 0
 			edge.open = False
-		path = Path(startPos, endPos, radius)
+		path = Path(startPos, endPos, startNode, endNode, radius)
 		openEdges = startNode.edges[:]
 		for edge in startNode.edges:
 			edge.gScore = 0
@@ -332,6 +370,7 @@ class NavMesh:
 			edge.open = True
 		def compare(x, y):
 			return (x.fScore > y.fScore) - (x.fScore < y.fScore)
+		iterations = 0
 		while len(openEdges) > 0:
 			openEdges.sort(compare)
 			currentEdge = openEdges.pop(0)
@@ -341,6 +380,7 @@ class NavMesh:
 				while c.cameFrom != None:
 					c = c.cameFrom
 					path.add(c)
+				path.clean()
 				return path
 			currentEdge.closed = True
 			for neighbor in currentEdge.neighbors:
@@ -358,6 +398,10 @@ class NavMesh:
 						neighbor.cameFrom = currentEdge
 						neighbor.gScore = tentativeGScore
 						neighbor.fScore = neighbor.gScore + neighbor.hScore
+			iterations += 1
+			if iterations > 9:
+				time.sleep(0.0)
+				iterations = 0
 		return None
 
 class NavNode:
@@ -453,7 +497,11 @@ class Edge:
 	
 	def costToEdge(self, edge):
 		# The cost is the distance between the two closest corners of the two edges.
-		return (self.center - edge.center).length()
+		dist1 = (self.a - edge.a).length()
+		dist2 = (self.b - edge.b).length()
+		dist3 = (self.a - edge.b).length()
+		dist4 = (self.b - edge.a).length()
+		return min(dist1, dist2, dist3, dist4)
 	
 	def getNodes(self):
 		return self.nodes
@@ -466,9 +514,12 @@ class Edge:
 		return self.neighbors
 
 class Path:
-	def __init__(self, start = None, end = None, radius = 0):
+	def __init__(self, start = None, end = None, startNode = None, endNode = None, radius = 0):
 		self.waypoints = []
 		self.edges = []
+		self.nodes = []
+		if startNode != None and endNode != None:
+			self.nodes = [endNode, startNode]
 		self.radius = radius
 		if start == None:
 			self.start = None
@@ -485,7 +536,17 @@ class Path:
 			i -= 1
 	def add(self, edge):
 		self.edges.insert(0, edge)
-		if (edge.a - self.end).length() < (edge.b - self.end).length():
+		if len(self.edges) > 1:
+			for node in edge.nodes:
+				if node in self.edges[1].nodes:
+					self.nodes.insert(1, node)
+		aDist = (edge.a - self.end).length()
+		bDist = (edge.b - self.end).length()
+		if len(self.waypoints) > 1:
+			last = self.waypoints[1]
+			aDist += (edge.a - last).length()
+			bDist += (edge.b - last).length()
+		if aDist < bDist:
 			self.waypoints.insert(0, edge.a + (edge.aToBVector * self.radius))
 		else:
 			self.waypoints.insert(0, edge.b - (edge.aToBVector * self.radius))
@@ -505,3 +566,7 @@ class Path:
 			return self.waypoints[len(self.waypoints) - 1]
 		else:
 			return None
+	def clear(self):
+		del self.waypoints[:]
+		del self.nodes[:]
+		del self.edges[:]

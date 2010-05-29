@@ -88,7 +88,7 @@ class EntitySnapshot(net.Object):
 	def takeSnapshot(self, entity):
 		self.pos = entity.getPosition()
 		self.quat = Quat(entity.getQuaternion())
-		self.time = engine.clock.getTime()
+		self.time = engine.clock.time
 		self.empty = False
 
 	def addTo(self, datagram):
@@ -102,7 +102,7 @@ class EntitySnapshot(net.Object):
 		es = EntitySnapshot()
 		es.pos = HighResVec3.getFrom(iterator)
 		es.quat = StandardQuat.getFrom(iterator)
-		es.time = engine.clock.getTime()
+		es.time = engine.clock.time
 		es.empty = False
 		return es
 	
@@ -120,7 +120,7 @@ class EntitySnapshot(net.Object):
 	def setFrom(self, snapshot):
 		self.pos = Vec3(snapshot.pos)
 		self.quat = Quat(snapshot.quat)
-		self.time = engine.clock.getTime()
+		self.time = engine.clock.time
 		self.empty = snapshot.empty
 	
 	def almostEquals(self, snapshot):
@@ -133,7 +133,7 @@ class NetManager(DirectObject):
 		self.deletePackets = []
 		self.clientSpawnPacketRequests = []
 		self.chatPackets = []
-		self.lastStatsLog = engine.clock.getTime()
+		self.lastStatsLog = engine.clock.time
 		self.incomingPackets = 0
 		self.totalIncomingPacketSize = 0
 		self.outgoingPackets = 0
@@ -175,12 +175,12 @@ class NetManager(DirectObject):
 						entity.controller.clientUpdate(backend.aiWorld, backend.entityGroup, iterator)
 					else:
 						engine.log.warning("Received controller packet with no matching entity. ID: " + str(id) + " Last entity updated: " + lastId + " - controller: " + str(lastController))
-						if sender != None and ((not id in self.requestedEntitySpawns.keys()) or (engine.clock.getTime() - self.requestedEntitySpawns[id] > 2.0)): # Only send a request once every two seconds
+						if sender != None and ((not id in self.requestedEntitySpawns.keys()) or (engine.clock.time - self.requestedEntitySpawns[id] > 2.0)): # Only send a request once every two seconds
 							p = net.Packet()
 							p.add(net.Uint8(net.PACKET_REQUESTSPAWNPACKET))
 							p.add(net.Uint8(id))
 							net.context.send(p, sender)
-							self.requestedEntitySpawns[id] = engine.clock.getTime()
+							self.requestedEntitySpawns[id] = engine.clock.time
 							engine.log.info("Sending request for missing entity spawn packet. Entity ID: " + str(id))
 						return rebroadcast
 				elif type == net.PACKET_SPAWN:
@@ -271,7 +271,7 @@ class NetManager(DirectObject):
 						entities.append(id)
 					# Delete any extra entities, assuming they aren't ones that we just spawned on our end.
 					for entity in (x for x in backend.entityGroup.entities.values() if x.active and x.getId() < 256):
-						if entity.getId() not in entities and engine.clock.getTime() - entity.spawnTime > 5.0:
+						if entity.getId() not in entities and engine.clock.time - entity.spawnTime > 5.0:
 							entity.delete(backend.entityGroup, False, False)
 					if len(missingEntities) > 0:
 						# Request spawn packets for any missing entities
@@ -279,7 +279,7 @@ class NetManager(DirectObject):
 						for id in missingEntities:
 							p.add(net.Uint8(net.PACKET_REQUESTSPAWNPACKET))
 							p.add(net.Uint8(id))
-							self.requestedEntitySpawns[id] = engine.clock.getTime()
+							self.requestedEntitySpawns[id] = engine.clock.time
 							engine.log.info("Sending request for missing entity spawn packet. Entity ID: " + str(id))
 						net.context.send(p, sender)
 					rebroadcast = False
@@ -292,9 +292,9 @@ class NetManager(DirectObject):
 	def update(self, backend):
 		# Only send out an update packet if we need to
 		packetUpdate = False
-		if engine.clock.getRealTime() - self.lastPacketUpdate >= net.SERVER_TICK:
+		if engine.clock.time - self.lastPacketUpdate >= net.SERVER_TICK:
 			packetUpdate = True
-			self.lastPacketUpdate = engine.clock.getRealTime() # Reset packet update timer
+			self.lastPacketUpdate = engine.clock.time # Reset packet update timer
 		
 		sendSpawn = False
 		spawnPacket = net.Packet()
@@ -354,8 +354,8 @@ class NetManager(DirectObject):
 					engine.log.warning("Client requested spawn packet for non-existent entity.")
 			del self.clientSpawnPacketRequests[:]
 			sendCheckSum = False
-			if net.netMode == net.MODE_SERVER and engine.clock.getTime() - self.lastCheckSumSent > 5.0:
-				self.lastCheckSumSent = engine.clock.getTime()
+			if net.netMode == net.MODE_SERVER and engine.clock.time - self.lastCheckSumSent > 5.0:
+				self.lastCheckSumSent = engine.clock.time
 				checkSumPacket = net.Packet()
 				checkSumPacket.add(net.Uint8(net.PACKET_ENTITYCHECKSUM))
 				checkSumPacket.add(net.Uint8(len([x for x in entityList if x.active and x.getId() < 256])))

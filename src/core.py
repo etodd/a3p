@@ -48,11 +48,11 @@ class Backend(DirectObject):
 		self.netManager = net2.NetManager()
 		self.entityGroup = entities.EntityGroup(self.netManager)
 		self.game = None
-		self.lastGc = engine.clock.getRealTime()
+		self.lastGc = engine.clock.time
 		self.scoreLimit = 1500
 		self.username = username
 		self.enableRespawn = True
-		self.startTime = engine.clock.getTime()
+		self.startTime = engine.clock.time
 		self.gameOver = False
 		self.matchLimit = 3
 		self.matchNumber = 0
@@ -63,9 +63,9 @@ class Backend(DirectObject):
 
 	def update(self):
 		if self.active:
-			if engine.clock.getRealTime() - self.lastGc > 10:
+			if engine.clock.time - self.lastGc > 10:
 				gc.collect()
-				self.lastGc = engine.clock.getRealTime()
+				self.lastGc = engine.clock.time
 			self.aiWorld.update()
 			self.netManager.update(self)
 			self.entityGroup.update()
@@ -167,14 +167,14 @@ class ServerBackend(Backend):
 	def update(self):
 		Backend.update(self)
 		if self.active:
-			if self.gameOver and engine.clock.getTime() - self.gameOverTime > 10:
+			if self.gameOver and engine.clock.time - self.gameOverTime > 10:
 				self.loadMap(choice(self.maps)) # self.maps is defined by our descendants
 			if self.registerHost:
 				registerDelay = 15.0 if self.registrationConfirmed else 2.0
-				if engine.clock.getRealTime() - self.lastRegister > registerDelay:
+				if engine.clock.time - self.lastRegister > registerDelay:
 					self.registrationConfirmed = False
 					online.registerHost(self.username, self.map.name, self.numClients, len(self.entityGroup.teams))
-					self.lastRegister = engine.clock.getRealTime()
+					self.lastRegister = engine.clock.time
 			if self.endOnReachingScoreLimit:
 				for team in self.entityGroup.teams:
 					if team.score + sum([self.entityGroup.getEntity(x).score for x in team.getAllies()]) >= self.scoreLimit:
@@ -187,7 +187,7 @@ class ServerBackend(Backend):
 		winningTeam.matchScore += 1
 		if winningTeam.matchScore > self.matchLimit / 2:
 			self.gameOver = True
-			self.gameOverTime = engine.clock.getTime()
+			self.gameOverTime = engine.clock.time
 		p = net.Packet()
 		p.add(net.Uint8(net.PACKET_ENDMATCH))
 		p.add(net.Boolean(self.gameOver))
@@ -285,10 +285,10 @@ class PointControlBackend(ServerBackend):
 	
 	def update(self):
 		ServerBackend.update(self)
-		if engine.clock.getTime() - self.lastPodSpawnCheck > 0.5:
+		if engine.clock.time - self.lastPodSpawnCheck > 0.5:
 			numPods = 1 if self.numClients <= 2 else 2
-			self.lastPodSpawnCheck = engine.clock.getTime()
-			if engine.clock.getTime() - self.lastPodSpawn > self.podSpawnDelay\
+			self.lastPodSpawnCheck = engine.clock.time
+			if engine.clock.time - self.lastPodSpawn > self.podSpawnDelay\
 			and len([1 for x in self.entityGroup.entities.values() if isinstance(x, entities.DropPod)]) < numPods\
 			and len([1 for team in self.entityGroup.teams if team.getPlayer() != None and team.getPlayer().active]) > 0:
 				self.spawnPod()
@@ -309,7 +309,7 @@ class PointControlBackend(ServerBackend):
 		pod = entities.DropPod(self.aiWorld.space, controllers.DropPodController())
 		pod.controller.setFinalPosition(pos)
 		self.entityGroup.spawnEntity(pod)
-		self.lastPodSpawn = engine.clock.getTime()
+		self.lastPodSpawn = engine.clock.time
 
 class SurvivalBackend(ServerBackend):
 	def __init__(self, registerHost = True, username = "Unnamed"):
@@ -344,7 +344,7 @@ class SurvivalBackend(ServerBackend):
 	def endMatch(self, winningTeam):
 		if self.matchNumber >= len(self.zombieLoadouts) or winningTeam.isAlly(self.zombieTeam):
 			self.gameOver = True
-			self.gameOverTime = engine.clock.getTime()
+			self.gameOverTime = engine.clock.time
 		ServerBackend.endMatch(self, winningTeam)
 		self.zombiesSpawned = False
 		self.zombieTeam.resetScore()
@@ -359,11 +359,11 @@ class SurvivalBackend(ServerBackend):
 				for i in range(self.zombieCounts[self.matchNumber]):
 					self.zombieTeam.respawn(self.zombieLoadouts[self.matchNumber][0], self.zombieLoadouts[self.matchNumber][1])
 				self.zombiesSpawned = True
-				self.zombieSpawnTime = engine.clock.getTime()
+				self.zombieSpawnTime = engine.clock.time
 			else:
 				if deadPlayers == self.numClients:
 					self.endMatch(self.zombieTeam)
-				elif self.zombiesSpawned and engine.clock.getTime() - self.zombieSpawnTime > self.zombieTeam.controller.spawnDelay + 1.0 and len([x for x in self.entityGroup.entities.values() if isinstance(x, entities.Actor) and x.team.isAlly(self.zombieTeam)]) == 0:
+				elif self.zombiesSpawned and engine.clock.time - self.zombieSpawnTime > self.zombieTeam.controller.spawnDelay + 1.0 and len([x for x in self.entityGroup.entities.values() if isinstance(x, entities.Actor) and x.team.isAlly(self.zombieTeam)]) == 0:
 					highestScore = -1
 					winningTeam = None
 					for team in self.entityGroup.teams:
@@ -617,8 +617,8 @@ class Game(DirectObject):
 			player = self.localTeam.getPlayer()
 			if player == None or not player.active:
 				if self.playerLastActive == -1:
-					self.playerLastActive = engine.clock.getTime()
-				if self.unitSelector.hidden and engine.clock.getTime() - self.playerLastActive > 1.0:
+					self.playerLastActive = engine.clock.time
+				if self.unitSelector.hidden and engine.clock.time - self.playerLastActive > 1.0:
 					self.spectatorController.serverUpdate(self.backend.aiWorld, self.backend.entityGroup, None)
 				if self.matchInProgress and (self.backend.enableRespawn or not self.spawnedOnce):
 					self.spawnedOnce = True
@@ -690,7 +690,7 @@ class Tutorial(Game):
 			self.localTeam.setPrimaryWeapon(components.CHAINGUN)
 			self.localTeam.setSecondaryWeapon(components.SNIPER)
 			self.localTeam.setSpecial(None)
-			self.enemyAiUnits = [(components.CHAINGUN, None)]
+			self.enemyAiUnits = [(components.SHOTGUN, None)]
 			self.backend.scoreLimit = 400
 		elif self.tutorialIndex == 1:
 			self.localTeam.setPrimaryWeapon(components.SHOTGUN)
@@ -698,12 +698,11 @@ class Tutorial(Game):
 			self.localTeam.setSpecial(None)
 			self.localTeam.purchaseUnit(components.PISTOL, None)
 			self.localTeam.purchaseUnit(components.MOLOTOV_THROWER, None)
-			self.enemyAiUnits = [(components.GRENADE_LAUNCHER, None), (components.SNIPER, None), (components.PISTOL, None)]
-			self.backend.scoreLimit = 600
+			self.enemyAiUnits = choice([[(components.GRENADE_LAUNCHER, None), (components.SNIPER, None), (None, None)], [(components.CHAINGUN, None), (components.SHOTGUN, None), (None, None)], [(components.PISTOL, None), (components.SNIPER, None), (None, None)]])
+			self.backend.scoreLimit = 800
 		elif self.tutorialIndex == 2:
-			self.enemyAiUnits = [(components.SHOTGUN, controllers.CLOAK_SPECIAL), (components.SNIPER, controllers.SHIELD_SPECIAL), (components.PISTOL, None)]
-			self.backend.scoreLimit = 1000
-
+			self.enemyAiUnits = choice([[(components.SHOTGUN, controllers.CLOAK_SPECIAL), (components.SNIPER, None), (components.PISTOL, None)], [(components.GRENADE_LAUNCHER, controllers.CLOAK_SPECIAL), (components.CHAINGUN, controllers.SHIELD_SPECIAL), (None, None)], [(components.PISTOL, None), (components.MOLOTOV_THROWER, controllers.SHIELD_SPECIAL), (components.SHOTGUN, None)]])
+			self.backend.scoreLimit = 1200
 		if self.tutorialIndex <= 2:
 			self.messageText.setText(self.messages[self.tutorialIndex])
 			self.messageText.show()
@@ -890,7 +889,7 @@ class MainMenu(DirectObject):
 		self.loginDialog = ui.LoginDialog(self.setUsername)
 		self.loginDialogShown = False
 		
-		self.introSound = audio.FlatSound("menu/intro.ogg")
+		self.introSound = audio.FlatSound("menu/intro.ogg", volume = 0.5)
 		self.introSound.play()
 		
 		self.clientConnectAddress = None
@@ -910,6 +909,8 @@ class MainMenu(DirectObject):
 	def escape(self):
 		if self.hostList.visible:
 			self.hostList.hide()
+		elif self.mapList.visible:
+			self.mapList.hide()
 		else:
 			engine.exit()
 	
@@ -918,7 +919,7 @@ class MainMenu(DirectObject):
 		self.hostList.hide()
 		self.loadingScreen.show()
 		self.clientConnectAddress = host
-		self.goTime = engine.clock.getTime()
+		self.goTime = engine.clock.time
 	
 	def startServer(self, map, gametype):
 		self.clickSound.play()
@@ -926,7 +927,7 @@ class MainMenu(DirectObject):
 		self.loadingScreen.show()
 		self.serverMapName = map
 		self.serverGameType = gametype
-		self.goTime = engine.clock.getTime()
+		self.goTime = engine.clock.time
 	
 	def setUsername(self, username):
 		self.clickSound.play()
@@ -942,8 +943,8 @@ class MainMenu(DirectObject):
 			return
 		net.context.readTick()
 		if self.startTime == -1:
-			self.startTime = engine.clock.getTime()
-		elapsedTime = engine.clock.getTime() - self.startTime
+			self.startTime = engine.clock.time
+		elapsedTime = engine.clock.time - self.startTime
 		if elapsedTime < self.introTime:
 			blend = elapsedTime / self.introTime
 			if self.introText != None:
@@ -960,12 +961,13 @@ class MainMenu(DirectObject):
 			self.skyBox.setColor(Vec4(1, 1, 1, blend))
 			if not self.backgroundSound.isPlaying():
 				self.backgroundSound.play()
-			self.backgroundSound.setVolume(blend)
+			self.backgroundSound.setVolume(blend * 0.5)
 		else:
 			self.cameraDistance = 20
 			self.overlay.setColor(Vec4(1, 1, 1, 1))
 			self.logo.setColor(1, 1, 1, 1)
 			self.skyBox.setColor(Vec4(1, 1, 1, 1))
+			self.backgroundSound.setVolume(0.5)
 		
 		if elapsedTime > self.introTime:
 			if not self.loginDialogShown and self.showLogin:
@@ -1010,7 +1012,7 @@ class MainMenu(DirectObject):
 		backend = None
 		game = None
 		
-		if self.goTime != -1 and engine.clock.getTime() - self.goTime > 0.25:
+		if self.goTime != -1 and engine.clock.time - self.goTime > 0.25:
 			if self.clientConnectAddress != None:
 				self.delete()
 				online.connectTo(self.clientConnectAddress)
@@ -1030,7 +1032,7 @@ class MainMenu(DirectObject):
 					if self.serverGameType == 0: # No survival maps for tutorial mode
 						# Tutorial mode
 						self.delete()
-						backend = PointControlBackend(True, self.username)
+						backend = PointControlBackend(False, self.username)
 						game = Tutorial(backend, 2 if self.skipToEndOfTutorial else 0)
 						game.localStart(self.serverMapName)
 					else:
@@ -1040,7 +1042,7 @@ class MainMenu(DirectObject):
 		return backend, game
 	
 	def click(self):
-		if self.mapList.visible or self.hostList.visible or engine.clock.getTime() - self.startTime < self.introTime + 0.5:
+		if self.mapList.visible or self.hostList.visible or self.loginDialog.visible or engine.clock.time - self.startTime < self.introTime + 0.5:
 			return
 		self.clickSound.play()
 		if self.selectedItem == 0: # Join
@@ -1146,8 +1148,8 @@ class GlobalChatConnection(DirectObject):
 		self.request(self.host + "/post.php", "user=" + _urlEncode(username) + "&msg=" + _urlEncode(message))
 	
 	def update(self):
-		if engine.clock.getTime() - self.lastPoll > 3.0:
-			self.lastPoll = engine.clock.getTime()
+		if engine.clock.time - self.lastPoll > 3.0:
+			self.lastPoll = engine.clock.time
 			self.request(self.host + "/get.php", "i=" + str(self.lastReceivedId), self.chatCallback)
 	
 	def chatCallback(self, data):

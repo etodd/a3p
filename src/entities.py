@@ -28,7 +28,7 @@ class EntityGroup(DirectObject):
 
 	def update(self):
 		"Updates all graphics objects, clears deleted entities, shakes the camera."
-		time = engine.clock.getTime() - self.lastCameraShake
+		time = engine.clock.time - self.lastCameraShake
 		decay = max(1 - (time / self.cameraShakeTime), 0)
 		self.cameraShakeX = self.cameraShakeVelX * decay * math.sin(time * 7)
 		self.cameraShakeY = self.cameraShakeVelY * decay * math.sin(time * 12)
@@ -139,7 +139,7 @@ class EntityGroup(DirectObject):
 			self.cameraShakeVelY = amount
 		else:
 			self.cameraShakeVelY = -amount
-		self.lastCameraShake = engine.clock.getTime()
+		self.lastCameraShake = engine.clock.time
 
 	# The damagingEntity gets credit for any kills resulting from the explosion.
 	# However instead of being invulnerable to the explosion, it receives 50% of the damage a normal entity would receive.
@@ -194,7 +194,7 @@ class Entity(DirectObject):
 		self.controller = controller
 		self.controller.setEntity(self)
 		self.killed = False
-		self.spawnTime = engine.clock.getTime()
+		self.spawnTime = engine.clock.time
 
 	def getId(self):
 		return self.id
@@ -513,50 +513,77 @@ class PhysicsEntity(ObjectEntity):
 	"A PhysicsEntity is a large non-character physics object that is included in AI path calculations."
 	def __init__(self, world, space, data = None, directory = None, file = None):
 		ObjectEntity.__init__(self, None, controllers.PhysicsEntityController())
+		self.geometries = []
+		self.geometry = None
+		self.vradius = 0
 		if data != None:
 			self.loadDataFile(world, space, data, directory, file)
 
 	def loadDataFile(self, world, space, data, directory, file):
 		self.directory = directory
 		self.dataFile = file
+		lines = data.split("\n")
+		i = 0
 		self.body = OdeBody(world)
-		for line in data.split('\n'):
-			tokens = line.split()
-			if tokens[0] == "model":
+		while i < len(lines):
+			tokens = lines[i].split()
+			if tokens[0] == "model" and self.node == None:
 				self.loadModel(directory + "/" + tokens[1])
-			elif tokens[0] == "geometry":
 				self.collisionNode = CollisionNode("cnode")
 				self.collisionNodePath = self.node.attachNewNode(self.collisionNode)
+			elif tokens[0] == "geometry":
+				offsetx = 0
+				offsety = 0
+				offsetz = 0
+				geom = None
 				if tokens[1] == "box":
 					sizex = float(tokens[2])
 					sizey = float(tokens[3])
 					sizez = float(tokens[4])
-					point1 = Point3(-sizex / 2.0, -sizey / 2.0, -sizez / 2.0)
-					point2 = Point3(sizex / 2.0, sizey / 2.0, sizez / 2.0)
-					self.radius = max(sizez, max(sizex, sizey)) / 2.0
-					self.vradius = sizez / 2.0
+					if len(tokens) == 8:
+						offsetx = float(tokens[5])
+						offsety = float(tokens[6])
+						offsetz = float(tokens[7])
+					point1 = Point3(-sizex / 2.0 + offsetx, -sizey / 2.0 + offsety, -sizez / 2.0 + offsetz)
+					point2 = Point3(sizex / 2.0 + offsetx, sizey / 2.0 + offsety, sizez / 2.0 + offsetz)
+					self.radius = max(self.radius, math.fabs(point1.getX()), math.fabs(point1.getY()), math.fabs(point2.getX()), math.fabs(point2.getY()))
+					self.vradius = max(self.vradius, math.fabs(point1.getZ()), math.fabs(point2.getZ()))
 					self.collisionNode.addSolid(CollisionBox(point1, point2))
-					self.geometry = OdeBoxGeom(space, sizex, sizey, sizez)
+					geom = OdeBoxGeom(space, sizex, sizey, sizez)
 				elif tokens[1] == "sphere":
 					radius = float(tokens[2])
-					self.collisionNode.addSolid(CollisionSphere(0, 0, 0, radius * 2.0))
-					self.geometry = OdeSphereGeom(space, radius)
-					self.radius = radius
-					self.vradius = radius
+					if len(tokens) == 6:
+						offsetx = float(tokens[3])
+						offsety = float(tokens[4])
+						offsetz = float(tokens[5])
+					self.collisionNode.addSolid(CollisionSphere(offsetx, offsety, offsetz, radius * 2.0))
+					geom = OdeSphereGeom(space, radius)
+					self.radius = max(self.radius, radius + max(math.fabs(offsetx), math.fabs(offsety)))
+					self.vradius = max(self.radius, radius + math.fabs(offsetz))
 				elif tokens[1] == "cylinder":
 					radius = float(tokens[2])
 					length = float(tokens[3])
-					point1 = Point3(-radius / 2.0, -radius / 2.0, -length  / 2.0)
-					point2 = Point3(radius / 2.0, radius / 2.0, length  / 2.0)
-					self.radius = radius
-					self.vradius = length / 2.0
+					if len(tokens) == 7:
+						offsetx = float(tokens[4])
+						offsety = float(tokens[5])
+						offsetz = float(tokens[6])
+					point1 = Point3(-radius / 2.0 + offsetx, -radius / 2.0 + offsety, -length  / 2.0 + offsetz)
+					point2 = Point3(radius / 2.0 + offsetx, radius / 2.0 + offsety, length  / 2.0 + offsetz)
+					self.radius = max(self.radius, radius + max(math.fabs(offsetx), math.fabs(offsety)))
+					self.vradius = max(self.vradius, length / 2.0 + math.fabs(offsetz))
 					self.collisionNode.addSolid(CollisionBox(point1, point2))
-					self.geometry = OdeCylinderGeom(space, radius, length)
-				self.geometry.setCollideBits(BitMask32(0x00000001))
-				self.geometry.setCategoryBits(BitMask32(0x00000001))
-				self.geometry.setBody(self.body)
-				space.setSurfaceType(self.geometry, 1)
+					geom = OdeCylinderGeom(space, radius, length)
+				geom.setCollideBits(BitMask32(0x00000001))
+				geom.setCategoryBits(BitMask32(0x00000001))
+				geom.setBody(self.body)
+				geom.setOffsetPosition(offsetx, offsety, offsetz)
+				space.setSurfaceType(geom, 1)
+				if self.geometry == None:
+					self.geometry = geom
+				else:
+					self.geometries.append(geom)
 			elif tokens[0] == "mass":
+				# Process the mass
 				m = OdeMass()
 				density = float(tokens[1])
 				if tokens[2] == "box":
@@ -566,12 +593,19 @@ class PhysicsEntity(ObjectEntity):
 				elif tokens[2] == "cylinder":
 					m.setCylinder(density, 3, float(tokens[3]), float(tokens[4])) # 1 = X axis, 2 = Y axis, 3 = Z axis
 				self.body.setMass(m)
+			i += 1
+	
+	def clear(self, entityGroup):
+		ObjectEntity.clear(self, entityGroup)
+		for geom in self.geometries:
+			geom.destroy()
+		del self.geometries[:]
 
 SPECIAL_DELAY = 18
 class TeamEntity(Entity):
 	"""A team is used to purchase new units. Each team has a controller and a color associated with it.
 	The team also tracks which actors are on the team."""
-	costs = {None:0, components.SHOTGUN:300, components.CHAINGUN:150, components.SNIPER:250, components.GRENADE_LAUNCHER:600, components.PISTOL:350, components.MOLOTOV_THROWER:450, controllers.CLOAK_SPECIAL:450, controllers.SHIELD_SPECIAL:300, controllers.AWESOME_SPECIAL:400, controllers.KAMIKAZE_SPECIAL:250, controllers.ROCKET_SPECIAL:600}
+	costs = {None:0, components.SHOTGUN:250, components.CHAINGUN:150, components.SNIPER:400, components.GRENADE_LAUNCHER:500, components.PISTOL:300, components.MOLOTOV_THROWER:550, controllers.CLOAK_SPECIAL:450, controllers.SHIELD_SPECIAL:300, controllers.AWESOME_SPECIAL:400, controllers.KAMIKAZE_SPECIAL:250, controllers.ROCKET_SPECIAL:600}
 	def __init__(self):
 		Entity.__init__(self, controllers.TeamEntityController(), local = False)
 		self.actors = []
@@ -628,9 +662,9 @@ class TeamEntity(Entity):
 	def getUsername(self):
 		return self.username
 	def specialAvailable(self):
-		return engine.clock.getTime() - self.lastSpecialActivated >= SPECIAL_DELAY
+		return engine.clock.time - self.lastSpecialActivated >= SPECIAL_DELAY
 	def enableSpecial(self):
-		self.lastSpecialActivated = engine.clock.getTime()
+		self.lastSpecialActivated = engine.clock.time
 	def setPrimaryWeapon(self, weapon):
 		self.primaryWeapon = weapon
 	def setSecondaryWeapon(self, weapon):
@@ -713,7 +747,7 @@ class Actor(ObjectEntity):
 		self.pinned = True
 		self.pinPosition = pos
 		self.pinRotation = self.getRotation()
-		self.pinTime = engine.clock.getTime()
+		self.pinTime = engine.clock.time
 
 	def damage(self, entity, damage, ranged = True):
 		if self.health > 0 and (not isinstance(entity, Actor) or entity == self or (not entity.team.isAlly(self.team) and self.active)):
@@ -954,7 +988,7 @@ class Spike(GraphicsObject):
 		self.node.reparentTo(engine.renderLit)
 		self.node.setPos(pos)
 		self.node.lookAt(Point3(pos + direction))
-		self.spawnTime = engine.clock.getTime()
+		self.spawnTime = engine.clock.time
 		self.entity = None
 		self.lifetime = 5.0
 		
@@ -976,5 +1010,5 @@ class Spike(GraphicsObject):
 		GraphicsObject.update(self)
 		if not self.active:
 			return
-		if engine.clock.getTime() - self.spawnTime > self.lifetime or (self.entity != None and not self.entity.active):
+		if engine.clock.time - self.spawnTime > self.lifetime or (self.entity != None and not self.entity.active):
 			self.delete(entityGroup)
