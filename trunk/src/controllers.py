@@ -25,7 +25,7 @@ class Controller(DirectObject):
 	def __init__(self):
 		self.criticalPackets = []
 		self.entity = None
-		self.lastPacketUpdate = engine.clock.getTime()
+		self.lastPacketUpdate = engine.clock.time
 		self.criticalUpdate = False
 		self.active = True
 	
@@ -102,7 +102,7 @@ class Controller(DirectObject):
 		The base ObjectController.clientUpdate function is meant to be called at the beginning of any derived clientUpdate functions."""
 		if self.entity != None:
 			if iterator != None:
-				self.lastPacketUpdate = engine.clock.getTime()
+				self.lastPacketUpdate = engine.clock.time
 
 	def delete(self, killed = False):
 		self.ignoreAll()
@@ -197,7 +197,7 @@ class TeamEntityController(Controller):
 		else:
 			p.add(net.Boolean(False))
 		self.oldUsername = self.entity.username
-		a = [x for x in self.respawns if engine.clock.getTime() - x[4] > self.spawnDelay]
+		a = [x for x in self.respawns if engine.clock.time - x[4] > self.spawnDelay]
 		p.add(net.Uint8(len(a)))
 		for purchase in a:
 			isLocalPlayer = purchase[0]
@@ -261,22 +261,22 @@ class TeamEntityController(Controller):
 				self.spawnSound.play(position = pos)
 				self.light.setPos(pos)
 				self.light.add()
-				self.lastSpawn = engine.clock.getTime()
-		if engine.clock.getTime() - self.lastSpawn > 4.0:
+				self.lastSpawn = engine.clock.time
+		if engine.clock.time - self.lastSpawn > 4.0:
 			self.light.remove()
 		else:
-			self.light.setAttenuation((0, 0, 0.001 + math.pow(engine.clock.getTime() - self.lastSpawn, 2) * 0.005))
+			self.light.setAttenuation((0, 0, 0.001 + math.pow(engine.clock.time - self.lastSpawn, 2) * 0.005))
 	
 	def respawn(self, weapon, special, teamIndex):
 		if weapon != None and (len([x for x in self.respawns if x[0] == False and x[3] == teamIndex]) == 0 or self.entity.isZombies):
-			self.respawns.append((False, weapon, special, teamIndex, engine.clock.getTime()))
+			self.respawns.append((False, weapon, special, teamIndex, engine.clock.time))
 	
 	def respawnPlayer(self, primary, secondary, special):
 		if len([x for x in self.respawns if x[0] == True]) == 0:
-			self.respawns.append((True, primary, secondary, special, engine.clock.getTime(), None)) # None means we are not spawning the player on a platform
+			self.respawns.append((True, primary, secondary, special, engine.clock.time, None)) # None means we are not spawning the player on a platform
 	
 	def platformSpawnPlayer(self, primary, secondary, special, pos):
-		self.respawns.append((True, primary, secondary, special, engine.clock.getTime() - self.spawnDelay, pos)) # pos is the position to spawn the player at
+		self.respawns.append((True, primary, secondary, special, engine.clock.time - self.spawnDelay, pos)) # pos is the position to spawn the player at
 
 class ObjectController(Controller):
 	def __init__(self):
@@ -347,7 +347,7 @@ class ObjectController(Controller):
 				self.lastSnapshot = snapshot
 				p.add(snapshot)
 			z = self.entity.getPosition().getZ()
-			if z < -30 or z > 30:
+			if z < -30 or z > 50:
 				self.entity.killer = None
 				self.entity.kill(aiWorld, entityGroup)
 		return p
@@ -364,7 +364,7 @@ class ObjectController(Controller):
 		The base ObjectController.clientUpdate function is meant to be called at the beginning of any derived clientUpdate functions."""
 		Controller.clientUpdate(self, aiWorld, entityGroup, iterator)
 		if self.entity != None:
-			currentTime = engine.clock.getTime() - 0.1
+			currentTime = engine.clock.time - 0.1
 			if len(self.snapshots) == 0:
 				self.snapshots.append(net2.EntitySnapshot())
 				self.snapshots[0].takeSnapshot(self.entity)
@@ -402,8 +402,8 @@ class FragmentController(ObjectController):
 	def __init__(self, velocity):
 		ObjectController.__init__(self)
 		self.velocity = Vec3(velocity)
-		self.spawnTime = engine.clock.getTime()
-		self.lifeTime = 7 + uniform(0, 1)
+		self.spawnTime = engine.clock.time
+		self.lifeTime = 3 + uniform(0, 2)
 		self.justSpawned = True
 	
 	def setEntity(self, entity):
@@ -414,7 +414,7 @@ class FragmentController(ObjectController):
 		# Fragments are always processed on client
 		self.entity.commitChanges()
 	
-		if engine.clock.getTime() > self.spawnTime + self.lifeTime or self.entity.getPosition().getZ() < -30:
+		if engine.clock.time > self.spawnTime + self.lifeTime or self.entity.getPosition().getZ() < -30:
 			self.entity.delete(entityGroup, localDelete = False)
 			return None
 		
@@ -511,7 +511,7 @@ class DropPodController(Controller):
 		"""Builds a packet instructing client(s) to spawn the correct Entity with the correct ID."""
 		p = Controller.buildSpawnPacket(self)
 		p.add(net2.HighResVec3(self.finalPosition))
-		p.add(net.StandardFloat(engine.clock.getTime() - self.entity.spawnTime))
+		p.add(net.StandardFloat(engine.clock.time - self.entity.spawnTime))
 		return p
 	
 	@staticmethod
@@ -520,25 +520,25 @@ class DropPodController(Controller):
 		entity = entities.DropPod(aiWorld.space, DropPodController(), False)
 		entity = Controller.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
 		entity.controller.setFinalPosition(net2.HighResVec3.getFrom(iterator))
-		entity.spawnTime = engine.clock.getTime() - net.StandardFloat.getFrom(iterator)
+		entity.spawnTime = engine.clock.time - net.StandardFloat.getFrom(iterator)
 		return entity
 	
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
 		p = Controller.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
 		paid = False
-		if self.landed and engine.clock.getTime() - self.lastPayout > self.payoutDelay and self.warningTime == -1:
+		if self.landed and engine.clock.time - self.lastPayout > self.payoutDelay and self.warningTime == -1:
 			droid = aiWorld.getNearestDroid(entityGroup, self.entity.getPosition())
 			if droid != None and (droid.getPosition() - self.entity.getPosition()).length() < self.captureDistance:
 				p.add(net.Boolean(True))
 				p.add(net.Uint8(droid.team.getId()))
 				paid = True
 				self.money -= self.payoutAmount
-				self.lastPayout = engine.clock.getTime()
+				self.lastPayout = engine.clock.time
 				self.addCriticalPacket(p, packetUpdate)
 		if not paid:
 			p.add(net.Boolean(False))
 		p.add(net.Uint8(max(self.money, 0)))
-		if self.warningTime != -1 and engine.clock.getTime() - self.warningTime > 3.0:
+		if self.warningTime != -1 and engine.clock.time - self.warningTime > 3.0:
 			self.entity.killer = None
 			self.entity.kill(aiWorld, entityGroup)
 		return p
@@ -562,13 +562,13 @@ class DropPodController(Controller):
 				self.particleGroup = particles.SmokeParticleGroup(self.entity.getPosition())
 				particles.add(self.particleGroup)
 			self.particleGroup.setPosition(self.entity.getPosition())
-			aliveTime = engine.clock.getTime() - self.entity.spawnTime
+			aliveTime = engine.clock.time - self.entity.spawnTime
 			self.entity.setPosition(self.startPosition + (self.finalPosition - self.startPosition) * min(1, (aliveTime / self.inAirTime)))
 			if aliveTime >= self.inAirTime and not self.landed:
 				self.landed = True
 				self.landingSound.play(position = self.entity.getPosition())
 		elif self.money <= 0 and self.warningTime == -1:
-			self.warningTime = engine.clock.getTime()
+			self.warningTime = engine.clock.time
 			self.warningSound.play(entity = self.entity)
 	
 	def delete(self, killed = False):
@@ -605,8 +605,8 @@ class GrenadeController(ObjectController):
 	
 	def trigger(self):
 		"Starts the (short) fuse to explode the grenade."
-		if self.bounceTime == -1 and engine.clock.getTime() > self.entity.spawnTime + 0.5:
-			self.bounceTime = engine.clock.getTime()
+		if self.bounceTime == -1 and engine.clock.time > self.entity.spawnTime + 0.5:
+			self.bounceTime = engine.clock.time
 			self.bounceSound.play(position = self.entity.getPosition())
 	
 	def clientUpdate(self, aiWorld, entityGroup, data = None):
@@ -650,7 +650,7 @@ class GrenadeController(ObjectController):
 		if self.bounceTime == -1:
 			if aiWorld.testCollisions(self.entity.collisionNodePath).getNumEntries() > 0:
 				self.trigger()
-		if (self.bounceTime != -1 and engine.clock.getTime() > self.bounceTime + 0.6) or (engine.clock.getTime() > self.entity.spawnTime + 5) or not self.entity.grenadeAlive:
+		if (self.bounceTime != -1 and engine.clock.time > self.bounceTime + 0.6) or (engine.clock.time > self.entity.spawnTime + 5) or not self.entity.grenadeAlive:
 			self.entity.kill(aiWorld, entityGroup)
 		return p
 	
@@ -711,7 +711,7 @@ class MolotovController(ObjectController):
 	
 		p = ObjectController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
 		
-		if engine.clock.getTime() - self.entity.spawnTime > self.lifeTime:
+		if engine.clock.time - self.entity.spawnTime > self.lifeTime:
 			self.entity.delete(entityGroup)
 
 		return p
@@ -772,7 +772,7 @@ class ActorController(ObjectController):
 					p.add(p2)
 		p.add(net.Uint8(255)) # End of component packets
 		p.add(net.Boolean(self.onFire))
-		if self.entity.health < self.entity.maxHealth and (engine.clock.getTime() - self.lastDamage > 4.0 or (self.entity.team.dock != None and (self.entity.team.dock.getPosition() - self.entity.getPosition()).length() < self.entity.team.dock.radius)):
+		if self.entity.health < self.entity.maxHealth and (engine.clock.time - self.lastDamage > 4.0 or (self.entity.team.dock != None and (self.entity.team.dock.getPosition() - self.entity.getPosition()).length() < self.entity.team.dock.radius)):
 			self.healthAddition += 60 * engine.clock.timeStep
 		self.entity.health += int(self.healthAddition)
 		self.lastHealthAddition = self.healthAddition
@@ -872,7 +872,7 @@ class DroidController(ActorController):
 	
 	def setOnFire(self, entity):
 		self.onFire = True
-		self.fireTimer = engine.clock.getTime()
+		self.fireTimer = engine.clock.time
 		self.fireEntity = entity
 
 	def setEntity(self, entity):
@@ -888,7 +888,7 @@ class DroidController(ActorController):
 	
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
 		if self.entity.pinned:
-			if engine.clock.getTime() - self.entity.pinTime > 5.0:
+			if engine.clock.time - self.entity.pinTime > 5.0:
 				self.entity.pinned = False
 				self.entity.pinPosition = None
 				self.entity.pinRotation = None
@@ -929,12 +929,12 @@ class DroidController(ActorController):
 		self.lastPosition = self.entity.getPosition()
 		
 		if self.onFire:
-			if engine.clock.getTime() - self.fireTimer > 2.0:
+			if engine.clock.time - self.fireTimer > 2.0:
 				self.onFire = False
 				self.fireEntity = None
 				self.fireTimer = -1
-			elif engine.clock.getTime() - self.lastFireDamage > 0.5:
-				self.lastFireDamage = engine.clock.getTime()
+			elif engine.clock.time - self.lastFireDamage > 0.5:
+				self.lastFireDamage = engine.clock.time
 				self.entity.damage(self.fireEntity, 8, ranged = False)
 
 		p = ActorController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
@@ -954,7 +954,7 @@ class DroidController(ActorController):
 	
 	def actorDamaged(self, entity, damage, ranged):
 		ActorController.actorDamaged(self, entity, damage, ranged)
-		self.lastDamage = engine.clock.getTime()
+		self.lastDamage = engine.clock.time
 		if self.entity.pinned:
 			self.lastPosition = self.entity.getPosition()
 	
@@ -984,11 +984,11 @@ class DroidController(ActorController):
 			
 		if self.entity.components[self.activeWeapon].reloadActive:
 			self.entity.crosshairNode.show()
-			self.entity.crosshairNode.setR(engine.clock.getTime() * 30)
+			self.entity.crosshairNode.setR(engine.clock.time * 30)
 		else:
 			self.entity.crosshairNode.hide()
 
-		if engine.clock.getTime() - self.entity.spawnTime < 4.0:
+		if engine.clock.time - self.entity.spawnTime < 4.0:
 			self.entity.setShielded(True)
 			self.entity.initialSpawnShieldEnabled = True
 		elif self.entity.initialSpawnShieldEnabled:
@@ -1104,7 +1104,7 @@ class PlayerController(DroidController):
 	def toggleZoom(self):
 		if self.zoomTime == -1 and not self.isPlatformMode:
 			if self.zoomed:
-				self.zoomTime = engine.clock.getTime()
+				self.zoomTime = engine.clock.time
 				self.currentCameraOffset = self.cameraOffset
 				self.currentFov = self.fov
 				self.desiredFov = self.defaultFov
@@ -1113,7 +1113,7 @@ class PlayerController(DroidController):
 				self.currentCrosshair = self.entity.components[self.activeWeapon].defaultCrosshair
 				self.zoomed = not self.zoomed
 			elif not self.entity.components[self.activeWeapon].reloadActive:
-				self.zoomTime = engine.clock.getTime()
+				self.zoomTime = engine.clock.time
 				self.currentCameraOffset = self.defaultCameraOffset
 				self.currentFov = self.defaultFov
 				self.desiredFov = self.entity.components[self.activeWeapon].zoomedFov
@@ -1130,7 +1130,7 @@ class PlayerController(DroidController):
 			actors = [x for x in self.entity.team.actors if x.teamIndex == id]
 			if len(actors) > 0:
 				actor = actors[0]
-				if engine.clock.getTime() - self.lastCommandTimes[id] < 0.4:
+				if engine.clock.time - self.lastCommandTimes[id] < 0.4:
 					# Player double-tapped the key. Special attack.
 					self.commands.append((actor.getId(), -1)) # -1 means special attack
 				elif self.targetedEnemy != None and self.targetedEnemy.active:
@@ -1138,7 +1138,7 @@ class PlayerController(DroidController):
 				else:
 					self.commands.append((actor.getId(), self.entity.getId())) # No target. Return to the player.
 				self.commandSound.play()
-				self.lastCommandTimes[id] = engine.clock.getTime()
+				self.lastCommandTimes[id] = engine.clock.time
 
 	def setKey(self, key, value):
 		self.keyMap[key] = value and engine.inputEnabled
@@ -1159,8 +1159,8 @@ class PlayerController(DroidController):
 			self.reload()
 			self.keyMap["reload"] = False
 		if self.keyMap["jump"]:
-			if engine.clock.getTime() - self.lastJump > 0.25 and aiWorld.testCollisions(self.entity.collisionNodePath).getNumEntries() > 0:
-				self.lastJump = engine.clock.getTime()
+			if engine.clock.time - self.lastJump > 0.25 and aiWorld.testCollisions(self.entity.collisionNodePath).getNumEntries() > 0:
+				self.lastJump = engine.clock.time
 				self.entity.setLinearVelocity(self.entity.getLinearVelocity() + Vec3(0, 0, 16))
 		if self.keyMap["switch-weapon"]:
 			self.keyMap["switch-weapon"] = False
@@ -1181,7 +1181,7 @@ class PlayerController(DroidController):
 			self.currentCrosshair = self.entity.components[self.activeWeapon].defaultCrosshair
 		
 		if self.zoomTime != -1:
-			blend = min(1.0, (engine.clock.getTime() - self.zoomTime) / self.totalZoomTime)
+			blend = min(1.0, (engine.clock.time - self.zoomTime) / self.totalZoomTime)
 			self.fov = self.currentFov + ((self.desiredFov - self.currentFov) * blend)
 			self.cameraOffset = self.currentCameraOffset + ((self.desiredCameraOffset - self.currentCameraOffset) * blend)
 			if base.camLens != None: # If we're a daemon.
@@ -1345,19 +1345,15 @@ class AIController(DroidController):
 		self.moving = False
 		self.path = ai.Path()
 		self.lastAiNode = None
-		self.aiNode = None
 		self.lastTargetAiNode = None
-		self.targetAiNode = None
-		self.lastPathFind = engine.clock.getTime() + random() + 1
-		self.lastEnemySelection = engine.clock.getTime() + random() + 1
-		self.lastDirectionUpdate = engine.clock.getTime() + random() + 1
-		self.lastTargetCheck = 0
-		self.pathTarget = Vec3()
+		self.lastPathFind = engine.clock.time + random() + 1.0
+		self.lastMovementUpdate = engine.clock.time + random() + 1.0
 		self.direction = Vec3()
 		self.lastShot = 0
+		self.lastTargetCheck = 0
 		self.enemyLastVisible = False
-		self.pathFindStep = 0
-		self.needClean = False
+		self.lastDodgeDirectionChange = 0
+		self.reverseDodgeDirection = False
 	
 	def buildSpawnPacket(self):
 		p = DroidController.buildSpawnPacket(self)
@@ -1382,10 +1378,15 @@ class AIController(DroidController):
 
 	def setTarget(self, target):
 		self.targetedEnemy = target
+	
+	def pathCallback(self, path):
+		self.path = path
 
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
-		if engine.clock.getTime() - self.lastEnemySelection > 0.5:
-			self.lastEnemySelection = engine.clock.getTime()
+		# PATH FIND UPDATE
+		if engine.clock.time - self.lastPathFind > 1.0:
+			self.lastPathFind = engine.clock.time
+			
 			player = self.entity.team.getPlayer()
 			if player == None and (self.targetedEnemy == None or not self.targetedEnemy.active):
 				self.targetedEnemy = aiWorld.getNearestDropPod(entityGroup, self.entity.getPosition())
@@ -1395,36 +1396,57 @@ class AIController(DroidController):
 				self.nearestEnemy = self.targetedEnemy
 			elif self.nearestEnemy == None or not self.nearestEnemy.active or (self.nearestEnemy.getPosition() - self.entity.getPosition()).length() > 15:
 				self.nearestEnemy = aiWorld.getNearestEnemy(entityGroup, self.entity.getPosition(), self.entity.team)
-			self.pathFindUpdate(aiWorld, entityGroup)
-
-		weapon = self.entity.components[self.activeWeapon]
-		if weapon.burstTimer == -1 and engine.clock.getTime() - weapon.burstDelayTimer >= weapon.burstDelay:
-			if self.nearestEnemy != None and self.nearestEnemy.active:
-				self.targetPos = Vec3(self.nearestEnemy.getPosition())
-				vector = self.targetPos - self.entity.getPosition()
-				if vector.length() < weapon.range:
-					vector.normalize()
-					if engine.clock.getTime() - self.lastTargetCheck > 0.5:
-						self.lastTargetCheck = engine.clock.getTime()
-						self.enemyLastVisible = entityGroup.getEntityFromEntry(aiWorld.getFirstCollision(self.entity.getPosition() + (vector * (self.entity.radius + 0.2)), vector)) == self.nearestEnemy
-					if self.enemyLastVisible:
-						weapon.burstTimer = engine.clock.getTime()
-						weapon.burstDelayTimer = -1
-						weapon.burstTime = weapon.burstTimeBase * ((random() * 1.5) + 1)
-						weapon.shotDelay = weapon.shotDelayBase * ((random() * 1.5) + 1)
-
-		self.movementUpdate()
+			
+			aiNode = aiWorld.navMesh.getNode(self.entity.getPosition(), self.lastAiNode)
+			targetAiNode = None
+			target = Vec3()
+			if self.targetedEnemy != None and self.targetedEnemy.active:
+				target = self.targetedEnemy.getPosition()
+			elif self.entity.team.getPlayer() != None and self.entity.team.getPlayer().active:
+				target = self.entity.team.getPlayer().getPosition()
+			targetAiNode = aiWorld.navMesh.getNode(target, self.lastTargetAiNode)
+			if (target - self.entity.getPosition()).length() > 10:
+				if (targetAiNode != None and aiNode != None) and (targetAiNode != self.lastTargetAiNode or (aiNode != self.lastAiNode and (aiNode not in self.path.nodes))):
+					ai.requestPath(self.pathCallback, aiNode, targetAiNode, self.entity.getPosition(), target, self.entity.radius + 0.5)
+			else:
+				self.path.clear()
+				self.path.end = target + Vec3(uniform(-12, 12), uniform(-12, 12), 0)
+			self.lastAiNode = aiNode
+			self.lastTargetAiNode = targetAiNode
 		
-		self.weaponUpdate()
-	
-		p = DroidController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
+		# PATH FIND TO NEXT NODE
+		if engine.clock.time - self.lastMovementUpdate > 0.2:
+			self.lastMovementUpdate = engine.clock.time
+			self.moving = False
+			self.direction = Vec3()
+			if self.path != None and self.path.hasNext():
+				self.moving = True
+				self.direction = self.path.current() - self.entity.getPosition()
+				if self.direction.length() < self.entity.radius + 2:
+					self.path.next()
+				self.direction.normalize()
+			elif self.path != None and self.path.end != None and (self.path.end - self.entity.getPosition()).length() > 4:
+				self.direction = self.path.end - self.entity.getPosition()
+				self.direction.normalize()
+				self.moving = True
 
-		return p
-	
-	def clientUpdate(self, aiWorld, entityGroup, iterator = None):
-		DroidController.clientUpdate(self, aiWorld, entityGroup, iterator)
-	
-	def movementUpdate(self):
+			# Simple obstacle avoidance
+			obj = entityGroup.getNearestPhysicsEntity(self.entity.getPosition())
+			if obj != None:
+				diff = obj.getPosition() - self.entity.getPosition()
+				if diff.length() < obj.radius + self.entity.radius + 1.5:
+					diff.setZ(0)
+					diff.normalize()
+					if self.direction.dot(diff) > 0.7:
+						up = Vec3(0, 0, 1)
+						self.direction = diff.cross(up)
+						if engine.clock.time - self.lastDodgeDirectionChange > 1.0:
+							self.lastDodgeDirectionChange = engine.clock.time
+							self.reverseDodgeDirection = random() > 0.5
+						if self.reverseDodgeDirection:
+							self.direction *= -1
+		
+		# PHYSICS/MOVEMENT UPDATE
 		angularVel = self.entity.getAngularVelocity()
 		if self.moving:
 			self.entity.addTorque(Vec3(engine.impulseToForce(-self.torque * self.direction.getY()), engine.impulseToForce(self.torque * self.direction.getX()), 0))
@@ -1433,15 +1455,29 @@ class AIController(DroidController):
 				self.entity.setAngularVelocity(angularVel * self.maxSpeed)
 		else:
 			self.entity.addTorque(Vec3(engine.impulseToForce(-angularVel.getX() * 6), engine.impulseToForce(-angularVel.getY() * 6), engine.impulseToForce(-angularVel.getZ() * 6)))
-	
-	def weaponUpdate(self):
-		weapon = self.entity.components[self.activeWeapon]			
-		if weapon.burstTimer != -1 and engine.clock.getTime() - weapon.burstTimer <= weapon.burstTime and self.nearestEnemy != None and self.nearestEnemy.active:
-			if engine.clock.getTime() - self.lastShot > weapon.shotDelay:
+			
+		# WEAPON UPDATE
+		weapon = self.entity.components[self.activeWeapon]
+		if weapon.burstTimer == -1 and engine.clock.time - weapon.burstDelayTimer >= weapon.burstDelay:
+			if self.nearestEnemy != None and self.nearestEnemy.active:
+				vector = self.nearestEnemy.getPosition() - self.entity.getPosition()
+				if vector.length() < weapon.range:
+					vector.normalize()
+					if engine.clock.time - self.lastTargetCheck > 1.0:
+						self.lastTargetCheck = engine.clock.time
+						self.enemyLastVisible = entityGroup.getEntityFromEntry(aiWorld.getFirstCollision(self.entity.getPosition() + (vector * (self.entity.radius + 0.2)), vector)) == self.nearestEnemy
+					if self.enemyLastVisible:
+						weapon.burstTimer = engine.clock.time
+						weapon.burstDelayTimer = -1
+						weapon.burstTime = weapon.burstTimeBase * ((random() * 1.5) + 1)
+						weapon.shotDelay = weapon.shotDelayBase * ((random() * 1.5) + 1)
+
+		if weapon.burstTimer != -1 and engine.clock.time - weapon.burstTimer <= weapon.burstTime and self.nearestEnemy != None and self.nearestEnemy.active:
+			if engine.clock.time - self.lastShot > weapon.shotDelay:
 				if weapon.fire():
-					weapon.burstDelayTimer = engine.clock.getTime()
+					weapon.burstDelayTimer = engine.clock.time
 					weapon.burstDelay = weapon.burstDelayBase * ((random() * 1.5) + 1)
-					self.lastShot = engine.clock.getTime()
+					self.lastShot = engine.clock.time
 		else:
 			weapon.burstTimer = -1
 
@@ -1454,57 +1490,13 @@ class AIController(DroidController):
 			cross = vector.cross(up)
 			self.targetPos += up * coefficient
 			self.targetPos += cross * coefficient
-
-	def pathFindUpdate(self, aiWorld, entityGroup):
-		aiNode = aiWorld.navMesh.getNode(self.entity.getPosition(), self.lastAiNode)
-		targetAiNode = None
-		target = Vec3()
-		if self.targetedEnemy != None and self.targetedEnemy.active:
-			target = self.targetedEnemy.getPosition()
-		elif self.entity.team.getPlayer() != None and self.entity.team.getPlayer().active:
-			target = self.entity.team.getPlayer().getPosition()
-		if (target - self.entity.getPosition()).length() > 10:
-			targetAiNode = aiWorld.navMesh.getNode(target, self.lastTargetAiNode)
-			if (targetAiNode != None and aiNode != None) and (targetAiNode != self.lastTargetAiNode or aiNode != self.lastAiNode):
-				self.path = aiWorld.navMesh.findPathFromNodes(aiNode, targetAiNode, self.entity.getPosition(), target, self.entity.radius + 0.5)
-				if self.path != None:
-					self.path.clean()
-		elif self.nearestEnemy != None and self.nearestEnemy.active and (self.nearestEnemy.getPosition() - self.entity.getPosition()).length() < 10:
-			# Do some tricksy dodging and stuff
-			target += Vec3(uniform(-10, 10), uniform(-10, 10), 0)
-			targetAiNode = aiWorld.navMesh.getNode(target, self.lastTargetAiNode)
-			if (targetAiNode != None and aiNode != None) and (targetAiNode != self.lastTargetAiNode or aiNode != self.lastAiNode):
-				self.path = aiWorld.navMesh.findPathFromNodes(aiNode, targetAiNode, self.entity.getPosition(), target, self.entity.radius + 0.5)
-				if self.path != None:
-					self.path.clean()
 	
-		self.moving = False
-		self.direction = Vec3()
-		if self.path != None and self.path.hasNext():
-			self.moving = True
-			self.direction = self.path.current() - self.entity.getPosition()
-			if self.direction.length() < self.entity.radius + 2:
-				self.path.next()
-			self.direction.normalize()
-		elif self.path != None and self.path.end != None and (self.path.end - self.entity.getPosition()).length() > 10:
-			self.direction = self.path.end - self.entity.getPosition()
-			self.direction.normalize()
-			self.moving = True
-		self.lastAiNode = aiNode
-		self.lastTargetAiNode = targetAiNode
+		p = DroidController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
 
-		# Simple obstacle avoidance
-		obj = entityGroup.getNearestPhysicsEntity(self.entity.getPosition())
-		if obj != None:
-			diff = obj.getPosition() - self.entity.getPosition()
-			if diff.length() < obj.radius + self.entity.radius + 1.5:
-				diff.setZ(0)
-				diff.normalize()
-				if self.direction.dot(diff) > 0.7:
-					up = Vec3(0, 0, 1)
-					self.direction = diff.cross(up)
-					if random() > 0.5:
-						self.direction *= -1
+		return p
+	
+	def clientUpdate(self, aiWorld, entityGroup, iterator = None):
+		DroidController.clientUpdate(self, aiWorld, entityGroup, iterator)
 
 class Special(DirectObject):
 	def __init__(self, actor):
@@ -1527,11 +1519,11 @@ class Special(DirectObject):
 	def enable(self):
 		if self.actor.team.specialAvailable():
 			self.actor.team.enableSpecial()
-			self.timer = engine.clock.getTime()
+			self.timer = engine.clock.time
 			self.newEnabled = True
 	
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
-		if self.timer > 0 and engine.clock.getTime() - self.timer >= self.lifeTime:
+		if self.timer > 0 and engine.clock.time - self.timer >= self.lifeTime:
 			self.newEnabled = False
 		p = net.Packet()
 		if packetUpdate:
@@ -1676,8 +1668,8 @@ class AwesomeSpecial(Special):
 		multiplier = 1.0
 		if self.enabled:
 			multiplier = 6.0
-			if engine.clock.getTime() - self.lastParticleSpawn > 0.05:
-				self.lastParticleSpawn = engine.clock.getTime()
+			if engine.clock.time - self.lastParticleSpawn > 0.05:
+				self.lastParticleSpawn = engine.clock.time
 				particles.add(particles.SparkParticleGroup(self.actor.getPosition()))
 			self.actor.health = self.actor.maxHealth
 		weapon = self.actor.components[self.actor.controller.activeWeapon]
@@ -1712,7 +1704,7 @@ class RocketSpecial(Special):
 				self.rocketSound.play(position = self.start)
 				self.start = self.actor.getPosition()
 			if self.target != None:
-				scale = float(engine.clock.getTime() - self.timer) / self.lifeTime
+				scale = float(engine.clock.time - self.timer) / self.lifeTime
 				offset = self.target - self.start
 				offset *= scale
 				height = (0.25 - ((scale - 0.5) * (scale - 0.5))) * 75
@@ -1889,7 +1881,7 @@ class EditController(Controller):
 		if entry == None:
 			return
 		self.mouseDown = True
-		self.clickTime = engine.clock.getTime()
+		self.clickTime = engine.clock.time
 		target = entry.getSurfacePoint(render)
 		if self.selectedTool == 1:
 			# Make a physics entity
@@ -1959,7 +1951,7 @@ class EditController(Controller):
 		p = Controller.serverUpdate(self, aiWorld, entityGroup, data)
 		"Updates the camera position, cursor position, and picking ray."
 		self.pickRay.setFromLens(base.camNode, self.ui.cursorX / self.aspectRatio, self.ui.cursorY)
-		if self.mouseDown and len(self.spawnedObjects) > 0 and engine.clock.getTime() - self.clickTime > 0.25:
+		if self.mouseDown and len(self.spawnedObjects) > 0 and engine.clock.time - self.clickTime > 0.25:
 			entry = aiWorld.getRayFirstCollision(self.pickRayNP)
 			if entry == None:
 				return

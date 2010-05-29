@@ -90,17 +90,17 @@ class Weapon(Component):
 		self.range = 40
 
 	def fire(self):
-		if self.isReady() and self.selected and (self.isAutomatic or engine.clock.getLastFrameTime() > self.lastTrigger):
-			self.lastFire = engine.clock.getTime()
+		if self.isReady() and self.selected and (self.isAutomatic or engine.clock.lastFrameTime > self.lastTrigger):
+			self.lastFire = engine.clock.time
 			self.firing = True
 			result = True
 		else:
 			result = False
-		self.lastTrigger = engine.clock.getTime()
+		self.lastTrigger = engine.clock.time
 		return result
 	
 	def isReady(self):
-		return engine.clock.getTime() - self.lastFire > self.fireTime
+		return engine.clock.time - self.lastFire > self.fireTime
 
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
 		return Component.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
@@ -163,7 +163,7 @@ class Gun(Weapon):
 	
 	def show(self):
 		Weapon.show(self)
-		self.showTime = engine.clock.getTime()
+		self.showTime = engine.clock.time
 		self.showSound.play(entity = self.actor)
 	
 	def hide(self):
@@ -177,7 +177,7 @@ class Gun(Weapon):
 	
 	def reload(self):
 		if not self.reloadActive and self.selected and self.ammo < self.clipSize:
-			self.lastReload = engine.clock.getTime()
+			self.lastReload = engine.clock.time
 			self.newReloadActive = True
 			self.reloadActive = True
 			self.reloadStarted = True
@@ -216,7 +216,7 @@ class Gun(Weapon):
 		self.reloadActive = self.newReloadActive
 		self.activeSound = 0 # No sound
 		if self.reloadActive:
-			if engine.clock.getTime() - self.lastReload < self.reloadTime:
+			if engine.clock.time - self.lastReload < self.reloadTime:
 				self.activeSound = 1 # Reload beep sound
 			else:
 				self.ammo = self.clipSize
@@ -242,7 +242,7 @@ class Gun(Weapon):
 			offset = 0
 			angleOffset = 0
 			if self.showTime != -1:
-				blend = min(1.0, (engine.clock.getTime() - self.showTime) / self.totalShowTime)
+				blend = min(1.0, (engine.clock.time - self.showTime) / self.totalShowTime)
 				if self.selected and blend < 1.0:
 					offset = 1.0 - blend
 					angleOffset = 90 - (blend * 90)
@@ -281,7 +281,6 @@ class ChainGun(Gun):
 		self.ammo = self.clipSize
 		self.light = engine.Light(color = Vec4(1.0, 0.7, 0.4, 1), attenuation = Vec3(0, 0, 0.003))
 		self.tracer = particles.BulletTracerParticleGroup()
-		self.force = 150
 		self.chainGunSound = audio.SoundPlayer("chaingun")
 		self.fireTime = 0.05
 		self.isAutomatic = True
@@ -299,9 +298,7 @@ class ChainGun(Gun):
 			origin = self.actor.getPosition() + (pos * (self.actor.radius + 0.1))
 			direction = self.actor.controller.targetPos - origin
 			direction.normalize()
-			
-			#self.actor.body.addForce(engine.impulseToForce(direction.getX() * -self.force, direction.getY() * -self.force, direction.getZ() * -self.force))
-		
+
 			if self.zoomed:
 				angleX = uniform(-0.5, 0.5)
 				angleY = uniform(-0.5, 0.5)
@@ -344,7 +341,7 @@ class ChainGun(Gun):
 
 		if iterator != None:
 			if net.Boolean.getFrom(iterator): # We're firing
-				self.lastFire = engine.clock.getTime()
+				self.lastFire = engine.clock.time
 				
 				if self.active:
 					self.chainGunSound.play(entity = self.actor)
@@ -372,11 +369,11 @@ class ChainGun(Gun):
 					else:
 						particles.add(particles.SparkParticleGroup(hitPos))
 						self.ricochetSound.play(position = hitPos)
-		if engine.clock.getTime() - self.lastFire > 0.1:
+		if engine.clock.time - self.lastFire > 0.1:
 			self.light.remove()
 		elif self.active:
 			self.light.setPos(self.getPosition())
-			self.light.setAttenuation((0, 0, 0.005 + math.pow((engine.clock.getTime() - self.lastFire), 2) * 8))
+			self.light.setAttenuation((0, 0, 0.005 + math.pow((engine.clock.time - self.lastFire), 2) * 8))
 	
 	def delete(self):
 		self.chainGunSound.delete()
@@ -392,7 +389,6 @@ class Shotgun(Gun):
 		self.ammo = self.clipSize
 		self.light = engine.Light(color = Vec4(1.0, 0.7, 0.4, 1), attenuation = Vec3(0, 0, 0.003))
 		self.tracer = particles.BulletTracerParticleGroup()
-		self.force = 900
 		self.shotGunSound = audio.SoundPlayer("shotgun")
 		self.fireTime = 1.0
 		self.range = 15
@@ -412,9 +408,7 @@ class Shotgun(Gun):
 			origin = self.actor.getPosition() + (pos * (self.actor.radius + 0.1))
 			direction = self.actor.controller.targetPos - origin
 			direction.normalize()
-			
-			#self.actor.body.addForce(engine.impulseToForce(direction.getX() * -self.force, direction.getY() * -self.force, direction.getZ() * -self.force))
-			
+
 			p.add(net2.StandardVec3(direction))
 			
 			entity = None
@@ -447,7 +441,7 @@ class Shotgun(Gun):
 
 		if iterator != None:
 			if net.Boolean.getFrom(iterator): # We're firing
-				self.lastFire = engine.clock.getTime()
+				self.lastFire = engine.clock.time
 				
 				if self.active:
 					self.shotGunSound.play(entity = self.actor)
@@ -475,11 +469,11 @@ class Shotgun(Gun):
 								particles.add(particles.HitRegisterParticleGroup(hitPos - direction, entity.team.color, (damage * 3) / self.damage))
 					else:
 						self.ricochetSound.play(position = hitPos)
-		if engine.clock.getTime() - self.lastFire > 0.1:
+		if engine.clock.time - self.lastFire > 0.1:
 			self.light.remove()
 		elif self.active:
 			self.light.setPos(self.getPosition())
-			self.light.setAttenuation((0, 0, 0.005 + math.pow((engine.clock.getTime() - self.lastFire), 2) * 8))
+			self.light.setAttenuation((0, 0, 0.005 + math.pow((engine.clock.time - self.lastFire), 2) * 8))
 	
 	def delete(self):
 		self.shotGunSound.delete()
@@ -499,13 +493,12 @@ class SniperRifle(Gun):
 		self.ammo = self.clipSize
 		self.light = engine.Light(color = Vec4(1.0, 0.7, 0.4, 1), attenuation = Vec3(0, 0, 0.003))
 		self.tracer = particles.BulletTracerParticleGroup()
-		self.force = 800
 		self.sniperSound = audio.SoundPlayer("sniper-rifle")
 		self.zoomed = False
 		self.fireTime = 0.8
 		self.reloadTime = 3.0
 		self.range = 300
-		self.accuracy = 0.3
+		self.accuracy = 0.27
 	
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
 		p = Gun.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
@@ -520,9 +513,7 @@ class SniperRifle(Gun):
 			origin = self.actor.getPosition() + (pos * (self.actor.radius + 0.1))
 			direction = self.actor.controller.targetPos - origin
 			direction.normalize()
-			
-			#self.actor.body.addForce(engine.impulseToForce(direction.getX() * -self.force, direction.getY() * -self.force, direction.getZ() * -self.force))
-			
+
 			p.add(net2.StandardVec3(direction))
 			
 			entity, hitPos, normal, queue = self.bulletTest(aiWorld, entityGroup, origin, direction)
@@ -577,11 +568,11 @@ class SniperRifle(Gun):
 					else:
 						self.ricochetSound.play(position = hitPos)
 						particles.add(particles.SparkParticleGroup(hitPos))
-		if engine.clock.getTime() - self.lastFire > 0.1:
+		if engine.clock.time - self.lastFire > 0.1:
 			self.light.remove()
 		elif self.active:
 			self.light.setPos(self.getPosition())
-			self.light.setAttenuation((0, 0, 0.005 + math.pow((engine.clock.getTime() - self.lastFire), 2) * 8))
+			self.light.setAttenuation((0, 0, 0.005 + math.pow((engine.clock.time - self.lastFire), 2) * 8))
 	
 	def hide(self):
 		self.zoomed = False
@@ -666,7 +657,7 @@ class MeleeClaw(Weapon):
 		if iterator != None:
 			state = net.Uint8.getFrom(iterator)
 			if state == 1: # We're impaling
-				self.impaleStart = engine.clock.getTime()
+				self.impaleStart = engine.clock.time
 				# Show the claw and animate it.
 				self.show()
 				self.node.play("Impale")
@@ -685,13 +676,13 @@ class MeleeClaw(Weapon):
 		if self.selected and self.active:
 			self.setPosition(self.actor.getPosition())
 			self.node.lookAt(Point3(self.actor.controller.targetPos))
-			if self.impaleStart != -1 and engine.clock.getTime() - self.impaleStart > self.node.getDuration("Impale") and engine.clock.getTime() - self.impaleStart < 0.75:
+			if self.impaleStart != -1 and engine.clock.time - self.impaleStart > self.node.getDuration("Impale") and engine.clock.time - self.impaleStart < 0.75:
 				self.node.pose("Impale", self.node.getNumFrames("Impale") - 1)
-			elif self.impaleStart != -1 and engine.clock.getTime() - self.impaleStart > 0.75 and engine.clock.getTime() - self.impaleStart < 0.75 + self.node.getDuration("Retract"):
+			elif self.impaleStart != -1 and engine.clock.time - self.impaleStart > 0.75 and engine.clock.time - self.impaleStart < 0.75 + self.node.getDuration("Retract"):
 				if self.node.getCurrentAnim() != "Retract":
 					self.node.play("Retract")
 					self.clawRetractSound.play(entity = self.actor)
-			elif engine.clock.getTime() - self.impaleStart > 0.75 + self.node.getDuration("Retract"):
+			elif engine.clock.time - self.impaleStart > 0.75 + self.node.getDuration("Retract"):
 				self.impaleStart = -1
 				self.hide()
 	
@@ -733,7 +724,6 @@ class GrenadeLauncher(Weapon):
 			direction.normalize()
 			
 			origin = self.actor.getPosition() + (direction * (self.actor.radius + 0.1))
-			#self.actor.body.addForce(engine.impulseToForce(direction.getX() * -self.force, direction.getY() * -self.force, direction.getZ() * -self.force))
 			grenade = entities.Grenade(aiWorld.world, aiWorld.space)
 			grenade.setTeam(self.actor.team)
 			grenade.setActor(self.actor)
@@ -763,7 +753,6 @@ MOLOTOV_THROWER = 247
 class MolotovThrower(Weapon):
 	def __init__(self, actor, id):
 		Weapon.__init__(self, actor, id)
-		self.force = 400
 		self.grenadeLaunchSound = audio.SoundPlayer("grenade-launch")
 		self.fireTime = 3.0
 		self.grenadeId = -1
@@ -779,7 +768,6 @@ class MolotovThrower(Weapon):
 			direction.normalize()
 			
 			origin = self.actor.getPosition() + (direction * (self.actor.radius + 0.1))
-			#self.actor.body.addForce(engine.impulseToForce(direction.getX() * -self.force, direction.getY() * -self.force, direction.getZ() * -self.force))
 			grenade = entities.Molotov(aiWorld.world, aiWorld.space)
 			grenade.setTeam(self.actor.team)
 			grenade.setActor(self.actor)
@@ -813,7 +801,6 @@ class Pistol(Gun):
 		self.ammo = self.clipSize
 		self.light = engine.Light(color = Vec4(1.0, 0.7, 0.4, 1), attenuation = Vec3(0, 0, 0.003))
 		self.tracer = particles.BulletTracerParticleGroup()
-		self.force = 700
 		self.pistolSound = audio.SoundPlayer("pistol")
 		self.pinSound = audio.SoundPlayer("claw")
 		self.fireTime = 0.05
@@ -844,8 +831,6 @@ class Pistol(Gun):
 			mat = Mat3()
 			mat.setRotateMatNormaxis(angleY, render.getRelativeVector(self.node, Vec3(1, 0, 0)))
 			direction = mat.xformVec(direction)
-			
-			#self.actor.body.addForce(engine.impulseToForce(direction.getX() * -self.force, direction.getY() * -self.force, direction.getZ() * -self.force))
 			
 			p.add(net2.StandardVec3(direction))
 			
@@ -890,7 +875,7 @@ class Pistol(Gun):
 
 		if iterator != None:
 			if net.Boolean.getFrom(iterator): # We're firing
-				self.lastFire = engine.clock.getTime()
+				self.lastFire = engine.clock.time
 				
 				if self.active:
 					self.pistolSound.play(entity = self.actor)
@@ -931,11 +916,11 @@ class Pistol(Gun):
 						particles.add(particles.SparkParticleGroup(hitPos))
 						entityGroup.addGraphicsObject(entities.Spike(hitPos, direction))
 						self.ricochetSound.play(position = hitPos)
-		if engine.clock.getTime() - self.lastFire > 0.1:
+		if engine.clock.time - self.lastFire > 0.1:
 			self.light.remove()
 		elif self.active:
 			self.light.setPos(self.getPosition())
-			self.light.setAttenuation((0, 0, 0.005 + math.pow((engine.clock.getTime() - self.lastFire), 2) * 8))
+			self.light.setAttenuation((0, 0, 0.005 + math.pow((engine.clock.time - self.lastFire), 2) * 8))
 	
 	def delete(self):
 		self.pistolSound.delete()

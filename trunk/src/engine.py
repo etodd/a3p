@@ -180,10 +180,11 @@ def init(showFrameRate = False, daemon = False):
 	renderObjects = renderLit.attachNewNode("renderObjects")
 	renderEnvironment = renderLit.attachNewNode("renderEnvironment")
 	controllers.init()
+	ai.init()
 	audio.init(dropOffFactor = 1.5, distanceFactor = 6, dopplerFactor = 0.0)
 	numMaxDynamicLights = 0
 	if enableShaders and not daemon:
-		numMaxDynamicLights = 4
+		numMaxDynamicLights = 2
 	for i in range(numMaxDynamicLights):
 		light = PointLight("Light" + str(i))
 		light.setColor(Vec4(0, 0, 0, 1))
@@ -272,6 +273,7 @@ def exceptHook(type, value, trace):
 	sys.exc_info = lambda: (type, value, trace) # logging uses sys.exc_info to get exception data.
 	exceptionData = traceback.format_exc()
 	log.info(exceptionData)
+	print exceptionData
 	
 def clearLights():
 	global lights
@@ -298,30 +300,19 @@ class Clock:
 			self.timerFunction = time.clock
 		else:
 			self.timerFunction = time.time
-		self.time = self.timerFunction()
+		self._time = self.timerFunction()
 		self.timeStep = 0
 		self.lastFrameTime = self.time
 		
 	def update(self):
 		"Call once every frame."
 		self.lastFrameTime = self.time
-		self.time = self.timerFunction()
+		self._time = self.timerFunction()
 		self.timeStep = min(0.1, max(0.005, self.time - self.lastFrameTime))
-
-	def setTime(self, time):
-		self.time = time
 	
-	def getTime(self):
-		return self.time
-	
-	def getLastFrameTime(self):
-		return self.lastFrameTime
-	
-	def getLastRealFrameTime(self):
-		return self.lastFrameTime
-	
-	def getRealTime(self):
-		return self.time
+	@property
+	def time(self):
+		return self._time
 
 class Map(DirectObject):
 	"""A Map loads all environment resources from a map file.
@@ -478,7 +469,7 @@ class Map(DirectObject):
 				self.waterNode.setShader(loader.loadShader("images/water.sha"))
 				self.waterNode.setTransparency(TransparencyAttrib.MAlpha)
 				self.waterNode.setShaderInput("watermap", loader.loadTexture("images/water-normal.jpg"))
-				self.waterNode.setShaderInput("time", clock.getTime())
+				self.waterNode.setShaderInput("time", clock.time)
 				self.waterNode.hide(BitMask32.bit(4))
 				self.waterPlane = Plane(Vec3(0, 0, 1), Point3(0, 0, float(tokens[1])))
 				self.waterPlaneNode = PlaneNode("waterPlaneNode")
@@ -724,7 +715,7 @@ class Map(DirectObject):
 			camPos = camera.getPos(render)
 			self.skyBox.setPos(camPos - Vec3(0, 0, 25))
 		if self.waterNode != None:
-			self.waterNode.setShaderInput("time", clock.getTime())
+			self.waterNode.setShaderInput("time", clock.time)
 			if reflectionCamera != None:
 				reflectionCamera.setMat(base.camera.getMat() * self.waterPlane.getReflectionMat())
 		if self.rain != None:
@@ -944,9 +935,9 @@ class Mouse:
 
 	def update(self):
 		"Updates the mouse's position and speed, then recenters the cursor in the window."
-		if not Mouse.enabled or clock.getTime() - self.lastUpdate <= 0.0:
+		if not Mouse.enabled:
 			return
-		self.lastUpdate = clock.getTime()
+		self.lastUpdate = clock.time
 		pointer = base.win.getPointer(0)
 		mouseX = pointer.getX()
 		mouseY = pointer.getY()

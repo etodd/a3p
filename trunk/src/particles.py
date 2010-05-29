@@ -51,7 +51,7 @@ class ParticleGroup:
 	def __init__(self):
 		self.active = True
 		self.position = None
-		self.lastPositionUpdate = engine.clock.getTime()
+		self.lastPositionUpdate = engine.clock.time
 		self.lastPosition = None
 	
 	@staticmethod
@@ -105,7 +105,7 @@ class ParticleGroup:
 		if self.position != None:
 			self.lastPosition = Vec3(self.position)
 		self.position = Vec3(pos)
-		self.lastPositionUpdate = engine.clock.getTime()
+		self.lastPositionUpdate = engine.clock.time
 		
 	def update(self):
 		pass
@@ -118,25 +118,25 @@ class SmokeParticleGroup(ParticleGroup):
 	generatorNode = None
 	def __init__(self, position):
 		ParticleGroup.__init__(self)
-		self.lifeTime = 5.0
+		self.lifeTime = 3.0
 		self.positions = []
 		self.spawnTimes = []
 		self.initialAngles = []
-		self.lastSpawn = engine.clock.getTime()
+		self.lastSpawn = engine.clock.time
 		self.interval = 2.0
 	
 	def spawnParticle(self, pos):
 		self.positions.append(pos)
-		self.spawnTimes.append(engine.clock.getTime())
+		self.spawnTimes.append(engine.clock.time)
 		self.initialAngles.append(random() * 360)
-		self.lastSpawn = engine.clock.getTime()
+		self.lastSpawn = engine.clock.time
 		
 	def update(self):
 		ParticleGroup.update(self)
-		if engine.clock.getTime() - self.lastSpawn >= self.lifeTime:
+		if engine.clock.time - self.lastSpawn >= self.lifeTime:
 			self.delete()
 		if self.active and ParticleGroup.begun:
-			if engine.clock.getTime() - self.lastPositionUpdate < 0.1:
+			if engine.clock.time - self.lastPositionUpdate < 0.1:
 				if self.lastPosition != None:
 					vector = self.position - self.lastPosition
 					distance = vector.length()
@@ -148,9 +148,9 @@ class SmokeParticleGroup(ParticleGroup):
 						self.spawnParticle(self.position)
 
 			for i in range(len(self.positions)):
-				blend = (engine.clock.getTime() - self.spawnTimes[i]) / self.lifeTime
+				blend = (engine.clock.time - self.spawnTimes[i]) / self.lifeTime
 				if blend <= 1.0:
-					ParticleGroup.generator.particle(self.positions[i], ParticleGroup.frames[0], 1.0 + (blend * 4.0), Vec4(1, 1, 1, max(0, 0.8 - (blend * 0.8))), self.initialAngles[i] + (blend * 45))
+					ParticleGroup.generator.particle(self.positions[i], ParticleGroup.frames[0], 1.0 + (blend * 3.0), Vec4(1, 1, 1, max(0, 0.8 - (blend * 0.8))), self.initialAngles[i] + (blend * 45))
 
 class FireParticleGroup(ParticleGroup):
 	generator = None
@@ -164,14 +164,14 @@ class FireParticleGroup(ParticleGroup):
 		self.finalAngles = []
 		self.initialSizes = []
 		self.finalHeights = []
-		self.lastSpawn = engine.clock.getTime()
+		self.lastSpawn = engine.clock.time
 		self.interval = 0.5
 		self.isIndependent = False
 	
 	def spawnParticle(self, pos):
 		self.positions.append(pos)
-		self.spawnTimes.append(engine.clock.getTime())
-		self.lastSpawn = engine.clock.getTime()
+		self.spawnTimes.append(engine.clock.time)
+		self.lastSpawn = engine.clock.time
 		angle = random() * 360
 		self.initialAngles.append(angle)
 		self.initialSizes.append(0.5 + (random() * 0.8))
@@ -180,10 +180,10 @@ class FireParticleGroup(ParticleGroup):
 		
 	def update(self):
 		ParticleGroup.update(self)
-		if self.isIndependent and engine.clock.getTime() - self.lastSpawn >= self.lifeTime:
+		if self.isIndependent and engine.clock.time - self.lastSpawn >= self.lifeTime:
 			self.delete()
 		if self.active and ParticleGroup.begun:
-			if engine.clock.getTime() - self.lastPositionUpdate < 0.1 and engine.clock.getTime() - self.lastSpawn > 0.01:
+			if engine.clock.time - self.lastPositionUpdate < 0.1 and engine.clock.time - self.lastSpawn > 0.01:
 				if self.lastPosition != None:
 					vector = self.position - self.lastPosition
 					distance = vector.length()
@@ -195,7 +195,7 @@ class FireParticleGroup(ParticleGroup):
 					else:
 						self.spawnParticle(self.position + Vec3(uniform(-1.0, 1.0), uniform(-1.0, 1.0), 0) * 0.5)
 			for i in range(len(self.positions)):
-				blend = (engine.clock.getTime() - self.spawnTimes[i]) / self.lifeTime
+				blend = (engine.clock.time - self.spawnTimes[i]) / self.lifeTime
 				if blend <= 1.0:
 					ParticleGroup.generator.blendedParticle(self.positions[i] + Vec3(0, 0, blend * self.finalHeights[i]), ParticleGroup.frames[5], ParticleGroup.frames[6], blend, self.initialSizes[i] - (blend * 0.5), Vec4(1, 1, 1, (1.0 - blend) * 0.75), ((1.0 - blend) * self.initialAngles[i]) + (blend * self.finalAngles[i]))
 
@@ -228,7 +228,7 @@ class SparkParticleGroup(ParticleGroup):
 		self.numParticles = numParticles
 		
 		self.position = Vec3(position)
-		self.spawnTime = engine.clock.getTime()
+		self.spawnTime = engine.clock.time
 		self.lifeTime = lifeTime + uniform(lifeTime * -0.3, lifeTime * 0.3)
 		self.positions = []
 		self.velocities = []
@@ -240,10 +240,10 @@ class SparkParticleGroup(ParticleGroup):
 
 	def update(self):
 		ParticleGroup.update(self)
-		if engine.clock.getTime() - self.spawnTime >= self.lifeTime:
+		if engine.clock.time - self.spawnTime >= self.lifeTime:
 			self.delete()
 		if self.active and ParticleGroup.begun:
-			self.color.setW(1 - ((engine.clock.getTime() - self.spawnTime) / self.lifeTime))
+			self.color.setW(1 - ((engine.clock.time - self.spawnTime) / self.lifeTime))
 			for i in range(self.numParticles):
 				self.velocities[i].setZ(self.velocities[i].getZ() - (engine.clock.timeStep * 40.0))
 				self.positions[i] += self.velocities[i] * engine.clock.timeStep
@@ -267,21 +267,21 @@ class HitRegisterParticleGroup(ParticleGroup):
 		ParticleGroup.__init__(self)
 		self.size = size
 		self.position = Vec3(position)
-		self.spawnTime = engine.clock.getTime()
+		self.spawnTime = engine.clock.time
 		self.lifeTime = 0.25 * size
 		self.color = color
 		self.angle = random() * 360
 
 	def update(self):
 		ParticleGroup.update(self)
-		if engine.clock.getTime() - self.spawnTime >= self.lifeTime:
+		if engine.clock.time - self.spawnTime >= self.lifeTime:
 			self.delete()
 		if self.active and ParticleGroup.begun:
-			blend = (engine.clock.getTime() - self.spawnTime) / self.lifeTime
+			blend = (engine.clock.time - self.spawnTime) / self.lifeTime
 			ParticleGroup.generator.particle(self.position, ParticleGroup.frames[2], (self.size * 0.25) + (blend * self.size), Vec4(self.color.getX(), self.color.getY(), self.color.getZ(), 1.25 - blend), self.angle)
 	
 class ExplosionParticleGroup(ParticleGroup):
-	def __init__(self, position, numParticles = 50, lifeTime = 3, size = 4.0):
+	def __init__(self, position, numParticles = 50, lifeTime = 1.5, size = 3.0):
 		ParticleGroup.__init__(self)
 		self.numParticles = numParticles
 		
@@ -291,7 +291,7 @@ class ExplosionParticleGroup(ParticleGroup):
 		self.light.add()
 		self.light.setPos(self.position)
 		
-		self.spawnTime = engine.clock.getTime()
+		self.spawnTime = engine.clock.time
 		self.lifeTime = lifeTime + uniform(lifeTime * -0.3, lifeTime * 0.3)
 		self.lightLifeTime = 1.5
 		self.positions = []
@@ -303,13 +303,13 @@ class ExplosionParticleGroup(ParticleGroup):
 
 	def update(self):
 		ParticleGroup.update(self)
-		if engine.clock.getTime() - self.spawnTime >= self.lifeTime:
+		if engine.clock.time - self.spawnTime >= self.lifeTime:
 			self.delete()
-		if engine.clock.getTime() - self.spawnTime >= self.lightLifeTime:
+		if engine.clock.time - self.spawnTime >= self.lightLifeTime:
 			self.light.remove()
 		if self.active and ParticleGroup.begun:
-			blend = (engine.clock.getTime() - self.spawnTime) / self.lifeTime
-			blend2 = (engine.clock.getTime() - self.spawnTime) / self.lightLifeTime
+			blend = (engine.clock.time - self.spawnTime) / self.lifeTime
+			blend2 = (engine.clock.time - self.spawnTime) / self.lightLifeTime
 			self.light.setColor(Vec4(1.0 * (1.0 - blend2), 0.7 * (1.0 - blend2), 0.4 * (1.0 - blend2), 1))
 			for i in range(self.numParticles):
 				ParticleGroup.generator.particle(self.positions[i], ParticleGroup.frames[0], 1.5 + (blend * 5.0), Vec4(1, 1, 1, max(0, 0.5 - (blend * 0.5))), self.initialAngles[i] + (blend * 45))

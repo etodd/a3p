@@ -166,7 +166,7 @@ class GameUI(DirectObject):
 		if specialReady and not self.lastSpecialReady:
 			self.specialReadySound.play()
 		self.lastSpecialReady = specialReady
-		self.specialBar.setValue(max(0, engine.clock.getTime() - self.localTeam.lastSpecialActivated))
+		self.specialBar.setValue(max(0, engine.clock.time - self.localTeam.lastSpecialActivated))
 		
 		allyList = []
 		for i in range(len(self.teams)):
@@ -370,14 +370,14 @@ class ChatLog(DirectObject):
 		engine.inputEnabled = True
 		
 	def displayChat(self, username, message):
-		self.messages.insert(0, Message(username + ": " + message, engine.clock.getTime()))
+		self.messages.insert(0, Message(username + ": " + message, engine.clock.time))
 		self._updateChatLog()
 	
 	def update(self):
 		numMessages = len(self.messages)
 		if numMessages > 0:
 			message = self.messages[numMessages - 1]
-			if engine.clock.getTime() - message.time > self.displayTime:
+			if engine.clock.time - message.time > self.displayTime:
 				del self.messages[numMessages - 1:]
 				self._updateChatLog()
 	
@@ -974,14 +974,14 @@ class HostList(DirectObject):
 		
 	def update(self):
 		if self.lastShow != -1:
-			elapsedTime = engine.clock.getTime() - self.lastShow
+			elapsedTime = engine.clock.time - self.lastShow
 			if elapsedTime < self.transitionTime:
 				self.dialog.setScale(elapsedTime / self.transitionTime)
 			else:
 				self.lastShow = -1
 				self.dialog.setScale(1.0)
 		if self.lastHide != -1:
-			elapsedTime = engine.clock.getTime() - self.lastHide
+			elapsedTime = engine.clock.time - self.lastHide
 			if elapsedTime < self.transitionTime:
 				self.dialog.setScale(1 - (elapsedTime / self.transitionTime))
 			else:
@@ -1000,7 +1000,7 @@ class HostList(DirectObject):
 		online.getHosts()
 		self.visible = True
 		self.lastHide = -1
-		self.lastShow = engine.clock.getTime()
+		self.lastShow = engine.clock.time
 	
 	def showHosts(self, hosts):
 		if not self.active:
@@ -1020,7 +1020,7 @@ class HostList(DirectObject):
 	def hide(self):
 		engine.Mouse.hideCursor()
 		self.lastShow = -1
-		self.lastHide = engine.clock.getTime()
+		self.lastHide = engine.clock.time
 		self.visible = False
 	
 	def go(self, host = None):
@@ -1060,14 +1060,14 @@ class LoginDialog(DirectObject):
 		
 	def update(self):
 		if self.lastShow != -1:
-			elapsedTime = engine.clock.getTime() - self.lastShow
+			elapsedTime = engine.clock.time - self.lastShow
 			if elapsedTime < self.transitionTime:
 				self.dialog.setScale(elapsedTime / self.transitionTime)
 			else:
 				self.lastShow = -1
 				self.dialog.setScale(1.0)
 		if self.lastHide != -1:
-			elapsedTime = engine.clock.getTime() - self.lastHide
+			elapsedTime = engine.clock.time - self.lastHide
 			if elapsedTime < self.transitionTime:
 				self.dialog.setScale(1 - (elapsedTime / self.transitionTime))
 			else:
@@ -1079,12 +1079,12 @@ class LoginDialog(DirectObject):
 		self.dialog.show()
 		self.visible = True
 		self.lastHide = -1
-		self.lastShow = engine.clock.getTime()
+		self.lastShow = engine.clock.time
 	
 	def hide(self):
 		engine.Mouse.hideCursor()
 		self.lastShow = -1
-		self.lastHide = engine.clock.getTime()
+		self.lastHide = engine.clock.time
 		self.visible = False
 	
 	def go(self, value = None):
@@ -1114,7 +1114,7 @@ class MapList(DirectObject):
 		self.mapButtons = []
 		hover = None
 		click = None
-		maps = [("impact", 0, "Impact [2v2]"), ("arena", 0, "Arena [4P]"), ("gold", 0, "Gold [4P]"), ("orbit", 0, "Orbit [3P]"), ("verdict", 0, "Verdict [2P]"), ("complex", 0, "Complex [2P]"), ("grid", 0, "Grid [2P]"), ("matrix", 1, "Matrix [4P Survival]")]
+		maps = [("impact", 0, "Impact [2v2]"), ("sectorx", 0, "Sector X [2v2]"), ("arena", 0, "Arena [4P]"), ("gold", 0, "Gold [4P]"), ("orbit", 0, "Orbit [3P]"), ("verdict", 0, "Verdict [2P]"), ("complex", 0, "Complex [2P]"), ("grid", 0, "Grid [2P]"), ("matrix", 1, "Matrix [4P Survival]")]
 		height = len(maps) * 0.15
 		self.mapList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.8, .8, -height / 2, height / 2), frameSize = (-.8, .8, -0.7, 0.7), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, scrollBarWidth = 0.04, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (1, 1, 1, 0.2), verticalScroll_pageSize = 0.4, verticalScroll_scrollSize = 0.2, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_image = "images/checkbox-disabled.jpg", verticalScroll_thumb_frameColor = (0, 0, 0, 0), verticalScroll_thumb_scale = 0.04, verticalScroll_thumb_image_scale = 0.04, verticalScroll_incButton_image = "images/checkbox-disabled.jpg", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/checkbox-disabled.jpg", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
 		offset = (height / 2) - 0.1
@@ -1127,14 +1127,14 @@ class MapList(DirectObject):
 		
 	def update(self):
 		if self.lastShow != -1:
-			elapsedTime = engine.clock.getTime() - self.lastShow
+			elapsedTime = engine.clock.time - self.lastShow
 			if elapsedTime < self.transitionTime:
 				self.dialog.setScale(elapsedTime /self.transitionTime)
 			else:
 				self.lastShow = -1
 				self.dialog.setScale(1.0)
 		if self.lastHide != -1:
-			elapsedTime = engine.clock.getTime() - self.lastHide
+			elapsedTime = engine.clock.time - self.lastHide
 			if elapsedTime < self.transitionTime:
 				self.dialog.setScale(1 - (elapsedTime / self.transitionTime))
 			else:
@@ -1145,14 +1145,14 @@ class MapList(DirectObject):
 		engine.Mouse.showCursor()
 		self.dialog.show()
 		self.visible = True
-		self.lastShow = engine.clock.getTime()
+		self.lastShow = engine.clock.time
 		self.lastHide = -1
 
 	def hide(self):
 		engine.Mouse.hideCursor()
 		self.visible = False
 		self.lastShow = -1
-		self.lastHide = engine.clock.getTime()
+		self.lastHide = engine.clock.time
 		
 	def delete(self):
 		self.active = False
