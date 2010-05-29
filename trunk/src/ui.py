@@ -51,7 +51,7 @@ class GameUI(DirectObject):
 		
 		self.scoreChangeText = OnscreenText(pos = (0, 0.4), scale = 0.5, fg = (1, 1, 1, 0), font = visitorFont, mayChange = True)
 		self.scoreChangeTextAlpha = 0.0
-		self.scoreChangeTextSize = 0.1
+		self.scoreChangeTextScale = 0.1
 		self.lastTeamScore = 0
 		
 		self.moneyText = OnscreenText(pos = (engine.aspectRatio - 0.53, self.verticalOffset - 0.05), scale = 0.075, align = TextNode.ARight, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)
