@@ -169,7 +169,7 @@ def init(showFrameRate = False, daemon = False):
 	
 	if not vfs.isDirectory("maps"):
 		mf = Multifile()
-		self.mf.openRead(ExecutionEnvironment.getEnvironmentVariable("PKG_ROOT") + "/pkg.mf")
+		mf.openRead(ExecutionEnvironment.getEnvironmentVariable("PKG_ROOT") + "/pkg.mf")
 	
 	isDaemon = daemon
 	

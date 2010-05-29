@@ -656,7 +656,7 @@ class Tutorial(Game):
 		self.tutorialScreens = []
 		self.messages = ["Find and capture the drop pods to earn money!", "Use your units to help defeat the enemy.", "Try using your special abilities."]
 		visitorFont = loader.loadFont("menu/visitor2.ttf")
-		self.messageText = OnscreenText(pos = (-1.25, 0.92), align = TextNode.ALeft, scale = 0.06, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)	
+		self.messageText = OnscreenText(pos = (-engine.aspectRatio + 0.05, 0.9), align = TextNode.ALeft, scale = 0.07, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)	
 		for i in range(4):
 			image = OnscreenImage(image = "images/part" + str(i + 1) + ".jpg", pos = (0, 0, 0), scale = (1680.0/1050.0, 1, 1))
 			image.hide()
@@ -667,6 +667,7 @@ class Tutorial(Game):
 		self.messageText.hide()
 		self.enemyAiUnits = [(components.CHAINGUN, None), (components.SNIPER, None), (components.PISTOL, None)]
 		self.enemyTeam = None
+		self.matchStartTime = -1
 	
 	def reset(self):
 		Game.reset(self)
@@ -683,6 +684,7 @@ class Tutorial(Game):
 	def startMatch(self):
 		if self.tutorialIndex >= len(self.tutorialScreens) - 1:
 			self.backend.connected = False
+		self.matchStartTime = engine.clock.time
 		render.show()
 		self.backend.map.hidePlatforms()
 		self.tutorialScreens[self.tutorialIndex].hide()
@@ -744,6 +746,15 @@ class Tutorial(Game):
 		self.enemyTeam.score = 0
 	
 	def update(self):
+		if self.matchStartTime != -1:
+			if engine.clock.time - self.matchStartTime < 2:
+				blend = (engine.clock.time - self.matchStartTime) / 2.0
+				self.messageText["fg"] = (1, 1, 1, blend)
+				self.messageText["scale"] = 0.06 + (1.0 - blend) * 0.4
+			else:
+				self.messageText["scale"] = 0.06
+				self.messageText["fg"] = (1, 1, 1, 1)
+				self.matchStartTime = -1
 		noTeamYet = False
 		if self.localTeam == None:
 			noTeamYet = True
