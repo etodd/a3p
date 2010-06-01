@@ -55,6 +55,8 @@ class GameUI(DirectObject):
 		self.lastTeamScore = 0
 		
 		self.moneyText = OnscreenText(pos = (engine.aspectRatio - 0.53, self.verticalOffset - 0.05), scale = 0.075, align = TextNode.ARight, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)
+		self.lastMoneyAmount = 0
+		self.lastMoneyChange = 0
 		
 		self.specialBar = StatusBar(range = entities.SPECIAL_DELAY, pos = (engine.aspectRatio - 0.02, 0, self.verticalOffset + 0.05), hpr = (0, 0, -90), width = 0.05, height = 0.25)
 		color = Vec3(0.6, 0.6, 0.6)
@@ -213,6 +215,14 @@ class GameUI(DirectObject):
 			i += 1
 		
 		self.moneyText.setText("$" + str(self.localTeam.money))
+		if self.localTeam.money != self.lastMoneyAmount:
+			self.lastMoneyChange = engine.clock.time
+			self.lastMoneyAmount = self.localTeam.money
+		moneyChangeTime = engine.clock.time - self.lastMoneyChange
+		if moneyChangeTime < 0.5:
+			self.moneyText["scale"] = 0.075 + (1 - (moneyChangeTime / 0.5)) * 0.05
+		else:
+			self.moneyText["scale"] = 0.075
 		
 		if self.localTeam.score > self.lastTeamScore:
 			self.scoreChangeTextAlpha = 1.0
@@ -234,7 +244,7 @@ class GameUI(DirectObject):
 		if player != None and player.active:
 			self.healthBar.show()
 			if player.controller.targetedEnemy != None and player.controller.targetedEnemy.active:
-				particles.EnemySelectorParticleGroup.draw(player.controller.targetedEnemy.getPosition())
+				particles.EnemySelectorParticleGroup.draw(player.controller.targetedEnemy.getPosition(), player.controller.targetedEnemy.radius)
 			self.healthBar.setValue(player.health, player.maxHealth)
 			weapon = player.components[player.controller.activeWeapon]
 			if isinstance(weapon, components.Gun) and weapon.selected:

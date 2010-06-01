@@ -33,6 +33,8 @@ defaultNotifyLevel = ConfigVariableString("default-directnotify-level")
 defaultNotifyLevel.setValue("debug")
 audioEngine = ConfigVariableString("audio-library-name")
 audioEngine.setValue("p3fmod_audio")
+notifyLevel = ConfigVariableString("notify-level")
+notifyLevel.setValue("fatal")
 
 import src.engine as engine
 import src.audio as audio

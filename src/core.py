@@ -278,8 +278,6 @@ class ServerBackend(Backend):
 class PointControlBackend(ServerBackend):
 	def __init__(self, registerHost = True, username = "Unnamed"):
 		ServerBackend.__init__(self, registerHost, username)
-		self.podSpawnDelay = 20
-		self.lastPodSpawn = 0
 		self.lastPodSpawnCheck = 0
 		self.maps = deathmatchMaps # List of all valid maps for this gametype
 	
@@ -288,8 +286,7 @@ class PointControlBackend(ServerBackend):
 		if engine.clock.time - self.lastPodSpawnCheck > 0.5:
 			numPods = 1 if self.numClients <= 2 else 2
 			self.lastPodSpawnCheck = engine.clock.time
-			if engine.clock.time - self.lastPodSpawn > self.podSpawnDelay\
-			and len([1 for x in self.entityGroup.entities.values() if isinstance(x, entities.DropPod)]) < numPods\
+			if len([1 for x in self.entityGroup.entities.values() if isinstance(x, entities.DropPod)]) < numPods\
 			and len([1 for team in self.entityGroup.teams if team.getPlayer() != None and team.getPlayer().active]) > 0:
 				self.spawnPod()
 	
@@ -306,7 +303,7 @@ class PointControlBackend(ServerBackend):
 					break
 			if pos == None or self.aiWorld.navMesh.getNode(pos) == None:
 				queue = None
-		pod = entities.DropPod(self.aiWorld.space, controllers.DropPodController())
+		pod = entities.DropPod(self.aiWorld.world, self.aiWorld.space)
 		pod.controller.setFinalPosition(pos)
 		self.entityGroup.spawnEntity(pod)
 		self.lastPodSpawn = engine.clock.time
@@ -458,8 +455,6 @@ class Game(DirectObject):
 			self.scoreText.hide()
 		self.gameui = ui.GameUI()
 		self.gameui.hide()
-
-		self.accept("escape", engine.Mouse.showCursor)
 		self.accept("space", self.handleSpacebar)
 		self.backend.setGame(self)
 		self.spawnedOnce = False
@@ -781,10 +776,10 @@ class MainMenu(DirectObject):
 		render.show()
 		engine.renderLit.show() # In case we just got back from the tutorial, which hides everything sometimes.
 		engine.Mouse.hideCursor()
-		self.backgroundSound = audio.FlatSound("menu/background.ogg")
+		self.backgroundSound = audio.FlatSound("menu/background.ogg", volume = 0.3)
 		self.backgroundSound.setVolume(0)
 		self.backgroundSound.setLoop(True)
-		self.clickSound = audio.FlatSound("menu/click.ogg")
+		self.clickSound = audio.FlatSound("menu/click.ogg", volume = 0.3)
 		self.active = True
 		self.accept("escape", self.escape)
 		self.accept("mouse1", self.click)
@@ -900,7 +895,7 @@ class MainMenu(DirectObject):
 		self.loginDialog = ui.LoginDialog(self.setUsername)
 		self.loginDialogShown = False
 		
-		self.introSound = audio.FlatSound("menu/intro.ogg", volume = 0.5)
+		self.introSound = audio.FlatSound("menu/intro.ogg", volume = 0.15)
 		self.introSound.play()
 		
 		self.clientConnectAddress = None
@@ -922,8 +917,6 @@ class MainMenu(DirectObject):
 			self.hostList.hide()
 		elif self.mapList.visible:
 			self.mapList.hide()
-		else:
-			engine.exit()
 	
 	def startClient(self, host):
 		self.clickSound.play()

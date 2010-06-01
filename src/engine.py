@@ -190,7 +190,7 @@ def init(showFrameRate = False, daemon = False):
 	renderEnvironment = renderLit.attachNewNode("renderEnvironment")
 	controllers.init()
 	ai.init()
-	audio.init(dropOffFactor = 1.5, distanceFactor = 6, dopplerFactor = 0.0)
+	audio.init(dropOffFactor = 1.4, distanceFactor = 14, dopplerFactor = 0.0)
 	numMaxDynamicLights = 0
 	if enableShaders and not daemon:
 		numMaxDynamicLights = 2
@@ -357,7 +357,7 @@ class Map(DirectObject):
 		self.waterPlane = None
 		self.waterPlaneNode = None
 		self.waterPlaneNodePath = None
-		self.mapDirectory = ""
+		self.mapDirectory = "maps"
 		self.isSurvival = False
 		self.ambientSound = None
 		self.platforms = []
@@ -607,7 +607,7 @@ class Map(DirectObject):
 				geom = SpawnPoint(aiWorld.space)
 				geom.setPosition(Vec3(float(tokens[1]), float(tokens[2]), float(tokens[3])))
 				geom.setRotation(Vec3(float(tokens[4]), float(tokens[5]), float(tokens[6])))
-				aiWorld.addSpawnPoint(geom)
+				aiWorld.spawnPoints.append(geom)
 			elif tokens[0] == "scenery":
 				scenery = loadModel(mapDirectory + "/" + tokens[1])
 				scenery.setPos(float(tokens[2]), float(tokens[3]), float(tokens[4]))

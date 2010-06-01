@@ -51,7 +51,7 @@ enabled = True
 
 def init(dropOffFactor, distanceFactor, dopplerFactor):
 	"Loads all common sounds and initializes the Panda3D Audio3DManager."
-	global manager
+	global manager, physicsManager
 	# Setup audio
 	manager = Audio3DManager(base.sfxManagerList[0], camera)
 	manager.setDropOffFactor(dropOffFactor)
@@ -72,7 +72,6 @@ def init(dropOffFactor, distanceFactor, dopplerFactor):
 	addSoundGroup(SoundGroup("kamikaze-special", ["sounds/kamikaze-special.ogg"], volume = 1.0))
 	addSoundGroup(SoundGroup("rocket", ["sounds/rocket.ogg"], volume = 1.0))
 	addSoundGroup(SoundGroup("reload", ["sounds/reload.ogg"], volume = 0.3))
-	addSoundGroup(SoundGroup("reload-beep", ["sounds/reload-beep.ogg"], volume = 0.3))
 	addSoundGroup(SoundGroup("alarm", ["sounds/alarm.ogg"], volume = 0.25))
 	addSoundGroup(SoundGroup("glass-shatter", ["sounds/glass-shatter1.ogg", "sounds/glass-shatter2.ogg", "sounds/glass-shatter3.ogg"], volume = 1.0))
 	addSoundGroup(SoundGroup("pistol", ["sounds/pistol.ogg"], volume = 1.0))
@@ -101,7 +100,7 @@ class SoundGroup(DirectObject):
 		self.sounds = dict()
 		for file in self.soundFiles:
 			self.sounds[file] = []
-			for _ in range(4):
+			for _ in range(3):
 				sound = manager.loadSfx(file)
 				sound.setVolume(self.volume)
 				self.sounds[file].append(sound)

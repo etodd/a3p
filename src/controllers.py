@@ -121,7 +121,7 @@ class TeamEntityController(Controller):
 		self.oldUsername = "Unnamed"
 		self.scoreAdditions = 0
 		self.moneyAdditions = 0
-		self.moneyIncreaseSound = audio.FlatSound("sounds/money.ogg", volume = 0.2)
+		self.moneyIncreaseSound = audio.FlatSound("sounds/money.ogg", volume = 0.1)
 	
 	def buildSpawnPacket(self):
 		p = Controller.buildSpawnPacket(self)
@@ -283,6 +283,8 @@ class ObjectController(Controller):
 		self.snapshots = []
 		self.lastSentSnapshot = net2.EntitySnapshot()
 		self.lastSnapshot = net2.EntitySnapshot()
+		self.upperHeightLimit = 50
+		self.lowerHeightLimit = -30
 	
 	def setEntity(self, entity):
 		"""ObjectEntity calls this function on initialization."""
@@ -344,7 +346,7 @@ class ObjectController(Controller):
 				self.lastSnapshot = snapshot
 				p.add(snapshot)
 			z = self.entity.getPosition().getZ()
-			if z < -30 or z > 50:
+			if z < self.lowerHeightLimit or z > self.upperHeightLimit:
 				self.entity.killer = None
 				self.entity.kill(aiWorld, entityGroup)
 		return p
@@ -471,42 +473,43 @@ class PhysicsEntityController(ObjectController):
 		p = ObjectController.buildSpawnPacket(self, isPhysicsEntity = True)
 		return p
 
-class DropPodController(Controller):
+class DropPodController(ObjectController):
 	def __init__(self):
-		Controller.__init__(self)
-		self.inAirTime = 3.0
+		ObjectController.__init__(self)
+		self.inAirTime = 2.0
 		self.landed = False
 		self.landingSound = audio.SoundPlayer("pod-landing")
 		self.particleGroup = None
 		self.finalPosition = None
 		self.startPosition = None
 		self.lastPayout = 0
-		self.payoutAmount = 10
-		self.payoutDelay = 0.7
+		self.payoutAmount = 20
+		self.payoutDelay = 1.5
 		self.captureDistance = 20
 		self.money = 300
 		self.warningSound = audio.SoundPlayer("kamikaze-special")
 		self.warningTime = -1
 		self.entrySound = audio.FlatSound("sounds/pod-entry.ogg", volume = 0.5)
 		self.entrySoundPlayed = False
+		self.upperHeightLimit = 1000
 
 	def setFinalPosition(self, pos):
 		pivot = Vec3(0, 0, 50)
-		self.finalPosition = Vec3(pos)
+		self.finalPosition = pos + Vec3(0, 0, self.entity.vradius)
 		dir = (pivot * 2.0) - self.finalPosition
 		dir.normalize()
-		self.startPosition = pivot + (dir * 1000)
+		self.startPosition = pivot + (dir * 500)
 		self.entity.setPosition(self.startPosition)
 		self.entity.node.lookAt(Point3(self.finalPosition))
 	
 	def setEntity(self, entity):
 		"""Entity calls this function on initialization."""
 		assert isinstance(entity, entities.DropPod)
-		Controller.setEntity(self, entity)
+		ObjectController.setEntity(self, entity)
 	
 	def buildSpawnPacket(self, isPhysicsEntity = False):
 		"""Builds a packet instructing client(s) to spawn the correct Entity with the correct ID."""
-		p = Controller.buildSpawnPacket(self)
+		p = ObjectController.buildSpawnPacket(self)
 		p.add(net2.HighResVec3(self.finalPosition))
 		p.add(net.StandardFloat(engine.clock.time - self.entity.spawnTime))
 		p.add(net.Uint16(self.money))
@@ -515,15 +518,18 @@ class DropPodController(Controller):
 	@staticmethod
 	def readSpawnPacket(aiWorld, entityGroup, iterator, entity = None, isPhysicsEntity = False):
 		"Static method called by descendants. Assumes entity has already been initialized by the descendant."
-		entity = entities.DropPod(aiWorld.space, DropPodController(), False)
-		entity = Controller.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
+		entity = entities.DropPod(aiWorld.world, aiWorld.space, False)
+		entity = ObjectController.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
 		entity.controller.setFinalPosition(net2.HighResVec3.getFrom(iterator))
 		entity.spawnTime = engine.clock.time - net.StandardFloat.getFrom(iterator)
 		self.money = net.Uint16.getFrom(iterator)
 		return entity
 	
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
-		p = Controller.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
+		if not self.landed:
+			aliveTime = engine.clock.time - self.entity.spawnTime
+			self.entity.setPosition(self.startPosition + (self.finalPosition - self.startPosition) * min(1, (aliveTime / self.inAirTime)))
+		p = ObjectController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
 		paid = False
 		if self.landed and engine.clock.time - self.lastPayout > self.payoutDelay and self.warningTime == -1:
 			droid = aiWorld.getNearestDroid(entityGroup, self.entity.getPosition())
@@ -543,7 +549,7 @@ class DropPodController(Controller):
 		return p
 	
 	def clientUpdate(self, aiWorld, entityGroup, data = None):
-		Controller.clientUpdate(self, aiWorld, entityGroup, data)
+		ObjectController.clientUpdate(self, aiWorld, entityGroup, data)
 		if data != None:
 			if net.Boolean.getFrom(data): # Pay money to some team or other
 				team = entityGroup.getEntity(net.Uint8.getFrom(data))
@@ -562,16 +568,17 @@ class DropPodController(Controller):
 				particles.add(self.particleGroup)
 			self.particleGroup.setPosition(self.entity.getPosition())
 			aliveTime = engine.clock.time - self.entity.spawnTime
-			self.entity.setPosition(self.startPosition + (self.finalPosition - self.startPosition) * min(1, (aliveTime / self.inAirTime)))
 			if aliveTime >= self.inAirTime and not self.landed:
 				self.landed = True
 				self.landingSound.play(position = self.entity.getPosition())
-		elif self.money <= 0 and self.warningTime == -1:
-			self.warningTime = engine.clock.time
-			self.warningSound.play(entity = self.entity)
+				self.entity.setLinearVelocity(Vec3(0, 0, 0))
+		else:
+			if self.money <= 0 and self.warningTime == -1:
+				self.warningTime = engine.clock.time
+				self.warningSound.play(entity = self.entity)
 	
 	def delete(self, killed = False):
-		Controller.delete(self, killed)
+		ObjectController.delete(self, killed)
 		if self.particleGroup != None:
 			self.particleGroup.delete()
 
@@ -908,7 +915,7 @@ class DroidController(ActorController):
 				# Check to make sure we didn't go through a wall
 				vector = self.entity.getPosition() - self.lastPosition
 				distance = vector.length()
-				if distance > self.entity.radius * 0.75:
+				if distance > self.entity.radius * 0.9:
 					vector.normalize()
 					queue = aiWorld.getCollisionQueue(self.lastPosition, vector, engine.renderEnvironment)
 					for i in range(queue.getNumEntries()):
@@ -1033,7 +1040,8 @@ class PlayerController(DroidController):
 		self.currentCrosshair = -1 # Used by GameUI to display the correct cursor
 		self.sprinting = False
 		self.lastSentSprinting = False
-		self.sprintSound = audio.FlatSound("sounds/sprint.ogg", 0.5)
+		self.targetDistance = 0
+		self.lastTargetCheck = 0
 	
 	def needsToSendUpdate(self):
 		if DroidController.needsToSendUpdate(self) or self.lastSentSprinting != self.sprinting:
@@ -1094,6 +1102,8 @@ class PlayerController(DroidController):
 			self.accept("q", self.issueCommand, [0])
 			self.accept("e", self.issueCommand, [1])
 			self.commandSound = audio.FlatSound("sounds/command.ogg", 0.5)
+			self.sprintSound = audio.FlatSound("sounds/sprint.ogg", 0.5)
+			self.jumpSound = audio.FlatSound("sounds/jump.ogg", 0.5)
 		
 	def sprint(self):
 		if engine.inputEnabled:
@@ -1161,6 +1171,7 @@ class PlayerController(DroidController):
 			if engine.clock.time - self.lastJump > 0.25 and aiWorld.testCollisions(self.entity.collisionNodePath).getNumEntries() > 0:
 				self.lastJump = engine.clock.time
 				self.entity.setLinearVelocity(self.entity.getLinearVelocity() + Vec3(0, 0, 16))
+				self.jumpSound.play()
 		if self.keyMap["switch-weapon"]:
 			self.keyMap["switch-weapon"] = False
 			if self.activeWeapon == 1:
@@ -1239,19 +1250,22 @@ class PlayerController(DroidController):
 			self.pickRay.setFromLens(base.camNode, 0, 0)
 		
 		target = None
-		queue = aiWorld.getRayCollisionQueue(self.pickRayNP)
-		camDistance = (camera.getPos() - self.entity.getPosition()).length() + self.entity.radius
-		for i in range(queue.getNumEntries()):
-			entry = queue.getEntry(i)
-			t = entry.getSurfacePoint(render)
-			targetVector = camera.getPos() - t
-			if camDistance < targetVector.length():
-				target = t
-				break
+		if engine.clock.time - self.lastTargetCheck > 0.05:
+			self.lastTargetCheck = engine.clock.time
+			queue = aiWorld.getRayCollisionQueue(self.pickRayNP)
+			camDistance = (camera.getPos() - self.entity.getPosition()).length() + self.entity.radius
+			for i in range(queue.getNumEntries()):
+				entry = queue.getEntry(i)
+				t = entry.getSurfacePoint(render)
+				targetVector = camera.getPos() - t
+				if camDistance < targetVector.length():
+					target = t
+					break
 		if target == None:
-			self.targetPos = self.pickRay.getOrigin() + (render.getRelativeVector(self.pickRayNP, self.pickRay.getDirection()) * 5)
+			self.targetPos = camera.getPos() + (render.getRelativeVector(camera, Vec3(0, 1, 0)) * self.targetDistance)
 		else:
 			self.targetPos = target
+			self.targetDistance = (target - camera.getPos()).length()
 		
 		origin = camera.getPos()
 		dir = render.getRelativeVector(camera, Vec3(0, 1, 0))
@@ -1397,20 +1411,21 @@ class AIController(DroidController):
 			elif self.nearestEnemy == None or not self.nearestEnemy.active or (self.nearestEnemy.getPosition() - self.entity.getPosition()).length() > 15:
 				self.nearestEnemy = aiWorld.getNearestEnemy(entityGroup, self.entity.getPosition(), self.entity.team)
 			
-			aiNode = aiWorld.navMesh.getNode(self.entity.getPosition(), self.lastAiNode)
+			aiNode = aiWorld.navMesh.getNode(self.entity.getPosition(), self.entity.radius, self.lastAiNode)
 			targetAiNode = None
-			target = Vec3()
+			target = None
 			if self.targetedEnemy != None and self.targetedEnemy.active:
-				target = self.targetedEnemy.getPosition()
+				target = self.targetedEnemy
 			elif self.entity.team.getPlayer() != None and self.entity.team.getPlayer().active:
-				target = self.entity.team.getPlayer().getPosition()
-			targetAiNode = aiWorld.navMesh.getNode(target, self.lastTargetAiNode)
-			if (target - self.entity.getPosition()).length() > 10:
-				if (targetAiNode != None and aiNode != None) and (targetAiNode != self.lastTargetAiNode or (aiNode != self.lastAiNode and (aiNode not in self.path.nodes))):
-					ai.requestPath(self.pathCallback, aiNode, targetAiNode, self.entity.getPosition(), target, self.entity.radius + 0.5)
-			else:
-				self.path.clear()
-				self.path.end = target + Vec3(uniform(-12, 12), uniform(-12, 12), 0)
+				target = self.entity.team.getPlayer()
+			if target != None:
+				targetAiNode = aiWorld.navMesh.getNode(target.getPosition(), target.radius)
+				if (target.getPosition() - self.entity.getPosition()).length() > 10:
+					if (targetAiNode != None and aiNode != None) and (targetAiNode != self.lastTargetAiNode or (aiNode != self.lastAiNode and (aiNode not in self.path.nodes))):
+						ai.requestPath(self.pathCallback, aiNode, targetAiNode, self.entity.getPosition(), target.getPosition(), self.entity.radius + 0.5)
+				else:
+					self.path.clear()
+					self.path.end = target.getPosition() + Vec3(uniform(-12, 12), uniform(-12, 12), 0)
 			self.lastAiNode = aiNode
 			self.lastTargetAiNode = targetAiNode
 		
@@ -1887,14 +1902,15 @@ class EditController(Controller):
 		if self.selectedTool == 1:
 			# Make a physics entity
 			filename = self.ui.currentPhysicsEntityFile
-			directory = self.map.mapDirectory + "/" + filename.rpartition("/")[0]
-			data = vfs.readFile(self.map.mapDirectory + "/" + filename + ".txt", 1)
-			obj = entities.PhysicsEntity(aiWorld.world, aiWorld.space, data, directory, filename)
-			obj.setPosition(target + Vec3(0, 0, obj.vradius))
-			normal = entry.getSurfaceNormal(render)
-			obj.setRotation(Vec3(0, math.degrees(-math.atan2(normal.getY(), normal.getZ())), math.degrees(math.atan2(normal.getX(), normal.getZ()))))
-			entityGroup.spawnEntity(obj)
-			self.spawnedObjects.append(obj)
+			if vfs.exists("maps/" + filename + ".txt"):
+				directory = "maps/" + filename.rpartition("/")[0]
+				data = vfs.readFile("maps/" + filename + ".txt", 1)
+				obj = entities.PhysicsEntity(aiWorld.world, aiWorld.space, data, directory, filename)
+				obj.setPosition(target + Vec3(0, 0, obj.vradius))
+				normal = entry.getSurfaceNormal(render)
+				obj.setRotation(Vec3(0, math.degrees(-math.atan2(normal.getY(), normal.getZ())), math.degrees(math.atan2(normal.getX(), normal.getZ()))))
+				entityGroup.spawnEntity(obj)
+				self.spawnedObjects.append(obj)
 		elif self.selectedTool == 2:
 			# Make a dock
 			dock = engine.Dock(aiWorld.space, len(aiWorld.docks))
@@ -1909,7 +1925,7 @@ class EditController(Controller):
 			geom.setPosition(Vec3(target))
 			normal = entry.getSurfaceNormal(render)
 			geom.setRotation(Vec3(0, math.degrees(-math.atan2(normal.getY(), normal.getZ())), math.degrees(math.atan2(normal.getX(), normal.getZ()))))
-			aiWorld.addSpawnPoint(geom)
+			aiWorld.spawnPoints.append(geom)
 			self.spawnedObjects.append(geom)
 		elif self.selectedTool == 4:
 			# Make vertical glass
@@ -1943,10 +1959,18 @@ class EditController(Controller):
 				self.savedPoint = None
 				self.spawnedObjects.append(glass)
 		elif self.selectedTool == 6:
-			# Delete physics entity
-			entity = entityGroup.getNearestPhysicsEntity(target)
-			entityGroup.removeEntity(entity)
-			entityGroup.clearDeletedEntities()
+			# Delete a physics entity, dock, or spawn point
+			objects = [entityGroup.getNearestPhysicsEntity(target), aiWorld.getNearestDock(target), aiWorld.getNearestSpawnPoint(target)]
+			obj = sorted(objects, key = lambda x: 100000 if x == None else (x.getPosition() - target).length())[0]
+			if isinstance(obj, engine.SpawnPoint):
+				obj.delete()
+				if isinstance(obj, engine.Dock):
+					aiWorld.docks.remove(obj)
+				else:
+					aiWorld.spawnPoints.remove(obj)
+			else:
+				obj.delete(entityGroup)
+				entityGroup.clearDeletedEntities()
 
 	def serverUpdate(self, aiWorld, entityGroup, data):
 		p = Controller.serverUpdate(self, aiWorld, entityGroup, data)
