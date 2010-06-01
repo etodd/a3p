@@ -74,6 +74,7 @@ class World:
 		self.space.setAutoCollideWorld(self.world)
 		self.contactGroup = OdeJointGroup()
 		self.space.setAutoCollideJointGroup(self.contactGroup)
+		self.space.setCollisionEvent("physicsCollision")
 		
 		self.world.setGravity(0, 0, -35)
 
@@ -91,12 +92,6 @@ class World:
 		self.space.autoCollide()
 		self.world.quickStep(engine.clock.timeStep)
 		self.contactGroup.empty() # Clear the contact joints
-	
-	def addSpawnPoint(self, point):
-		self.spawnPoints.append(point)
-
-	def deleteSpawnPoint(self, point):
-		self.spawnPoints.remove(point)
 	
 	def getNearestDroid(self, entityGroup, pos):
 		"Gets an entity on any opposing team with the smallest straight-line distance from the specified position."
@@ -140,7 +135,18 @@ class World:
 			if dist < lowestDistance or lowestDistance == -1:
 				lowestDistance = dist
 				returnValue = point
-		return returnValue.getPosition()
+		return returnValue
+	
+	def getNearestDock(self, pos):
+		lowestDistance = -1
+		returnValue = None
+		for point in self.docks:
+			vector1 = pos - point.getPosition()
+			dist = vector1.length()
+			if dist < lowestDistance or lowestDistance == -1:
+				lowestDistance = dist
+				returnValue = point
+		return returnValue
 	
 	def getNearestOpenSpawnPoint(self, team, entityGroup, pos, minRadius = 50):
 		dockList = [team.dock] if team.dock != None else []
@@ -321,17 +327,17 @@ class NavMesh:
 				return edge
 		return None
 
-	def getNode(self, pos, lastKnownNode = None):
+	def getNode(self, pos, radius = 1, lastKnownNode = None):
 		if lastKnownNode != None:
-			if lastKnownNode.containerTest(pos):
+			if lastKnownNode.containerTest(pos, radius):
 				return lastKnownNode
 			nodes = []
 			for edge in lastKnownNode.edges:
-				nodes += [x for x in edge.getNodes() if x != lastKnownNode and x.containerTest(pos)]
+				nodes += [x for x in edge.getNodes() if x != lastKnownNode and x.containerTest(pos, radius)]
 			if len(nodes) == 0:
-				nodes = [x for x in self.nodes if x.containerTest(pos)]
+				nodes = [x for x in self.nodes if x.containerTest(pos, radius)]
 		else:
-			nodes = [x for x in self.nodes if x.containerTest(pos)]
+			nodes = [x for x in self.nodes if x.containerTest(pos, radius)]
 		size = len(nodes)
 		if size == 0:
 			return None
@@ -347,8 +353,8 @@ class NavMesh:
 	
 	def findPath(self, startPos, endPos, radius = 1):
 		"A* algorithm."
-		startNode = self.getNode(startPos)
-		endNode = self.getNode(endPos)
+		startNode = self.getNode(startPos, radius)
+		endNode = self.getNode(endPos, radius)
 		return self.findPathFromNodes(startNode, endNode, startPos, endPos, radius)
 	
 	def findPathFromNodes(self, startNode, endNode, startPos, endPos, radius = 1):	
@@ -430,9 +436,9 @@ class NavNode:
 			else:
 				self.edgeNormals.append(reverseNormal)
 	
-	def containerTest(self, p):
+	def containerTest(self, p, radius = 1):
 		p2 = Vec3(p.getX(), p.getY(), 0)
-		if p.getZ() > self.highest + 2 or p.getZ() < self.lowest - 2:
+		if p.getZ() > self.highest + radius + 1 or p.getZ() < self.lowest - radius - 1:
 			return False
 		for i in range(len(self.edgeNormals)):
 			vector = p2 - self.edges[i].flatCenter

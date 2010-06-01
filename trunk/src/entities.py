@@ -315,14 +315,12 @@ class ObjectEntity(Entity):
 		self.body.destroy()
 		engine.deleteModel(self.node, self.filename)
 
-class DropPod(Entity):
-	def __init__(self, space, controller, local = net.netMode == net.MODE_SERVER):
-		Entity.__init__(self, controller, local)
-		self.node = loader.loadModel("models/pod/pod")
-		self.node.reparentTo(engine.renderLit)
+class DropPod(ObjectEntity):
+	def __init__(self, world, space, local = net.netMode == net.MODE_SERVER):
+		ObjectEntity.__init__(self, "models/pod/pod", controllers.DropPodController(), True)
 		self.collisionNode = CollisionNode("cnode")
 		self.collisionNodePath = self.node.attachNewNode(self.collisionNode)
-		sizex = 3
+		"""sizex = 3
 		sizey = 3
 		sizez = 7
 		point1 = Point3(-sizex / 2.0, -sizey / 2.0, -sizez / 2.0)
@@ -330,9 +328,20 @@ class DropPod(Entity):
 		self.radius = max(sizez, max(sizex, sizey)) / 2.0
 		self.vradius = sizez / 2.0
 		self.collisionNode.addSolid(CollisionBox(point1, point2))
-		self.geometry = OdeBoxGeom(space, sizex, sizey, sizez)
+		self.geometry = OdeBoxGeom(space, sizex, sizey, sizez)"""
+		self.radius = 3.5
+		self.vradius = 3.5
+		self.collisionNode.addSolid(CollisionSphere(0, 0, 0, self.radius))
+		self.geometry = OdeSphereGeom(space, self.radius)
 		self.geometry.setCollideBits(BitMask32(0x00000001))
 		self.geometry.setCategoryBits(BitMask32(0x00000001))
+		self.body = OdeBody(world)
+		M = OdeMass()
+		M.setSphere(2, self.radius)
+		self.body.setMass(M)
+		self.geometry.setBody(self.body)
+		avel = 5
+		self.setAngularVelocity(Vec3(uniform(-avel, avel), uniform(-avel, avel), uniform(-avel, avel)))
 		space.setSurfaceType(self.geometry, 1)
 		visitorFont = loader.loadFont("menu/visitor2.ttf")
 		self.amountIndicator = TextNode("dropPodAmountIndicator")
@@ -352,36 +361,24 @@ class DropPod(Entity):
 		self.amountIndicatorNode.setBin("fixed", 102) # 102 so it's in front of all the MeshDrawer particles.
 		self.amountIndicatorNode.hide(BitMask32.bit(4)) # Don't cast shadows
 		self.amountIndicatorNode.setBillboardPointEye()
-	
-	def getPosition(self):
-		return self.node.getPos()
-	
-	def setPosition(self, pos):
-		self.node.setPos(pos)
-		self.geometry.setPosition(pos)
-	
-	def setRotation(self, hpr):
-		self.node.setHpr(hpr)
-		self.geometry.setQuat(self.node.getQuat(render))
-	
-	def getRotation(self):
-		return self.node.getHpr()
 		
 	def delete(self, entityGroup, killed = False, localDelete = True):
-		Entity.delete(self, entityGroup, killed, localDelete)
+		ObjectEntity.delete(self, entityGroup, killed, localDelete)
 	
 	def kill(self, aiWorld, entityGroup, localDelete = True):
 		if self.active:
 			position = self.getPosition()
-			entityGroup.explode(position, force = 4000, damage = 67, damageRadius = 20, sourceEntity = self, damagingEntity = None) # Give damage credit to our parent actor
+			entityGroup.explode(position, force = 5000, damage = 80, damageRadius = 25, sourceEntity = self, damagingEntity = None) # Give damage credit to our parent actor
 			explosionSound = audio.SoundPlayer("large-explosion")
 			explosionSound.play(position = position)
-		Entity.kill(self, aiWorld, entityGroup, localDelete)
-	
-	def clear(self, entityGroup):
-		Entity.clear(self, entityGroup)
-		self.node.removeNode()
-		self.geometry.destroy()
+			# Add fragments
+			for _ in range(8):
+				offset = Vec3(uniform(-1, 1), uniform(-1, 1), uniform(0, 1))
+				offset.normalize()
+				fragment = Fragment(aiWorld.world, aiWorld.space, position + (offset * 1.5), offset * 30)
+				entityGroup.generateEntityId(fragment, 1024)
+				entityGroup.addEntity(fragment)
+		ObjectEntity.kill(self, aiWorld, entityGroup, localDelete)
 
 class Fragment(ObjectEntity):
 	def __init__(self, world, space, pos, velocity):
@@ -423,28 +420,6 @@ class GlassFragment(Fragment):
 		vel = 5
 		self.setAngularVelocity(Vec3(uniform(-vel, vel), uniform(-vel, vel), uniform(-vel, vel)))
 		space.setSurfaceType(self.geometry, 2)
-
-class Springboard(ObjectEntity):
-	"A springboard applies an upward force to any entity that touches it."
-	def __init__(self, world, space):
-		ObjectEntity.__init__(self, "models/springboard/springboard", controllers.SpringboardController(Vec3(0, 0, 1)))
-		self.node.setTransparency(TransparencyAttrib.MAlpha)
-		self.radius = 1.5
-		self.vradius = 0.1
-		size = self.radius
-		vsize = self.vradius
-		self.collisionNode = CollisionNode("cnode")
-		self.collisionNodePath = self.node.attachNewNode(self.collisionNode)
-		self.collisionNode.addSolid(CollisionSphere(0, 0, 0, size))
-		self.body = OdeBody(world)
-		M = OdeMass()
-		M.setBox(50, size, size, vsize)
-		self.body.setMass(M)
-		self.geometry = OdeBoxGeom(space, size, size, size)
-		self.geometry.setCollideBits(BitMask32(0x00000001))
-		self.geometry.setCategoryBits(BitMask32(0x00000001))
-		self.geometry.setBody(self.body)
-		space.setSurfaceType(self.geometry, 1)
 
 class Glass(ObjectEntity):
 	def __init__(self, world, space):
@@ -556,10 +531,10 @@ class PhysicsEntity(ObjectEntity):
 						offsetx = float(tokens[3])
 						offsety = float(tokens[4])
 						offsetz = float(tokens[5])
-					self.collisionNode.addSolid(CollisionSphere(offsetx, offsety, offsetz, radius * 2.0))
+					self.collisionNode.addSolid(CollisionSphere(offsetx, offsety, offsetz, radius))
 					geom = OdeSphereGeom(space, radius)
 					self.radius = max(self.radius, radius + max(math.fabs(offsetx), math.fabs(offsety)))
-					self.vradius = max(self.radius, radius + math.fabs(offsetz))
+					self.vradius = max(self.vradius, radius + math.fabs(offsetz))
 				elif tokens[1] == "cylinder":
 					radius = float(tokens[2])
 					length = float(tokens[3])
@@ -867,14 +842,6 @@ class BasicDroid(Actor):
 			position = self.getPosition()
 			
 			entityGroup.explode(position, force = 2000, damage = 0, damageRadius = 25, sourceEntity = self)
-
-			# Add fragments
-			for _ in range(6):
-				offset = Vec3(uniform(-1, 1), uniform(-1, 1), uniform(0, 1))
-				offset.normalize()
-				fragment = Fragment(aiWorld.world, aiWorld.space, position + (offset * 1.5), offset * 30)
-				entityGroup.generateEntityId(fragment, 1024)
-				entityGroup.addEntity(fragment)
 			
 			explosionSound = audio.SoundPlayer("large-explosion")
 			explosionSound.play(position = position)

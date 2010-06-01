@@ -256,11 +256,11 @@ class UnitHighlightParticleGroup(ParticleGroup):
 			ParticleGroup.generator.billboard(Vec3(pos), ParticleGroup.frames[1], size, color)
 
 class EnemySelectorParticleGroup(ParticleGroup):
-	color = Vec4(1, 1, 1, 0.3)
+	color = Vec4(1, 1, 1, 0.5)
 	@staticmethod
-	def draw(pos):
+	def draw(pos, radius):
 		if ParticleGroup.begun:
-			ParticleGroup.generator.billboard(Vec3(pos), ParticleGroup.frames[4], 2.5, EnemySelectorParticleGroup.color)
+			ParticleGroup.generator.particle(Vec3(pos), ParticleGroup.frames[4], radius * 2.0, EnemySelectorParticleGroup.color, engine.clock.time * -30)
 
 class HitRegisterParticleGroup(ParticleGroup):
 	def __init__(self, position, color, size = 0.5):

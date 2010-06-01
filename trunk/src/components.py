@@ -139,7 +139,6 @@ class Gun(Weapon):
 		self.lastReload = -1
 		self.ricochetSound = audio.SoundPlayer("ricochet")
 		self.reloadSound = audio.SoundPlayer("reload")
-		self.reloadBeepSound = audio.SoundPlayer("reload-beep")
 		self.showSound = audio.SoundPlayer("change-weapon")
 		self.node = engine.loadModel(modelFile)
 		self.modelFile = modelFile
@@ -173,8 +172,6 @@ class Gun(Weapon):
 		self.reloadActive = False
 		self.reloadStarted = False
 		self.lastReload = -1
-		if self.reloadBeepSound.isPlaying():
-			self.reloadBeepSound.stop()
 	
 	def reload(self):
 		if not self.reloadActive and self.selected and self.ammo < self.clipSize:
@@ -251,14 +248,10 @@ class Gun(Weapon):
 					self.showTime = -1
 			if self.selected:
 				self._updatePosition(offset, angleOffset)
-			if self.activeSound == 1: # Reload beep sound
+			if self.activeSound == 1: # Reloading sound (actually no sound right now)
 				self.reloadActive = True # So clients also have an accurate reloadActive value
-				if not self.reloadBeepSound.isPlaying():
-					self.reloadBeepSound.play(entity = self.actor)
 			elif self.activeSound == 2: # Reload ready sound
 				self.reloadActive = False # So clients also have an accurate reloadActive value
-				if self.reloadBeepSound.isPlaying():
-					self.reloadBeepSound.stop()
 				self.reloadSound.play(entity = self.actor)
 				self.activeSound = 0 # Only play once
 	
@@ -272,7 +265,6 @@ class Gun(Weapon):
 	
 	def delete(self):
 		self.ricochetSound.delete()
-		self.reloadBeepSound.delete()
 		self.reloadSound.delete()
 		self.node.removeNode()
 		Weapon.delete(self)
