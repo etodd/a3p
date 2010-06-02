@@ -1103,7 +1103,6 @@ class PlayerController(DroidController):
 			self.accept("e", self.issueCommand, [1])
 			self.commandSound = audio.FlatSound("sounds/command.ogg", 0.5)
 			self.sprintSound = audio.FlatSound("sounds/sprint.ogg", 0.5)
-			self.jumpSound = audio.FlatSound("sounds/jump.ogg", 0.5)
 		
 	def sprint(self):
 		if engine.inputEnabled:
@@ -1171,7 +1170,6 @@ class PlayerController(DroidController):
 			if engine.clock.time - self.lastJump > 0.25 and aiWorld.testCollisions(self.entity.collisionNodePath).getNumEntries() > 0:
 				self.lastJump = engine.clock.time
 				self.entity.setLinearVelocity(self.entity.getLinearVelocity() + Vec3(0, 0, 16))
-				self.jumpSound.play()
 		if self.keyMap["switch-weapon"]:
 			self.keyMap["switch-weapon"] = False
 			if self.activeWeapon == 1:

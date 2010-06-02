@@ -612,12 +612,14 @@ class TeamEntity(Entity):
 		Entity.setLocal(self, local)
 		if self.player != None:
 			self.player.setLocal(self.isLocal)
+	def clearUnits(self):
+		del self.purchasedTypes[:]
 	def resetScore(self):
 		if self.isZombies:
 			self.money += 800
 		if self.isSurvivors:
 			self.money += 250
-		del self.purchasedTypes[:]
+		self.clearUnits()
 		self.lastSpecialActivated = -SPECIAL_DELAY
 		self.score = 0
 		self.player = None
@@ -857,6 +859,7 @@ class BasicDroid(Actor):
 class PlayerDroid(BasicDroid):
 	def __init__(self, world, space, controller, local = net.netMode == net.MODE_SERVER):
 		BasicDroid.__init__(self, world, space, controller, local)
+		print "done"
 		self.username = "Unnamed"
 		self.scoreMultiplier = 2.0
 	
