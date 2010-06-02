@@ -54,7 +54,7 @@ class Backend(DirectObject):
 		self.enableRespawn = True
 		self.startTime = engine.clock.time
 		self.gameOver = False
-		self.matchLimit = 3
+		self.matchLimit = 1
 		self.matchNumber = 0
 		self.connected = True # All backends are connected by default. Clients can be disconnected though.
 
@@ -459,6 +459,7 @@ class Game(DirectObject):
 		self.backend.setGame(self)
 		self.spawnedOnce = False
 		self.spectatorController = controllers.SpectatorController()
+		self.buyScreenDisplayed = False
 
 	def startMatch(self):
 		# Must buy at least one weapon
@@ -467,28 +468,27 @@ class Game(DirectObject):
 			self.errorSound.play()
 			return
 		
-		self.backend.map.hidePlatforms()
-		
-		self.spawnedOnce = False
-		
-		self.matchInProgress = True
-
-		self.winSound.stop()
-		self.loseSound.stop()
+		if not self.matchInProgress:
+			self.backend.map.hidePlatforms()
+			self.spawnedOnce = False
+			self.matchInProgress = True
+			self.winSound.stop()
+			self.loseSound.stop()
+			
+		self.gameui.show()
+		self.unitSelector.hide()
+		self.promptText.hide()
+		self.scoreText.hide()
 
 		weaponSelections = self.unitSelector.getUnitWeapons()
 		specialSelections = self.unitSelector.getUnitSpecials()
+		self.localTeam.clearUnits()
 		for i in range(len(weaponSelections)):
 			self.localTeam.purchaseUnit(weaponSelections[i], specialSelections[i])
 		
 		self.localTeam.setPrimaryWeapon(self.unitSelector.getPrimaryWeapon())
 		self.localTeam.setSecondaryWeapon(self.unitSelector.getSecondaryWeapon())
 		self.localTeam.setSpecial(self.unitSelector.getSpecial())
-
-		self.gameui.show()
-		self.unitSelector.hide()
-		self.promptText.hide()
-		self.scoreText.hide()
 	
 	def gameInfoCallback(self, iterator):
 		engine.log.info("Processing game setup information...")
@@ -509,6 +509,7 @@ class Game(DirectObject):
 		self.backend.type = info.type
 		if self.backend.type == SURVIVAL:
 			self.unitSelector.disableUnits()
+		self.unitSelector.show()
 	
 	def localStart(self, map):
 		self.backend.loadMap(map)
@@ -613,13 +614,18 @@ class Game(DirectObject):
 			if player == None or not player.active:
 				if self.playerLastActive == -1:
 					self.playerLastActive = engine.clock.time
-				if self.unitSelector.hidden and engine.clock.time - self.playerLastActive > 1.0:
-					self.spectatorController.serverUpdate(self.backend.aiWorld, self.backend.entityGroup, None)
-				if self.matchInProgress and (self.backend.enableRespawn or not self.spawnedOnce):
-					self.spawnedOnce = True
-					self.localTeam.respawnPlayer()
+				if engine.clock.time - self.playerLastActive > 1.0:
+					if not self.buyScreenDisplayed:
+						self.showBuyScreen()
+						self.buyScreenDisplayed = True
+					elif self.unitSelector.hidden:
+						self.spectatorController.serverUpdate(self.backend.aiWorld, self.backend.entityGroup, None)
+					if self.unitSelector.hidden and self.matchInProgress and (self.backend.enableRespawn or not self.spawnedOnce):
+						self.spawnedOnce = True
+						self.localTeam.respawnPlayer()
 			else:
 				self.playerLastActive = -1
+				self.buyScreenDisplayed = False
 			if self.gameui != None:
 				self.gameui.update(self.backend.scoreLimit)
 				self.unitSelector.update()
@@ -647,7 +653,8 @@ class Tutorial(Game):
 		self.backend.matchLimit = 10
 		self.promptText.hide()
 		self.scoreText.hide()
-		self.unitSelector.hide()
+		if index < 2:
+			self.unitSelector.hide()
 		self.tutorialScreens = []
 		self.messages = ["Find and capture the drop pods to earn money!", "Use your units to help defeat the enemy.", "Try using your special abilities."]
 		visitorFont = loader.loadFont("menu/visitor2.ttf")
@@ -664,45 +671,59 @@ class Tutorial(Game):
 		self.enemyTeam = None
 		self.matchStartTime = -1
 	
+	def handleSpacebar(self):
+		if render.isHidden():
+			render.show()
+			self.backend.map.hidePlatforms()
+			self.tutorialScreens[self.tutorialIndex].hide()
+		else:
+			Game.handleSpacebar(self)
+	
 	def reset(self):
 		Game.reset(self)
 		self.unitSelector.hide()
 	
 	def showBuyScreen(self):
-		self.hideTutorialScreen()
-		if self.tutorialIndex == 2 and self.unitSelector.hidden:
-			self.unitSelector.show()
-		else:
-			self.unitSelector.hide()
+		if self.tutorialIndex < 2:
+			self.hideTutorialScreen()
 			self.startMatch()
+		else:
+			Game.showBuyScreen(self)
 	
 	def startMatch(self):
-		if self.tutorialIndex >= len(self.tutorialScreens) - 1:
-			self.backend.connected = False
-		self.matchStartTime = engine.clock.time
-		render.show()
-		self.backend.map.hidePlatforms()
-		self.tutorialScreens[self.tutorialIndex].hide()
-		if self.tutorialIndex == 0:
-			self.localTeam.setPrimaryWeapon(components.CHAINGUN)
-			self.localTeam.setSecondaryWeapon(components.SNIPER)
-			self.localTeam.setSpecial(None)
-			self.enemyAiUnits = [(components.SHOTGUN, None)]
-			self.backend.scoreLimit = 400
-		elif self.tutorialIndex == 1:
-			self.localTeam.setPrimaryWeapon(components.SHOTGUN)
-			self.localTeam.setSecondaryWeapon(components.GRENADE_LAUNCHER)
-			self.localTeam.setSpecial(None)
-			self.localTeam.purchaseUnit(components.PISTOL, None)
-			self.localTeam.purchaseUnit(components.MOLOTOV_THROWER, None)
-			self.enemyAiUnits = choice([[(components.GRENADE_LAUNCHER, None), (components.SNIPER, None), (None, None)], [(components.CHAINGUN, None), (components.SHOTGUN, None), (None, None)], [(components.PISTOL, None), (components.SNIPER, None), (None, None)]])
-			self.backend.scoreLimit = 800
-		elif self.tutorialIndex == 2:
-			self.enemyAiUnits = choice([[(components.SHOTGUN, controllers.CLOAK_SPECIAL), (components.SNIPER, None), (components.PISTOL, None)], [(components.GRENADE_LAUNCHER, controllers.CLOAK_SPECIAL), (components.CHAINGUN, controllers.SHIELD_SPECIAL), (None, None)], [(components.PISTOL, None), (components.MOLOTOV_THROWER, controllers.SHIELD_SPECIAL), (components.SHOTGUN, None)]])
-			self.backend.scoreLimit = 1200
-		if self.tutorialIndex <= 2:
-			self.messageText.setText(self.messages[self.tutorialIndex])
-			self.messageText.show()
+		if not self.matchInProgress:
+			if self.tutorialIndex >= len(self.tutorialScreens) - 1:
+				self.backend.connected = False
+			self.matchStartTime = engine.clock.time
+			if self.tutorialIndex == 0:
+				self.localTeam.setPrimaryWeapon(components.CHAINGUN)
+				self.localTeam.setSecondaryWeapon(components.SNIPER)
+				self.localTeam.setSpecial(None)
+				self.enemyAiUnits = [(components.SHOTGUN, None)]
+				self.backend.scoreLimit = 400
+			elif self.tutorialIndex == 1:
+				self.localTeam.setPrimaryWeapon(components.SHOTGUN)
+				self.localTeam.setSecondaryWeapon(components.GRENADE_LAUNCHER)
+				self.localTeam.setSpecial(None)
+				self.localTeam.purchaseUnit(components.PISTOL, None)
+				self.localTeam.purchaseUnit(components.MOLOTOV_THROWER, None)
+				self.enemyAiUnits = choice([[(components.GRENADE_LAUNCHER, None), (components.SNIPER, None), (None, None)], [(components.CHAINGUN, None), (components.SHOTGUN, None), (None, None)], [(components.PISTOL, None), (components.SNIPER, None), (None, None)]])
+				self.backend.scoreLimit = 800
+			elif self.tutorialIndex == 2:
+				self.enemyAiUnits = choice([[(components.SHOTGUN, controllers.CLOAK_SPECIAL), (components.SNIPER, None), (components.PISTOL, None)], [(components.GRENADE_LAUNCHER, controllers.CLOAK_SPECIAL), (components.CHAINGUN, controllers.SHIELD_SPECIAL), (None, None)], [(components.PISTOL, None), (components.MOLOTOV_THROWER, controllers.SHIELD_SPECIAL), (components.SHOTGUN, None)]])
+				self.backend.scoreLimit = 1200
+			if self.tutorialIndex <= 2:
+				self.messageText.setText(self.messages[self.tutorialIndex])
+				self.messageText.show()
+				
+			# Purchase AI units
+			self.enemyTeam = self.backend.entityGroup.teams[1]
+			self.enemyTeam.setLocal(True)
+			self.enemyTeam.setUsername("Computer")
+			self.enemyTeam.controller.tutorialMode = True
+			self.enemyTeam.resetScore()
+			for u in self.enemyAiUnits:
+				self.enemyTeam.purchaseUnit(u[0], u[1])
 		
 		if self.tutorialIndex == 2:
 			Game.startMatch(self)
@@ -714,15 +735,6 @@ class Tutorial(Game):
 			self.gameui.show()
 			self.promptText.hide()
 			self.scoreText.hide()
-
-		# Purchase AI units
-		self.enemyTeam = self.backend.entityGroup.teams[1]
-		self.enemyTeam.setLocal(True)
-		self.enemyTeam.setUsername("Computer")
-		self.enemyTeam.controller.tutorialMode = True
-		self.enemyTeam.resetScore()
-		for u in self.enemyAiUnits:
-			self.enemyTeam.purchaseUnit(u[0], u[1])
 	
 	def endMatchCallback(self, winningTeam):
 		localTeam = self.localTeam

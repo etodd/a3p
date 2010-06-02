@@ -49,8 +49,7 @@ def requestPath(callback, aiNode, targetAiNode, position, targetPosition, radius
 	pathRequests.append(request)
 
 class World:
-	"""The AI world models the physics world as a series of grids, where each cell has a traversal cost associated with it.
-	Portals can be created between grids, and AI entities navigate through the grids using an A* search algorithm.
+	"""The AI world models the world using a navigation mesh. AI entities navigate between edges in the mesh using an A* search algorithm.
 	The AI world also contains the ODE world and space, and includes functions to test for collisions."""
 	def __init__(self):
 		global currentWorld
