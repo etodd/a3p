@@ -522,7 +522,7 @@ class DropPodController(ObjectController):
 		entity = ObjectController.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
 		entity.controller.setFinalPosition(net2.HighResVec3.getFrom(iterator))
 		entity.spawnTime = engine.clock.time - net.StandardFloat.getFrom(iterator)
-		self.money = net.Uint16.getFrom(iterator)
+		entity.controller.money = net.Uint16.getFrom(iterator)
 		return entity
 	
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):

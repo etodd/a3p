@@ -49,7 +49,7 @@ class Backend(DirectObject):
 		self.entityGroup = entities.EntityGroup(self.netManager)
 		self.game = None
 		self.lastGc = engine.clock.time
-		self.scoreLimit = 1500
+		self.scoreLimit = 3000
 		self.username = username
 		self.enableRespawn = True
 		self.startTime = engine.clock.time
@@ -559,18 +559,20 @@ class Game(DirectObject):
 		self.gameui.hide()
 	
 	def endMatchCallback(self, winningTeam):
+		self.endMatch(winningTeam) # For object-oriented inheritance nonsense
+	
+	def endMatch(self, winningTeam):
 		self.backend.map.showPlatforms()
+		self.localTeam.platformSpawnPlayer(self.backend.map.platforms[self.localTeam.lastMatchPosition].getPosition() + Vec3(0, 0, 2))
+		self.gameui.showUsernames()
 		
 		if self.localTeam.isAlly(winningTeam):
 			self.winSound.play()
 		else:
 			self.loseSound.play()
 		
-		self.localTeam.platformSpawnPlayer(self.backend.map.platforms[self.localTeam.lastMatchPosition].getPosition() + Vec3(0, 0, 2))
-		
 		self.matchReset()
 		
-		self.gameui.showUsernames()
 		self.updateScoreText()
 		self.promptText.show()
 
@@ -672,12 +674,24 @@ class Tutorial(Game):
 		self.matchStartTime = -1
 	
 	def handleSpacebar(self):
-		if render.isHidden():
-			render.show()
-			self.backend.map.hidePlatforms()
-			self.tutorialScreens[self.tutorialIndex].hide()
+		if self.tutorialIndex == 3:
+			self.backend.connected = False # Exit tutorial
 		else:
-			Game.handleSpacebar(self)
+			if render.isHidden():
+				render.show()
+				self.backend.map.hidePlatforms()
+				self.tutorialScreens[self.tutorialIndex].hide()
+				if self.tutorialIndex == 2:
+					self.showBuyScreen()
+			else:
+				Game.handleSpacebar(self)
+	
+	def endMatch(self, winningTeam):
+		if self.localTeam.isAlly(winningTeam):
+			self.winSound.play()
+		else:
+			self.loseSound.play()
+		self.matchReset()
 	
 	def reset(self):
 		Game.reset(self)
@@ -687,13 +701,11 @@ class Tutorial(Game):
 		if self.tutorialIndex < 2:
 			self.hideTutorialScreen()
 			self.startMatch()
-		else:
+		elif self.tutorialIndex < 3:
 			Game.showBuyScreen(self)
 	
 	def startMatch(self):
 		if not self.matchInProgress:
-			if self.tutorialIndex >= len(self.tutorialScreens) - 1:
-				self.backend.connected = False
 			self.matchStartTime = engine.clock.time
 			if self.tutorialIndex == 0:
 				self.localTeam.setPrimaryWeapon(components.CHAINGUN)
