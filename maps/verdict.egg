@@ -6,10 +6,10 @@
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.451903581619}
-  <Scalar> specg {0.451903581619}
-  <Scalar> specb {0.451903581619}
-  <Scalar> shininess {16.75}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> Walls {
   <Scalar> diffr {0.658841967583}

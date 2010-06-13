@@ -6,118 +6,118 @@
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_10 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_11 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.365636616945}
+  <Scalar> specg {0.365636616945}
+  <Scalar> specb {0.365636616945}
+  <Scalar> shininess {40.25}
 }
 <Material> material_16 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_17 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_15 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_8 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.307818323374}
+  <Scalar> specg {0.307818323374}
+  <Scalar> specb {0.307818323374}
+  <Scalar> shininess {38.25}
 }
 <Material> material_9 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_3.003 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.307818293571}
+  <Scalar> specg {0.307818293571}
+  <Scalar> specb {0.307818293571}
+  <Scalar> shininess {34.75}
 }
 <Material> material_3.002 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_0 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_2 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_3 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Texture> material_17_00_Kd.017 {
   "./gold_material_17.jpg"

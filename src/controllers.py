@@ -1844,7 +1844,7 @@ class EditController(Controller):
 		self.accept("mouse3", self.setKey, ["rotate",1])
 		self.accept("mouse3-up", self.setKey, ["rotate",0])
 		self.accept("enter", self.save, [aiWorld, entityGroup])
-		self.accept("z", self.undo, [entityGroup])
+		self.accept("z", self.undo, [aiWorld, entityGroup])
 		self.accept("escape", engine.exit)
 		self.keyMap = {"left":0, "right":0, "forward":0, "back":0, "raise":0, "lower":0, "rotate":0}
 		self.angleX = math.radians(45)
@@ -1867,11 +1867,15 @@ class EditController(Controller):
 			print exceptionData
 			engine.log.info(exceptionData)
 	
-	def undo(self, entityGroup):
+	def undo(self, aiWorld, entityGroup):
 		if len(self.spawnedObjects) > 0:
 			obj = self.spawnedObjects.pop()
 			if isinstance(obj, engine.SpawnPoint):
 				obj.delete()
+				if isinstance(obj, engine.Dock):
+					aiWorld.docks.remove(obj)
+				else:
+					aiWorld.spawnPoints.remove(obj)
 			else:
 				obj.delete(entityGroup)
 				entityGroup.clearDeletedEntities()
