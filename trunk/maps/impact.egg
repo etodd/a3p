@@ -9,43 +9,43 @@
   <Scalar> specr {0.0}
   <Scalar> specg {0.0}
   <Scalar> specb {0.0}
-  <Scalar> shininess {12.5}
+  <Scalar> shininess {0.25}
 }
 <Material> material_2 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.39416244626}
-  <Scalar> specg {0.39416244626}
-  <Scalar> specb {0.39416244626}
-  <Scalar> shininess {42.0}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_3 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {38.25}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_4 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {40.0}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_5 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {32.75}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_6 {
   <Scalar> diffr {1.0}
@@ -54,7 +54,7 @@
   <Scalar> specr {0.0}
   <Scalar> specg {0.0}
   <Scalar> specb {0.0}
-  <Scalar> shininess {12.5}
+  <Scalar> shininess {0.25}
 }
 <Texture> material_3_02_Tex.001 {
   "./impact-lightmap.jpg"

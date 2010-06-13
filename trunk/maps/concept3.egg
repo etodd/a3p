@@ -6,64 +6,64 @@
   <Scalar> diffr {0.800000011921}
   <Scalar> diffg {0.800000011921}
   <Scalar> diffb {0.800000011921}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {42.0}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> texture_7 {
   <Scalar> diffr {0.800000011921}
   <Scalar> diffg {0.800000011921}
   <Scalar> diffb {0.800000011921}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {42.0}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> texture_6 {
   <Scalar> diffr {0.800000011921}
   <Scalar> diffg {0.800000011921}
   <Scalar> diffb {0.800000011921}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {36.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> texture_1 {
   <Scalar> diffr {0.800000011921}
   <Scalar> diffg {0.800000011921}
   <Scalar> diffb {0.800000011921}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {34.75}
+  <Scalar> specr {0.336497455835}
+  <Scalar> specg {0.336497455835}
+  <Scalar> specb {0.336497455835}
+  <Scalar> shininess {42.0}
 }
 <Material> texture_0 {
   <Scalar> diffr {0.800000011921}
   <Scalar> diffg {0.800000011921}
   <Scalar> diffb {0.800000011921}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
+  <Scalar> specr {0.307664990425}
+  <Scalar> specg {0.307664990425}
+  <Scalar> specb {0.307664990425}
   <Scalar> shininess {38.25}
 }
 <Material> texture_3 {
   <Scalar> diffr {0.800000011921}
   <Scalar> diffg {0.800000011921}
   <Scalar> diffb {0.800000011921}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
+  <Scalar> specr {0.307664990425}
+  <Scalar> specg {0.307664990425}
+  <Scalar> specb {0.307664990425}
   <Scalar> shininess {42.0}
 }
 <Material> texture_9 {
   <Scalar> diffr {0.800000011921}
   <Scalar> diffg {0.800000011921}
   <Scalar> diffb {0.800000011921}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {38.25}
+  <Scalar> specr {0.365329951048}
+  <Scalar> specg {0.365329951048}
+  <Scalar> specb {0.365329951048}
+  <Scalar> shininess {42.0}
 }
 <Material> texture_8 {
   <Scalar> diffr {0.800000011921}
@@ -72,7 +72,7 @@
   <Scalar> specr {0.0}
   <Scalar> specg {0.0}
   <Scalar> specb {0.0}
-  <Scalar> shininess {12.5}
+  <Scalar> shininess {0.25}
 }
 <Texture> texture_1_00_Kd.001 {
   "./concept3_texture_1.jpg"
@@ -30279,7 +30279,7 @@
       <VertexRef> { 2492 2493 2494 2495 <Ref> { concept3.001 } }
     }
   }
-  <Group> concept3.001_02_texture_0 {
+  <Group> concept3.001_01_texture_0 {
     <Polygon> {
       <TRef> { texture_0_00_Kd }
       <TRef> { texture_0_01_Tex.005 }
@@ -32617,7 +32617,7 @@
       <VertexRef> { 3449 3450 3451 <Ref> { concept3.001 } }
     }
   }
-  <Group> concept3.001_03_texture_3 {
+  <Group> concept3.001_02_texture_3 {
     <Polygon> {
       <TRef> { texture_3_00_Kd.003 }
       <TRef> { texture_3_01_Tex.006 }
@@ -33003,7 +33003,7 @@
       <VertexRef> { 2488 2489 2490 2491 <Ref> { concept3.001 } }
     }
   }
-  <Group> concept3.001_04_texture_7 {
+  <Group> concept3.001_03_texture_7 {
     <Polygon> {
       <TRef> { texture_7_00_Kd.007 }
       <TRef> { texture_7_01_Tex }
@@ -33685,7 +33685,7 @@
       <VertexRef> { 3377 3378 3379 <Ref> { concept3.001 } }
     }
   }
-  <Group> concept3.001_06_texture_6 {
+  <Group> concept3.001_04_texture_6 {
     <Polygon> {
       <TRef> { texture_6_00_Kd.006 }
       <TRef> { texture_6_01_Tex.003 }
@@ -34391,7 +34391,7 @@
       <VertexRef> { 3539 3540 3541 <Ref> { concept3.001 } }
     }
   }
-  <Group> concept3.001_07_texture_9 {
+  <Group> concept3.001_05_texture_9 {
     <Polygon> {
       <TRef> { texture_9_00_Kd.009 }
       <TRef> { texture_9_01_Tex.007 }
@@ -35129,7 +35129,7 @@
       <VertexRef> { 2673 2674 2675 <Ref> { concept3.001 } }
     }
   }
-  <Group> concept3.001_08_texture_1 {
+  <Group> concept3.001_06_texture_1 {
     <Polygon> {
       <TRef> { texture_1_00_Kd.001 }
       <TRef> { texture_1_01_Tex.001 }
@@ -38065,7 +38065,7 @@
       <VertexRef> { 3701 3702 3703 <Ref> { concept3.001 } }
     }
   }
-  <Group> concept3.001_09_texture_5 {
+  <Group> concept3.001_07_texture_5 {
     <Polygon> {
       <TRef> { texture_5_00_Kd.005 }
       <TRef> { texture_5_01_Tex.002 }

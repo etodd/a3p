@@ -6,37 +6,37 @@
   <Scalar> diffr {0.800000011921}
   <Scalar> diffg {0.800000011921}
   <Scalar> diffb {0.800000011921}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
+  <Scalar> specr {0.379746198654}
+  <Scalar> specg {0.379746198654}
+  <Scalar> specb {0.379746198654}
   <Scalar> shininess {40.0}
 }
 <Material> texture_11.001 {
   <Scalar> diffr {0.800000011921}
   <Scalar> diffg {0.800000011921}
   <Scalar> diffb {0.800000011921}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
+  <Scalar> specr {0.336497455835}
+  <Scalar> specg {0.336497455835}
+  <Scalar> specb {0.336497455835}
   <Scalar> shininess {43.75}
 }
 <Material> texture_7 {
   <Scalar> diffr {0.800000011921}
   <Scalar> diffg {0.800000011921}
   <Scalar> diffb {0.800000011921}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
+  <Scalar> specr {0.322081208229}
+  <Scalar> specg {0.322081208229}
+  <Scalar> specb {0.322081208229}
   <Scalar> shininess {42.0}
 }
 <Material> texture_6 {
   <Scalar> diffr {0.800000011921}
   <Scalar> diffg {0.800000011921}
   <Scalar> diffb {0.800000011921}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {40.0}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> texture_3 {
   <Scalar> diffr {0.800000011921}
@@ -45,7 +45,7 @@
   <Scalar> specr {0.0}
   <Scalar> specg {0.0}
   <Scalar> specb {0.0}
-  <Scalar> shininess {12.5}
+  <Scalar> shininess {0.25}
 }
 <Material> texture_9.001 {
   <Scalar> diffr {0.800000011921}
@@ -54,16 +54,16 @@
   <Scalar> specr {0.0}
   <Scalar> specg {0.0}
   <Scalar> specb {0.0}
-  <Scalar> shininess {12.5}
+  <Scalar> shininess {0.25}
 }
 <Material> texture_5.001 {
   <Scalar> diffr {0.800000011921}
   <Scalar> diffg {0.800000011921}
   <Scalar> diffb {0.800000011921}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {40.0}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> texture_9 {
   <Scalar> diffr {0.800000011921}
@@ -72,7 +72,7 @@
   <Scalar> specr {0.0}
   <Scalar> specg {0.0}
   <Scalar> specb {0.0}
-  <Scalar> shininess {12.5}
+  <Scalar> shininess {0.25}
 }
 <Texture> texture_11.001_02_lightmap {
   "./concept1-lightmap.jpg"

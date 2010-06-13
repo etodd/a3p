@@ -681,14 +681,14 @@ class Map(DirectObject):
 				if light.getTag("type") == "directional":
 					mapFile.write("directional " + light.getName() + " " + str(color.getX()) + " " + str(color.getY()) + " " + str(color.getZ()) + " " + str(light.getH()) + " " + str(light.getP()) + " " + str(light.getR()) + (" shadow" if light.node().isShadowCaster() else "") + "\n")
 				else:
-					pos = light.getNode(0).getPos(render)
-					atten = light.getAttenuation()
-					fov = light.getLens().getFov()
-					exponent = light.getExponent()
+					pos = light.getPos(render)
+					atten = light.getNode(0).getAttenuation()
+					fov = light.getNode(0).getLens().getFov()
+					exponent = light.getNode(0).getExponent()
 					mapFile.write("spot " + light.getName() + " " + " " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + " " + str(light.getH()) + " " + str(light.getP()) + " " + str(light.getR()) + " " + str(color.getX()) + " " + str(color.getY()) + " " + str(color.getZ()) + " " + str(atten.getX()) + " " + str(atten.getY()) + " " + str(atten.getZ()) + " " + str(fov) + " " + str(exponent) + " " + (" shadow" if light.getTag("shadow") == "true" else "") + "\n")
 			elif isinstance(light.getNode(0), PointLight):
-				atten = light.getAttenuation()
-				pos = light.getNode(0).getPos(render)
+				atten = light.getNode(0).getAttenuation()
+				pos = light.getPos(render)
 				mapFile.write("point " + light.getName() + " " + str(pos.getX()) + " " + str(pos.getY()) + " " + str(pos.getZ()) + " " + str(color.getX()) + " " + str(color.getY()) + " " + str(color.getZ()) + " " + str(atten.getX()) + " " + str(atten.getY()) + " " + str(atten.getZ()) + "\n")
 		for sceneryFile in self.sceneries.keys():
 			pos = self.sceneries[sceneryFile].getPos(render)

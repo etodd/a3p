@@ -810,7 +810,7 @@ class MainMenu(DirectObject):
 		self.cameraDistance = 20
 	
 		self.globe = loader.loadModel("menu/Globe")
-		self.globe.reparentTo(engine.renderLit)
+		self.globe.reparentTo(render)
 		self.globe.setTransparency(TransparencyAttrib.MAlpha)
 		self.globe.setColor(Vec4(1, 1, 1, 0.6))
 		self.globe.setTwoSided(True)
@@ -884,12 +884,6 @@ class MainMenu(DirectObject):
 		
 		self.belt = JunkBelt(5)
 		
-		# Ambient light
-		ambient = AmbientLight("ambient")
-		ambient.setColor(Vec4(1.0, 2.0, 4.0, 1))
-		self.ambientLightNode = engine.renderLit.attachNewNode(ambient)
-		engine.renderLit.setLight(self.ambientLightNode)
-		
 		self.angle = uniform(0, 360)
 		self.period = 60
 		self.uiAngle = 0
@@ -908,7 +902,7 @@ class MainMenu(DirectObject):
 		global firstBoot
 		self.introTime = 2
 		if firstBoot and not skipIntro:
-			self.introTime = 6
+			self.introTime = 4
 			visitorFont = loader.loadFont("menu/visitor2.ttf")
 			self.introText = OnscreenText(pos = (0, 0), scale = 0.2, align = TextNode.ACenter, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True, text = "et1337 presents")
 		self.showLogin = firstBoot
@@ -991,6 +985,8 @@ class MainMenu(DirectObject):
 			if not self.backgroundSound.isPlaying():
 				self.backgroundSound.play()
 			self.backgroundSound.setVolume(blend * 0.5)
+			if self.introText != None:
+				self.introText["fg"] = Vec4(1, 1, 1, 0)
 		else:
 			self.cameraDistance = 20
 			self.overlay.setColor(Vec4(1, 1, 1, 1))
@@ -1091,8 +1087,6 @@ class MainMenu(DirectObject):
 		self.overlay.removeNode()
 		self.belt.delete()
 		self.background.removeNode()
-		engine.renderLit.clearLight(self.ambientLightNode)
-		self.ambientLightNode.removeNode()
 		self.globe.removeNode()
 		self.skyBox.removeNode()
 		self.ignoreAll()
@@ -1129,7 +1123,7 @@ class JunkBelt:
 			instance.setHpr(hpr)
 			model = choice(self.models)
 			model.instanceTo(instance)
-			instance.reparentTo(engine.renderLit)
+			instance.reparentTo(render)
 			self.instances.append(instance)
 
 	def update(self):

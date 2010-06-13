@@ -6,64 +6,64 @@
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_16.001 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_15.001 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_17.001 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_2.001 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_9.001 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Material> material_3.004 {
   <Scalar> diffr {1.0}
   <Scalar> diffg {1.0}
   <Scalar> diffb {1.0}
-  <Scalar> specr {0.25}
-  <Scalar> specg {0.25}
-  <Scalar> specb {0.25}
-  <Scalar> shininess {12.5}
+  <Scalar> specr {0.0}
+  <Scalar> specg {0.0}
+  <Scalar> specb {0.0}
+  <Scalar> shininess {0.25}
 }
 <Texture> material_3.004_02_lightmap.001 {
   "./gold-lightmap2.jpg"
