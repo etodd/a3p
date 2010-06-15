@@ -129,15 +129,20 @@ def saveConfigFile():
 	configFile.write("username " + savedUsername)
 	configFile.close()
 
+def cacheModel(filename):
+	model = loader.loadModel(filename)
+	model.reparentTo(renderLit)
+	model.reparentTo(hidden)
+	cache[filename] = model
+
 def loadModel(filename):
 	if not filename in cache:
-		model = loader.loadModel(filename)
-		cache[filename] = model
+		return loader.loadModel(filename)
 	else:
 		model = cache[filename]
-	node = hidden.attachNewNode(filename)
-	model.instanceTo(node)
-	return node
+		node = hidden.attachNewNode(filename)
+		model.instanceTo(node)
+		return node
 
 def loadAnimation(filename, animations):
 	a = Actor(filename, animations)
@@ -225,25 +230,24 @@ def init(showFrameRate = False, daemon = False):
 	particles.init()
 	
 def preloadModels():
-	def preloadModel(filename):
-		node = loadModel(filename)
-		node.reparentTo(renderLit)
-		deleteModel(node, filename)
-	preloadModel("models/basicdroid/BasicDroid")
-	preloadModel("models/basicdroid/chaingun")
-	preloadModel("models/basicdroid/BasicDroid-lowres")
-	preloadModel("models/basicdroid/sniper")
-	preloadModel("models/basicdroid/shotgun")
-	preloadModel("models/basicdroid/pistol")
-	preloadModel("models/shield/shield")
-	preloadModel("models/grenade/Grenade")
-	preloadModel("models/fragment/Fragment")
-	preloadModel("models/basicdroid/claw")
-	preloadModel("models/basicdroid/claw-Retract")
-	preloadModel("models/basicdroid/claw-Impale")
-	preloadModel("models/fragment/GlassFragment")
-	preloadModel("models/spike/spike")
-	preloadModel("models/pod/pod")
+	cacheModel("models/basicdroid/BasicDroid")
+	cacheModel("models/basicdroid/chaingun")
+	cacheModel("models/basicdroid/BasicDroid-lowres")
+	cacheModel("models/basicdroid/sniper")
+	cacheModel("models/basicdroid/shotgun")
+	cacheModel("models/basicdroid/pistol")
+	cacheModel("models/shield/shield")
+	cacheModel("models/grenade/Grenade")
+	cacheModel("models/fragment/Fragment")
+	cacheModel("models/basicdroid/claw")
+	cacheModel("models/basicdroid/claw-Retract")
+	cacheModel("models/basicdroid/claw-Impale")
+	cacheModel("models/fragment/GlassFragment")
+	cacheModel("models/spike/spike")
+	cacheModel("models/pod/pod")
+	cacheModel("maps/Block")
+	cacheModel("maps/block1")
+	
 
 def postProcessingChanged():
 	global filters
