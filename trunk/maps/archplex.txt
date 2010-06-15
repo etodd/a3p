@@ -9,7 +9,7 @@ geometry-scenery archplex 0.0 0.0 0.0
 skybox skybox1/skybox
 sound ambient-windy.ogg 0.20000000298
 light all ambient AmbientLight 0.5 0.5 0.5
-light all point PointLight 0.0 0.0 6.0 0.600000023842 0.800000011921 1.0 0.0 0.0 0.000399999989895
+light all point PointLight 0.0 0.0 6.0 0.400000023842 0.600000011921 0.8 0.0 0.0 0.001
 light all directional Light1 1.10000002384 1.0 0.900000095367 0.0 -95.0 0.0 shadow
 physicsentity block1 39.5583343506 27.6288261414 20.7110900879 151.890197754 -7.49104970055e-07 -1.01303136546e-07
 physicsentity block1 -67.1885910034 -4.1499786377 -2.30189442635 0.0 0.0 0.0

@@ -820,6 +820,9 @@ class Dock(SpawnPoint):
 		self.shieldNode.setColor(0.8, 0.9, 1.0, 0.6)
 		self.shieldNode.setTransparency(TransparencyAttrib.MAlpha)
 		self.shieldNode.hide(BitMask32.bit(4)) # Don't cast shadows
+	
+	def setPosition(self, pos):
+		self.node.setPos(pos - Vec3(0, 0, self.vradius))
 
 class Platform(DirectObject):
 	"Makes a platform upon which to parade the game winners."

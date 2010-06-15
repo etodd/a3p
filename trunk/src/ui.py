@@ -39,6 +39,17 @@ class GameUI(DirectObject):
 		self.damageTransparency = 0.0
 		self.lastPlayerHealth = 0
 		
+		self.specialIndicators = []
+		img = OnscreenImage(image = "images/special-slot.png", pos = (engine.aspectRatio - 0.54, 0, 0.8), scale = (0.065, 0, 0.065), color = Vec4(1, 1, 1, 0.5))
+		img.setTransparency(TransparencyAttrib.MAlpha)
+		self.specialIndicators.append(img)
+		img2 = OnscreenImage(image = "images/special-slot.png", pos = (engine.aspectRatio - 0.39, 0, 0.8), scale = (0.08, 0, 0.08), color = Vec4(1, 1, 1, 0.5))
+		img2.setTransparency(TransparencyAttrib.MAlpha)
+		self.specialIndicators.append(img2)
+		img3 = OnscreenImage(image = "images/special-slot.png", pos = (engine.aspectRatio - 0.24, 0, 0.8), scale = (0.065, 0, 0.065), color = Vec4(1, 1, 1, 0.5))
+		img3.setTransparency(TransparencyAttrib.MAlpha)
+		self.specialIndicators.append(img3)
+		
 		self.teamGroups = []
 		self.playerUsernames = []
 		self.teams = []
@@ -120,6 +131,8 @@ class GameUI(DirectObject):
 		self.healthBar.setColors((color.getX() + 0.4, color.getY() + 0.4, color.getZ() + 0.4, 0.5), (color.getX(), color.getY(), color.getZ(), 0.5))
 	
 	def hide(self):
+		for img in self.specialIndicators:
+			img.hide()
 		if self.crosshairs[self.currentCrosshair] != None:
 			self.crosshairs[self.currentCrosshair].hide()
 		for h in self.healthBars:
@@ -146,6 +159,8 @@ class GameUI(DirectObject):
 	def show(self):
 		if self.crosshairs[self.currentCrosshair] != None:
 			self.crosshairs[self.currentCrosshair].show()
+		for img in self.specialIndicators:
+			img.show()
 		self.ammoTextNode.show()
 		for h in self.healthBars:
 			h.show()
@@ -203,11 +218,16 @@ class GameUI(DirectObject):
 				self.healthBars[i].setTeamIndex(actor.teamIndex)
 			else:
 				self.healthBars[i].setTeamIndex(-1)
+			img = self.specialIndicators[actor.teamIndex * 2]
+			file = UnitSelectorScreen.types[actor.specialId][0]
+			if img["image"] != file:
+				img["image"] = file
+				img.setTransparency(TransparencyAttrib.MAlpha)
 			self.healthBars[i].setPos(actor.getPosition() + Vec3(0, 0, actor.radius + 1))
 			self.healthBars[i].setValue(actor.health, actor.maxHealth)
 			self.healthBars[i].setColor(actor.team.color)
 			self.healthBars[i].setScale((camera.getPos() - self.healthBars[i].getPos()).length() * 0.07)
-
+			
 		i = 0
 		for t in self.teams:
 			self.teamScores[i].setValue(t.score, scoreLimit)
@@ -242,6 +262,11 @@ class GameUI(DirectObject):
 
 		player = self.localTeam.getPlayer()
 		if player != None and player.active:
+			img = self.specialIndicators[1]
+			file = UnitSelectorScreen.types[player.specialId][0]
+			if img["image"] != file:
+				img["image"] = file
+				img.setTransparency(TransparencyAttrib.MAlpha)
 			self.healthBar.show()
 			if player.controller.targetedEnemy != None and player.controller.targetedEnemy.active:
 				particles.EnemySelectorParticleGroup.draw(player.controller.targetedEnemy.getPosition(), player.controller.targetedEnemy.radius)
@@ -288,6 +313,8 @@ class GameUI(DirectObject):
 
 	def delete(self):
 		for img in self.crosshairs[1:]:
+			img.destroy()
+		for img in self.specialIndicators:
 			img.destroy()
 		self.specialBar.delete()
 		self.scoreChangeText.destroy()
@@ -419,21 +446,22 @@ class ChatLog(DirectObject):
 		engine.inputEnabled = True
 
 class UnitSelectorScreen(DirectObject):
-	def __init__(self, startCallback):
-		self.types = {
-			components.CHAINGUN:("images/chaingun-icon.png", "Chaingun", "High rate of fire. Inaccurate and weak at long ranges. Cheap but less effective than most weapons."),
-			components.SHOTGUN:("images/shotgun-icon.png", "Shotgun", "Slow rate of fire. Effective at close range. Holds eight shells."),
-			components.SNIPER:("images/sniper-icon.png", "Sniper", "Medium rate of fire. 2X zoom. Infinite range. Capable of one-shot kills. Holds four bullets."),
-			components.GRENADE_LAUNCHER:("images/grenade-icon.png", "Grenade", "Very slow rate of fire. Blasts surrounding units and objects away upon detonation. Good area damage."),
-			components.PISTOL:("images/pistol-icon.png", "Pistol", "High rate of fire. Medium range. Holds twelve bullets. Capable of pinning enemies to walls."),
+	types = {
 			components.MOLOTOV_THROWER:("images/molotov-icon.png", "Molotov", "Very slow rate of fire. Catches nearby enemies on fire, causing lethal damage over time. Good for weakening enemies before switching weapons."),
-			controllers.KAMIKAZE_SPECIAL:("images/kamikaze-icon.png", "Kamikaze", "Unleashes a powerful suicidal explosion after a three second delay upon activation."),
-			controllers.SHIELD_SPECIAL:("images/shield-icon.png", "Shield", "Permanently decreases ranged damage for one unit by 50%. When activated, shields the whole squad for ten seconds. Useless against fire, grenades, and melee weapons."),
-			controllers.CLOAK_SPECIAL:("images/cloak-icon.png", "Cloak", "Permanently cloaks one unit from enemy AI units. When activated, cloaks the whole squad from AI units for ten seconds."),
+			components.GRENADE_LAUNCHER:("images/grenade-icon.png", "Grenade", "Very slow rate of fire. Blasts surrounding units and objects away upon detonation. Good area damage."),
+			components.SNIPER:("images/sniper-icon.png", "Sniper", "Medium rate of fire. 2X zoom. Infinite range. Capable of one-shot kills. Holds four bullets."),
+			components.PISTOL:("images/pistol-icon.png", "Pistol", "High rate of fire. Medium range. Holds twelve bullets. Capable of pinning enemies to walls."),
+			components.SHOTGUN:("images/shotgun-icon.png", "Shotgun", "Slow rate of fire. Effective at close range. Holds eight shells."),
+			components.CHAINGUN:("images/chaingun-icon.png", "Chaingun", "High rate of fire. Inaccurate and weak at long ranges. Cheap but less effective than most weapons."),
+			controllers.ROCKET_SPECIAL:("images/rocket-icon.png", "Rocket", "Upon activation, launches one unit toward the targeted enemy, causing a devastating explosion upon impact."),
 			controllers.AWESOME_SPECIAL:("images/awesome-icon.png", "Awesome", "Renders one unit invincible for ten seconds upon activation. Also drastically increases movement, firing, and reload speed."),
-			controllers.ROCKET_SPECIAL:("images/rocket-icon.png", "Rocket", "Upon activation, launches one unit toward the targeted enemy, causing a devastating explosion upon impact.")
+			controllers.CLOAK_SPECIAL:("images/cloak-icon.png", "Cloak", "Permanently cloaks one unit from enemy AI units. When activated, cloaks the whole squad from AI units for ten seconds."),
+			controllers.SHIELD_SPECIAL:("images/shield-icon.png", "Shield", "Permanently decreases ranged damage for one unit by 50%. When activated, shields the whole squad for ten seconds. Useless against fire, grenades, and melee weapons."),
+			controllers.KAMIKAZE_SPECIAL:("images/kamikaze-icon.png", "Kamikaze", "Unleashes a powerful suicidal explosion after a three second delay upon activation."),
+			None:("images/special-slot.png", "None", "")
 		}
-		
+	codes = [components.MOLOTOV_THROWER, components.GRENADE_LAUNCHER, components.SNIPER, components.PISTOL, components.SHOTGUN, components.CHAINGUN, controllers.AWESOME_SPECIAL, controllers.ROCKET_SPECIAL, controllers.CLOAK_SPECIAL, controllers.SHIELD_SPECIAL, controllers.KAMIKAZE_SPECIAL]
+	def __init__(self, startCallback):
 		self.startCallback = startCallback
 		self.team = None
 		self.hidden = False
@@ -477,21 +505,21 @@ class UnitSelectorScreen(DirectObject):
 		
 		# Buy slots
 		
-		# Specials
-		origin = Vec3(-0.25, 0, 0.6)
-		offset = Vec3()
-		for i in range(5):
-			code = self.types.keys()[i]
-			slot = UnitIconSlot(code, UnitIconSlot.AcceptsSpecials, origin + offset, "images/buy-slot.png", self.types[code][1], isSpecial = True)
-			self.buySlots.append(slot)
-			offset += Vec3(0, 0, -0.2)
-			
 		# Weapons
 		origin = Vec3(-1.0, 0, 0.6)
 		offset = Vec3()
-		for i in range(5, 11):
-			code = self.types.keys()[i]
-			slot = UnitIconSlot(code, UnitIconSlot.AcceptsWeapons, origin + offset, "images/buy-slot.png", self.types[code][1], isSpecial = False)
+		for i in range(6):
+			code = UnitSelectorScreen.codes[i]
+			slot = UnitIconSlot(code, UnitIconSlot.AcceptsWeapons, origin + offset, "images/buy-slot.png", UnitSelectorScreen.types[code][1], isSpecial = False)
+			self.buySlots.append(slot)
+			offset += Vec3(0, 0, -0.2)
+		
+		# Specials
+		origin = Vec3(-0.25, 0, 0.6)
+		offset = Vec3()
+		for i in range(6, 11):
+			code = UnitSelectorScreen.codes[i]
+			slot = UnitIconSlot(code, UnitIconSlot.AcceptsSpecials, origin + offset, "images/buy-slot.png", UnitSelectorScreen.types[code][1], isSpecial = True)
 			self.buySlots.append(slot)
 			offset += Vec3(0, 0, -0.2)
 		
@@ -526,7 +554,6 @@ class UnitSelectorScreen(DirectObject):
 	def rightClick(self):
 		if not self.hidden:
 			pos = self._getMousePos()
-			
 
 	def click(self):
 		if not self.hidden:
@@ -543,7 +570,7 @@ class UnitSelectorScreen(DirectObject):
 				for slot in self.buySlots: # Check if the user is clicking a buy slot
 					if slot.icon == None and (slot.getPos() - pos).length() < 0.1:
 						if self.team.purchaseItem(slot.type):
-							icon = UnitSelectIcon(slot.type, slot.isSpecial, self.types[slot.type][0])
+							icon = UnitSelectIcon(slot.type, slot.isSpecial, UnitSelectorScreen.types[slot.type][0])
 							self.icons.append(icon)
 							self.purchases.append(icon)
 							icon.drop(slot)
@@ -580,14 +607,14 @@ class UnitSelectorScreen(DirectObject):
 				if (slot.getPos() - pos).length() < 0.1:
 					self.infoDialog.setPos(pos + Vec3(0.2, 0, 0))
 					self.infoDialog.show()
-					self.infoTitle.setText(self.types[slot.type][1])
+					self.infoTitle.setText(UnitSelectorScreen.types[slot.type][1])
 					cost = entities.TeamEntity.costs[slot.type]
 					if cost > self.team.money:
 						self.infoCostText["fg"] = (1, 0, 0, 1)
 					else:
 						self.infoCostText["fg"] = (1, 1, 1, 1)
 					self.infoCostText.setText("$" + str(cost))
-					self.infoText.setText(self.types[slot.type][2])
+					self.infoText.setText(UnitSelectorScreen.types[slot.type][2])
 					showInfo = True
 					break
 			if not showInfo:
