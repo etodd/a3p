@@ -682,7 +682,7 @@ class Tutorial(Game):
 				self.backend.map.hidePlatforms()
 				self.tutorialScreens[self.tutorialIndex].hide()
 				if self.tutorialIndex == 2:
-					self.showBuyScreen()
+					self.showBuyScreen(True)
 			else:
 				Game.handleSpacebar(self)
 	
@@ -697,11 +697,8 @@ class Tutorial(Game):
 		Game.reset(self)
 		self.unitSelector.hide()
 	
-	def showBuyScreen(self):
-		if self.tutorialIndex < 2:
-			self.hideTutorialScreen()
-			self.startMatch()
-		elif self.tutorialIndex < 3:
+	def showBuyScreen(self, override = False):
+		if self.tutorialIndex >= 2 and (self.matchInProgress or override):
 			Game.showBuyScreen(self)
 	
 	def startMatch(self):
