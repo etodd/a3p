@@ -580,7 +580,7 @@ SPECIAL_DELAY = 18
 class TeamEntity(Entity):
 	"""A team is used to purchase new units. Each team has a controller and a color associated with it.
 	The team also tracks which actors are on the team."""
-	costs = {None:0, components.SHOTGUN:250, components.CHAINGUN:150, components.SNIPER:400, components.GRENADE_LAUNCHER:500, components.PISTOL:300, components.MOLOTOV_THROWER:550, controllers.CLOAK_SPECIAL:450, controllers.SHIELD_SPECIAL:300, controllers.AWESOME_SPECIAL:400, controllers.KAMIKAZE_SPECIAL:250, controllers.ROCKET_SPECIAL:600}
+	costs = {None:0, components.SHOTGUN:250, components.CHAINGUN:150, components.SNIPER:400, components.GRENADE_LAUNCHER:500, components.PISTOL:300, components.MOLOTOV_THROWER:550, controllers.CLOAK_SPECIAL:450, controllers.SHIELD_SPECIAL:300, controllers.AWESOME_SPECIAL:500, controllers.KAMIKAZE_SPECIAL:250, controllers.ROCKET_SPECIAL:600}
 	def __init__(self):
 		Entity.__init__(self, controllers.TeamEntityController(), local = False)
 		self.actors = []
