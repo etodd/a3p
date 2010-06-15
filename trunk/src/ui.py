@@ -40,13 +40,13 @@ class GameUI(DirectObject):
 		self.lastPlayerHealth = 0
 		
 		self.specialIndicators = []
-		img = OnscreenImage(image = "images/special-slot.png", pos = (engine.aspectRatio - 0.54, 0, 0.8), scale = (0.065, 0, 0.065), color = Vec4(1, 1, 1, 0.5))
+		img = OnscreenImage(image = "images/special-slot.png", pos = (engine.aspectRatio - 0.54, 0, 0.8), scale = (0.065, 0, 0.065))
 		img.setTransparency(TransparencyAttrib.MAlpha)
 		self.specialIndicators.append(img)
-		img2 = OnscreenImage(image = "images/special-slot.png", pos = (engine.aspectRatio - 0.39, 0, 0.8), scale = (0.08, 0, 0.08), color = Vec4(1, 1, 1, 0.5))
+		img2 = OnscreenImage(image = "images/special-slot.png", pos = (engine.aspectRatio - 0.39, 0, 0.8), scale = (0.08, 0, 0.08))
 		img2.setTransparency(TransparencyAttrib.MAlpha)
 		self.specialIndicators.append(img2)
-		img3 = OnscreenImage(image = "images/special-slot.png", pos = (engine.aspectRatio - 0.24, 0, 0.8), scale = (0.065, 0, 0.065), color = Vec4(1, 1, 1, 0.5))
+		img3 = OnscreenImage(image = "images/special-slot.png", pos = (engine.aspectRatio - 0.24, 0, 0.8), scale = (0.065, 0, 0.065))
 		img3.setTransparency(TransparencyAttrib.MAlpha)
 		self.specialIndicators.append(img3)
 		
