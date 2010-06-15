@@ -683,6 +683,8 @@ class Tutorial(Game):
 				self.tutorialScreens[self.tutorialIndex].hide()
 				if self.tutorialIndex == 2:
 					self.showBuyScreen(True)
+				else:
+					self.startMatch()
 			else:
 				Game.handleSpacebar(self)
 	
