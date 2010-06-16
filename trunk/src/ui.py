@@ -1167,13 +1167,12 @@ class MapList(DirectObject):
 		self.mapButtons = []
 		hover = None
 		click = None
-		maps = engine.readFile("maps/maps.txt").split("\n")
-		height = len(maps) * 0.15 + 0.05
+		height = len(engine.maps) * 0.15 + 0.05
 		self.mapList = DirectScrolledFrame(parent = self.dialog, pos = (0, 0, 0.1), canvasSize = (-.8, .8, -height / 2, height / 2), frameSize = (-.85, .85, -0.7, 0.7), frameColor = (0, 0, 0, 0.5), autoHideScrollBars = True, manageScrollBars = True, verticalScroll_manageButtons = True, verticalScroll_resizeThumb = True, scrollBarWidth = 0.08, verticalScroll_relief = DGG.FLAT, verticalScroll_frameColor = (0.4, 0.6, 0.8, 0.4), verticalScroll_pageSize = 0.5, verticalScroll_scrollSize = 0.5, verticalScroll_thumb_rolloverSound = None, verticalScroll_thumb_clickSound = None, verticalScroll_incButton_rolloverSound = None, verticalScroll_incButton_clickSound = None, verticalScroll_decButton_rolloverSound = None, verticalScroll_decButton_clickSound = None, verticalScroll_thumb_frameColor = (0, 0.15, 0.3, 1.0), verticalScroll_thumb_relief = DGG.FLAT, verticalScroll_incButton_image = "images/scroll-down.jpg", verticalScroll_incButton_frameColor = (0, 0, 0, 0), verticalScroll_incButton_scale = 0.04, verticalScroll_incButton_image_scale = 0.04, verticalScroll_decButton_image = "images/scroll-up.jpg", verticalScroll_decButton_frameColor = (0, 0, 0, 0), verticalScroll_decButton_scale = 0.04, verticalScroll_decButton_image_scale = 0.04)
 		offset = (height / 2) - 0.1
 		mapTypes = ["dm", "zs"]
-		for map in maps:
-			mapType, name, title = map.split("\t")
+		for map in engine.maps:
+			mapType, name, title = map
 			mapType = mapTypes.index(mapType)
 			self.mapButtons.append(DirectButton(parent = self.mapList.getCanvas(), text = title, text_align = TextNode.ALeft, pos = (0, 0, offset), relief = DGG.FLAT, text_font = visitorFont, frameColor = (0.1, 0.4, 0.6, 0.6), frameSize = (-0.95, 0.95, -.075, .075), text_fg = (1, 1, 1, 1), text_scale = 0.1, text_pos = (-0.9, -0.02), scale = 0.8, rolloverSound = None, clickSound = None, command = self.callback, extraArgs = [name, mapType], suppressMouse = 0))
 			offset -= 0.15

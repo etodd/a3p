@@ -616,9 +616,9 @@ class TeamEntity(Entity):
 		del self.purchasedTypes[:]
 	def resetScore(self):
 		if self.isZombies:
-			self.money += 800
+			self.money += 1000
 		if self.isSurvivors:
-			self.money += 250
+			self.money += 200
 		self.clearUnits()
 		self.lastSpecialActivated = -SPECIAL_DELAY
 		self.score = 0

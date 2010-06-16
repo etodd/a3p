@@ -25,9 +25,6 @@ from random import uniform, choice
 DEATHMATCH = 0
 SURVIVAL = 1
 
-deathmatchMaps = ["impact", "verdict", "orbit", "arena", "complex", "grid"]
-survivalMaps = ["matrix"]
-
 firstBoot = True
 
 class GameInfo(DirectObject): # Data structure containing game setup information
@@ -279,7 +276,7 @@ class PointControlBackend(ServerBackend):
 	def __init__(self, registerHost = True, username = "Unnamed"):
 		ServerBackend.__init__(self, registerHost, username)
 		self.lastPodSpawnCheck = 0
-		self.maps = deathmatchMaps # List of all valid maps for this gametype
+		self.maps = [x[1] for x in engine.maps if x[0] == "dm"] # List of all valid maps for this gametype
 	
 	def update(self):
 		ServerBackend.update(self)
@@ -311,7 +308,7 @@ class PointControlBackend(ServerBackend):
 class SurvivalBackend(ServerBackend):
 	def __init__(self, registerHost = True, username = "Unnamed"):
 		ServerBackend.__init__(self, registerHost, username)
-		self.maps = survivalMaps # List of all valid maps for this gametype
+		self.maps = [x[1] for x in engine.maps if x[0] == "zs"] # List of all valid maps for this gametype
 		self.type = SURVIVAL
 		self.enableRespawn = False
 		self.zombiesSpawned = False
@@ -434,7 +431,7 @@ class Game(DirectObject):
 		self.unitSelector = None
 		self.gameui = None
 		visitorFont = loader.loadFont("menu/visitor2.ttf")
-		self.promptText = OnscreenText(pos = (0, 0.85), scale = 0.1, fg = (0.7, 0.7, 0.7, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)
+		self.promptText = OnscreenText(pos = (0, 0.85), scale = 0.1, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)
 		self.scoreText = OnscreenText(pos = (0, 0.92), scale = 0.06, fg = (1, 1, 1, 1), shadow = (0, 0, 0, 0.5), font = visitorFont, mayChange = True)			
 		self.winSound = audio.FlatSound("sounds/win.ogg")
 		self.loseSound = audio.FlatSound("sounds/lose.ogg")
@@ -605,7 +602,6 @@ class Game(DirectObject):
 			if team != None:
 				team.setLocal(True)
 				self.localTeam = team
-				self.localTeam.resetScore()
 				self.localTeam.setUsername(self.backend.username)
 				self.unitSelector.setTeam(team)
 				self.gameui.setTeams(self.backend.entityGroup.teams, team)

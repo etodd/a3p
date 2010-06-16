@@ -206,7 +206,7 @@ class TeamEntityController(Controller):
 			if not self.entity.active:
 				return
 			if self.entity.isZombies:
-				pos = aiWorld.getRandomSpawnPoint(zombieSpawnsOnly = True) # Zombies spawn at any spawn point other than the first.
+				pos = aiWorld.getRandomOpenSpawnPoint(self.entity, entityGroup, zombieSpawnsOnly = True) # Zombies spawn at any spawn point other than the first.
 			elif self.entity.isSurvivors:
 				pos = aiWorld.spawnPoints[0].getPosition() # Survivors always spawn at the first defined spawn point.
 			else:
@@ -217,7 +217,7 @@ class TeamEntityController(Controller):
 				elif len(self.entity.actors) > 0:
 					target = self.entity.actors[0].getPosition()
 				if target == None:
-					pos = aiWorld.getRandomSpawnPoint(team = self.entity)
+					pos = aiWorld.getRandomOpenSpawnPoint(self.entity, entityGroup)
 				else:
 					pos = aiWorld.getNearestOpenSpawnPoint(self.entity, entityGroup, target) + Vec3(uniform(-2, 2), uniform(-2, 2), 0)
 			if isLocalPlayer:
@@ -283,7 +283,7 @@ class ObjectController(Controller):
 		self.snapshots = []
 		self.lastSentSnapshot = net2.EntitySnapshot()
 		self.lastSnapshot = net2.EntitySnapshot()
-		self.upperHeightLimit = 50
+		self.upperHeightLimit = 70
 		self.lowerHeightLimit = -30
 	
 	def setEntity(self, entity):
@@ -1103,6 +1103,7 @@ class PlayerController(DroidController):
 			self.accept("e", self.issueCommand, [1])
 			self.commandSound = audio.FlatSound("sounds/command.ogg", 0.5)
 			self.sprintSound = audio.FlatSound("sounds/sprint.ogg", 0.5)
+			self.jumpSound = audio.FlatSound("sounds/jump.ogg", 0.5)
 		
 	def sprint(self):
 		if engine.inputEnabled:
@@ -1170,6 +1171,7 @@ class PlayerController(DroidController):
 			if engine.clock.time - self.lastJump > 0.25 and aiWorld.testCollisions(self.entity.collisionNodePath).getNumEntries() > 0:
 				self.lastJump = engine.clock.time
 				self.entity.setLinearVelocity(self.entity.getLinearVelocity() + Vec3(0, 0, 16))
+				self.jumpSound.play()
 		if self.keyMap["switch-weapon"]:
 			self.keyMap["switch-weapon"] = False
 			if self.activeWeapon == 1:
@@ -1200,11 +1202,12 @@ class PlayerController(DroidController):
 		self.mouse.update()
 		self.angleX = self.mouse.getX()
 		self.angleY = self.mouse.getY()
-		
-		if self.isPlatformMode:
-			self.angleX += math.pi
 
 		angleX = self.angleX
+		
+		if self.isPlatformMode:
+			angleX = 0
+		
 		move = True
 		if self.keyMap["left"] and self.keyMap["forward"]:
 			angleX += (.75 * math.pi)
@@ -1240,7 +1243,7 @@ class PlayerController(DroidController):
 
 		if self.isPlatformMode:
 			self.pickRay.setOrigin(Point3(self.entity.getPosition()))
-			self.pickRay.setDirection(Vec3(math.sin(self.angleX), math.cos(self.angleX), math.sin(self.angleY)))
+			self.pickRay.setDirection(Vec3(0, -1, 0))
 		else:
 			camera.setHpr(-math.degrees(self.angleX) + entityGroup.cameraShakeX * 0.5, math.degrees(self.angleY) + entityGroup.cameraShakeY * 0.5, 0)
 			cameraPos = render.getRelativeVector(camera, self.cameraOffset)
