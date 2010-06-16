@@ -247,11 +247,12 @@ def preloadModels():
 	cacheModel("models/basicdroid/claw-Retract")
 	cacheModel("models/basicdroid/claw-Impale")
 	cacheModel("models/fragment/GlassFragment")
+	cacheModel("models/spawnpoint/SpawnPoint")
 	cacheModel("models/spike/spike")
 	cacheModel("models/pod/pod")
 	cacheModel("maps/Block")
 	cacheModel("maps/block1")
-	
+	cacheModel("models/crosshair/crosshair")
 
 def postProcessingChanged():
 	global filters

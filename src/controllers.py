@@ -147,7 +147,8 @@ class TeamEntityController(Controller):
 		entity = Controller.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
 		entity.color = net2.HighResVec4.getFrom(iterator)
 		dockIndex = net.Uint8.getFrom(iterator)
-		entity.dock = [x for x in aiWorld.docks if x.teamIndex == dockIndex][0]
+		if len(aiWorld.docks) > 0:
+			entity.dock = [x for x in aiWorld.docks if x.teamIndex == dockIndex][0]
 		numAllies = net.Uint8.getFrom(iterator)
 		for i in range(numAllies):
 			entity.addAlly(net.Uint8.getFrom(iterator))
