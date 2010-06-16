@@ -552,7 +552,8 @@ class Game(DirectObject):
 			self.promptText.setText("Next game in 10 seconds...")
 		else:
 			self.promptText.hide()
-			self.unitSelector.show()
+			if self.backend.enableRespawn:
+				self.unitSelector.show()
 		self.gameui.hide()
 	
 	def endMatchCallback(self, winningTeam):

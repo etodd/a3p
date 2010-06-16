@@ -87,6 +87,13 @@ class GameUI(DirectObject):
 		self.ammoTextNode.setScale(0.4)
 		self.ammoTextNode.hide(BitMask32.bit(4)) # Don't cast shadows
 		
+		self.dockHighlighter = engine.loadModel("models/crosshair/crosshair")
+		self.dockHighlighter.setBillboardPointEye()
+		self.dockHighlighter.setShaderOff()
+		self.dockHighlighter.setLightOff(True)
+		self.dockHighlighter.hide()
+		self.dockHighlighter.setScale(8)
+		
 		self.healthBars = []
 		
 		self.cursorX = 0
@@ -98,6 +105,13 @@ class GameUI(DirectObject):
 	
 	def setTeams(self, teams, team):
 		self.localTeam = team
+		
+		if self.localTeam.dock != None:
+			self.dockHighlighter.reparentTo(self.localTeam.dock.node)
+			self.dockHighlighter.show()
+		else:
+			self.dockHighlighter.hide()
+		
 		self.teams = teams
 		for username in self.playerUsernames:
 			username.removeNode()
@@ -178,6 +192,8 @@ class GameUI(DirectObject):
 	def update(self, scoreLimit):
 		if self.hidden or self.localTeam == None:
 			return
+			
+		self.dockHighlighter.setR(engine.clock.time * 15)
 		
 		specialReady = self.localTeam.specialAvailable()
 		if specialReady and not self.lastSpecialReady:
@@ -312,6 +328,7 @@ class GameUI(DirectObject):
 		self.chatLog.update()
 
 	def delete(self):
+		self.dockHighlighter.removeNode()
 		for img in self.crosshairs[1:]:
 			img.destroy()
 		for img in self.specialIndicators:

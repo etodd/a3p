@@ -5,7 +5,6 @@ dock 1 117.257286072 -30.7027549744 5.50231552124
 dock 2 -63.1096763611 -84.4319152832 5.54756164551
 teams 3
 geometry-scenery orbit 0.0 0.0 0.0
-geometry orbit-geometry 0.0 0.0 0.0
 skybox skybox1/skybox
 sound ambient-cavern.ogg 0.20000000298
 light all ambient AmbientLight 0.300000011921 0.300000011921 0.300000011921
