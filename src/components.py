@@ -380,7 +380,7 @@ class ChainGun(Gun):
 SHOTGUN = 253
 class Shotgun(Gun):
 	def __init__(self, actor, id):
-		Gun.__init__(self, actor, 100, "models/basicdroid/shotgun", id)
+		Gun.__init__(self, actor, 150, "models/basicdroid/shotgun", id)
 		self.clipSize = 8
 		self.ammo = self.clipSize
 		self.light = engine.Light(color = Vec4(1.0, 0.7, 0.4, 1), attenuation = Vec3(0, 0, 0.003))

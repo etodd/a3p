@@ -53,6 +53,8 @@ physicsEntityFileCache = dict()
 map = None
 inputEnabled = True
 
+maps = []
+
 def exit():
 	if net.context != None:
 		net.context.delete()
@@ -169,6 +171,7 @@ def init(showFrameRate = False, daemon = False):
 	global filters
 	global isDaemon
 	global mf
+	global maps
 	
 	mf = None
 	
@@ -228,6 +231,7 @@ def init(showFrameRate = False, daemon = False):
 		reflectionCamera.reparentTo(render)
 		reflectionCamera.node().setActive(False)
 	particles.init()
+	maps = [x.split("\t") for x in readFile("maps/maps.txt").split("\n")]
 	
 def preloadModels():
 	cacheModel("models/basicdroid/BasicDroid")
@@ -449,7 +453,7 @@ class Map(DirectObject):
 					colors = [Vec4(0.4, 0.0, 0.0, 1), Vec4(0.0, 0.0, 0.4, 1), Vec4(0, 0.4, 0, 1), Vec4(0.4, 0.4, 0, 1)]
 					for i in range(4):
 						team = entities.TeamEntity()
-						team.money = 150 # 250 gets added when the score is reset. So the player starts with 400.
+						team.money = 300 # Starting money amount for survival
 						team.color = colors[i]
 						team.isSurvivors = True
 						entityGroup.spawnEntity(team)
@@ -827,6 +831,9 @@ class Dock(SpawnPoint):
 	
 	def setPosition(self, pos):
 		self.node.setPos(pos - Vec3(0, 0, self.vradius))
+	
+	def getPosition(self):
+		return self.node.getPos() + Vec3(0, 0, self.vradius)
 
 class Platform(DirectObject):
 	"Makes a platform upon which to parade the game winners."

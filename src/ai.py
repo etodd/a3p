@@ -171,6 +171,29 @@ class World:
 			spawns.append(team.dock)
 		return choice(spawns).getPosition()
 	
+	def getRandomOpenSpawnPoint(self, team, entityGroup, minRadius = 50, zombieSpawnsOnly = False):
+		if zombieSpawnsOnly:
+			spawns = self.spawnPoints[1:]
+		else:
+			spawns = self.spawnPoints[:]
+		if team != None and team.dock != None:
+			spawns.append(team.dock)
+		goodSpawns = []
+		enemies = [x for x in entityGroup.entities.values() if isinstance(x, entities.Actor) and x.team != team]
+		for point in spawns:
+			p = point.getPosition()
+			open = True
+			for enemy in enemies:
+				if (enemy.getPosition() - p).length() < minRadius:
+					open = False
+					break
+			if open:
+				goodSpawns.append(point)
+		if len(goodSpawns) == 0:
+			return spawns[0].getPosition()
+		else:
+			return choice(goodSpawns).getPosition()
+	
 	def getRayCollisionQueue(self, rayNP, node = None):
 		"""Gets a CollisionHandlerQueue containing all collisions along the specified ray.
 		Only checks for collisions with the specified NodePath, if one is given."""
