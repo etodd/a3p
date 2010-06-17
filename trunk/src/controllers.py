@@ -1784,7 +1784,7 @@ class SpectatorController(Controller):
 		angleX += self.mouse.getDX()
 		angleY += self.mouse.getDY()
 
-		speed = engine.clock.timeStep * 40
+		speed = engine.clock.timeStep * 40 if engine.clock.timeStep > 0 else 1
 		velocity = Vec3(0, 0, 0)
 		if self.keyMap["forward"] == 1:
 			velocity += Vec3(speed * math.sin(angleX), speed * math.cos(angleX), speed * math.sin(angleY))
@@ -1999,7 +1999,7 @@ class EditController(Controller):
 			self.angleX += self.ui.mouse.getDX()
 			self.angleY += self.ui.mouse.getDY()
 		
-		speed = engine.clock.timeStep * 40
+		speed = engine.clock.timeStep * 40 if engine.clock.timeStep > 0 else 1
 		velocity = Vec3(0, 0, 0)
 		if self.keyMap["forward"] == 1:
 			velocity += Vec3(speed * math.sin(self.angleX), speed * math.cos(self.angleX), speed * math.sin(self.angleY))

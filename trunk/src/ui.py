@@ -92,6 +92,7 @@ class GameUI(DirectObject):
 		self.dockHighlighter.setShaderOff()
 		self.dockHighlighter.setLightOff(True)
 		self.dockHighlighter.hide()
+		self.dockHighlighter.hide(BitMask32.bit(4)) # Don't cast shadows
 		self.dockHighlighter.setScale(8)
 		
 		self.healthBars = []
@@ -437,7 +438,7 @@ class ChatLog(DirectObject):
 	
 	def update(self):
 		numMessages = len(self.messages)
-		if numMessages > 0:
+		if numMessages > 0 and self.displayTime != -1:
 			message = self.messages[numMessages - 1]
 			if engine.clock.time - message.time > self.displayTime:
 				del self.messages[numMessages - 1:]

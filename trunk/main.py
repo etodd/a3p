@@ -53,7 +53,7 @@ def showHelpInfo():
 	print "-d map\t\t\tRun in dedicated server mode on the specified map"
 	print "-v\t\t\t(Daemon only) Run the game in survival mode"
 	print "-h\t\t\tShow help information"
-	print "-m\t\t\tSkip main menu introduction"
+	print "-m\t\t\tDeveloper mode"
 	engine.exit()
 
 if "-h" in sys.argv or "/?" in sys.argv or "--help" in sys.argv:
@@ -136,6 +136,7 @@ while i < len(sys.argv):
 			showHelpInfo()
 	elif sys.argv[i] == "-m":
 		skipIntro = True
+		engine.enablePause = True
 	elif sys.argv[i] == "-v":
 		pass # Already been processed.
 	else:

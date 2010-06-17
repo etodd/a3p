@@ -14,15 +14,16 @@
 	{
 		var wrapper = document.getElementById("wrapper");
 		wrapper.innerHTML += P3D_RunContent("data", "game.p3d", "id", "game",
-			  "width", "928", "height", "600", "auto_start", "1",
+			  "width", "928", "height", "600", "auto_start", "1", "username", "<?php echo base64_decode($_REQUEST["u"]);?>",
 			  "onPluginFail", "PluginFail()", "onPythonStop", "OnStop()", "splash_img", "http://a3p.sourceforge.net/play/loading.png")
 	}
 	</script>
 </head>
 <body style="height: 100%;" onload="LoadGame()">
-	<div class="Container" style="width: 1200px; margin-top: 0px;">
+	<div class="Container" style="width: 1200px; margin-top: 0px; text-align: center;">
 		<div style="width: 928px; margin-left: auto; margin-right: auto; margin-top: 50px;" id="wrapper">
 		</div>
+		<div style="color: white; margin-top: 5px;">Can't see the game? <a href="http://www.panda3d.org/download/panda3d-runtime-1.0.0/Panda3D-Runtime-1.0.0.exe">Install this plugin</a> and restart your browser.</div>
 	</div>
 </div>
 </body>

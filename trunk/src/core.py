@@ -63,9 +63,10 @@ class Backend(DirectObject):
 			if engine.clock.time - self.lastGc > 10:
 				gc.collect()
 				self.lastGc = engine.clock.time
-			self.aiWorld.update()
-			self.netManager.update(self)
-			self.entityGroup.update()
+			if not engine.paused:
+				self.aiWorld.update()
+				self.netManager.update(self)
+				self.entityGroup.update()
 			if self.map != None:
 				self.map.update()
 
@@ -457,6 +458,7 @@ class Game(DirectObject):
 		self.spawnedOnce = False
 		self.spectatorController = controllers.SpectatorController()
 		self.buyScreenDisplayed = False
+		self.accept("p", engine.togglePause)
 
 	def startMatch(self):
 		# Must buy at least one weapon
@@ -598,38 +600,44 @@ class Game(DirectObject):
 		self.scoreText.show()
 
 	def update(self):
-		if self.localTeam == None:
-			team = self.backend.entityGroup.getEntity(self.localTeamID)
-			if team != None:
-				team.setLocal(True)
-				self.localTeam = team
-				self.localTeam.setUsername(self.backend.username)
-				self.unitSelector.setTeam(team)
-				self.gameui.setTeams(self.backend.entityGroup.teams, team)
-				self.updateScoreText()
+		if engine.paused:
+			self.spectatorController.serverUpdate(self.backend.aiWorld, self.backend.entityGroup, None)
 		else:
-			self.localTeam.respawnUnits()
-			player = self.localTeam.getPlayer()
-			if player == None or not player.active:
-				if self.playerLastActive == -1:
-					self.playerLastActive = engine.clock.time
-				if engine.clock.time - self.playerLastActive > 1.0:
-					if not self.buyScreenDisplayed:
-						self.showBuyScreen()
-						self.buyScreenDisplayed = True
-					elif self.unitSelector.hidden:
-						self.spectatorController.serverUpdate(self.backend.aiWorld, self.backend.entityGroup, None)
-					if self.unitSelector.hidden and self.matchInProgress and (self.backend.enableRespawn or not self.spawnedOnce):
-						self.spawnedOnce = True
-						self.localTeam.respawnPlayer()
+			if self.localTeam == None:
+				team = self.backend.entityGroup.getEntity(self.localTeamID)
+				if team != None:
+					team.setLocal(True)
+					self.localTeam = team
+					self.localTeam.setUsername(self.backend.username)
+					self.unitSelector.setTeam(team)
+					self.gameui.setTeams(self.backend.entityGroup.teams, team)
+					self.updateScoreText()
 			else:
-				self.playerLastActive = -1
-				self.buyScreenDisplayed = False
-			if self.gameui != None:
-				self.gameui.update(self.backend.scoreLimit)
-				self.unitSelector.update()
+				self.localTeam.respawnUnits()
+				player = self.localTeam.getPlayer()
+				if player == None or not player.active:
+					if self.playerLastActive == -1:
+						self.playerLastActive = engine.clock.time
+					if engine.clock.time - self.playerLastActive > 1.0:
+						if not self.buyScreenDisplayed:
+							self.showBuyScreen()
+							self.buyScreenDisplayed = True
+						elif self.unitSelector.hidden:
+							self.spectatorController.serverUpdate(self.backend.aiWorld, self.backend.entityGroup, None)
+						if self.unitSelector.hidden and self.matchInProgress and (self.backend.enableRespawn or not self.spawnedOnce):
+							self.spawnedOnce = True
+							self.localTeam.respawnPlayer()
+				else:
+					self.playerLastActive = -1
+					self.buyScreenDisplayed = False
+				if self.gameui != None:
+					self.gameui.update(self.backend.scoreLimit)
+					self.unitSelector.update()
 
 	def delete(self):
+		if engine.paused:
+			engine.togglePause()
+	
 		engine.log.info("Deleting game.")
 		
 		if self.unitSelector != None:
@@ -919,12 +927,15 @@ class MainMenu(DirectObject):
 		
 		self.username = "Unnamed"
 		
-		self.chatLog = ui.ChatLog(verticalOffset = -0.9, displayTime = 60.0, maxChats = 16, chatBoxAlwaysVisible = True, showOwnChats = False)
+		self.chatLog = ui.ChatLog(verticalOffset = -0.9, displayTime = -1, maxChats = 16, chatBoxAlwaysVisible = True, showOwnChats = False)
 		self.chatLog.hide()
 		self.chatConnection = GlobalChatConnection()
 		
 		self.startTime = -1
 		self.goTime = -1
+		if base.appRunner != None:
+			self.setUsername(base.appRunner.getToken("username"))
+			self.loginDialogShown = True
 	
 	def escape(self):
 		if self.hostList.visible:
