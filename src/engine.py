@@ -49,6 +49,8 @@ shadowMapWidth = 1024
 shadowMapHeight = 1024
 mf = None
 physicsEntityFileCache = dict()
+paused = False
+enablePause = False
 
 map = None
 inputEnabled = True
@@ -74,6 +76,11 @@ class Logger:
 		self.notify.debug(msg)
 	def exception(self, msg):
 		self.notify.error(msg)
+
+def togglePause():
+	global paused
+	if enablePause:
+		paused = not paused
 
 def loadConfigFile():
 	global enableDistortionEffects
@@ -301,9 +308,12 @@ def clearLights():
 
 def update():
 	"Updates global components. Basically the clock. Should be called once every frame, regardless of the game state."
-	clock.update()
+	if not paused:
+		clock.update()
+	else:
+		clock.timeStep = 0
 	particles.ParticleGroup.begin()
-	particles.update()
+	particles.update(not paused)
 
 def endUpdate():
 	particles.ParticleGroup.end()
