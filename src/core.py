@@ -537,6 +537,7 @@ class Game(DirectObject):
 		self.matchInProgress = False
 		self.localTeam = None
 		self.spawnedOnce = False
+		self.buyScreenDisplayed = False
 	
 	def handleSpacebar(self):
 		if not self.matchInProgress and self.localTeam != None:
@@ -554,8 +555,7 @@ class Game(DirectObject):
 			self.promptText.setText("Next game in 10 seconds...")
 		else:
 			self.promptText.hide()
-			if self.backend.enableRespawn:
-				self.unitSelector.show()
+			self.unitSelector.show()
 		self.gameui.hide()
 	
 	def endMatchCallback(self, winningTeam):
