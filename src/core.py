@@ -314,8 +314,8 @@ class SurvivalBackend(ServerBackend):
 		self.enableRespawn = False
 		self.zombiesSpawned = False
 		self.roundNumber = 0
-		self.zombieLoadouts = [(components.SHOTGUN, None), (components.SNIPER, None), (components.GRENADE_LAUNCHER, None), (components.CHAINGUN, controllers.SHIELD_SPECIAL), (components.PISTOL, None), (components.GRENADE_LAUNCHER, controllers.SHIELD_SPECIAL)]
-		self.zombieCounts = [4, 5, 5, 5, 9, 9]
+		self.zombieLoadouts = [(components.SHOTGUN, None), (components.CHAINGUN, None), (components.PISTOL, None), (components.GRENADE_LAUNCHER, None), (components.CHAINGUN, controllers.SHIELD_SPECIAL), (components.SNIPER, None), (components.SHOTGUN, controllers.CLOAK_SPECIAL), (components.PISTOL, controllers.SHIELD_SPECIAL), (components.GRENADE_LAUNCHER, controllers.SHIELD_SPECIAL), (components.SNIPER, controllers.CLOAK_SPECIAL), (components.MOLOTOV_THROWER, controllers.CLOAK_SPECIAL), (components.GRENADE_LAUNCHER, controllers.SHIELD_SPECIAL), (components.SNIPER, controllers.SHIELD_SPECIAL)]
+		self.zombieCounts = [4, 5, 5, 6, 6, 6, 7, 9, 9, 9, 9, 9, 9]
 		self.matchLimit = 100000
 		self.zombieSpawnTime = 0
 		self.scoreLimit = self.zombieCounts[0] * 150
