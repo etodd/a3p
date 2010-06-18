@@ -934,8 +934,10 @@ class MainMenu(DirectObject):
 		self.startTime = -1
 		self.goTime = -1
 		if base.appRunner != None:
-			self.setUsername(base.appRunner.getToken("username"))
-			self.loginDialogShown = True
+			token = base.appRunner.getToken("username")
+			if token != "" and token != "Unnamed":
+				self.setUsername(token)
+				self.loginDialogShown = True
 	
 	def escape(self):
 		if self.hostList.visible:
