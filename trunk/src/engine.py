@@ -51,6 +51,7 @@ mf = None
 physicsEntityFileCache = dict()
 paused = False
 enablePause = False
+modelFileSuffix = ""
 
 map = None
 inputEnabled = True
@@ -139,14 +140,16 @@ def saveConfigFile():
 	configFile.close()
 
 def cacheModel(filename):
-	model = loader.loadModel(filename)
+	global modelFileSuffix
+	model = loader.loadModel(filename + modelFileSuffix)
 	model.reparentTo(renderLit)
 	model.reparentTo(hidden)
 	cache[filename] = model
 
 def loadModel(filename):
+	global modelFileSuffix
 	if not filename in cache:
-		return loader.loadModel(filename)
+		return loader.loadModel(filename + modelFileSuffix)
 	else:
 		model = cache[filename]
 		node = hidden.attachNewNode(filename)
@@ -154,7 +157,10 @@ def loadModel(filename):
 		return node
 
 def loadAnimation(filename, animations):
-	a = Actor(filename, animations)
+	global modelFileSuffix
+	for anim in animations:
+		animations[anim] += modelFileSuffix
+	a = Actor(filename + modelFileSuffix, animations)
 	a.setBlend(frameBlend = True)
 	return a
 
@@ -241,6 +247,9 @@ def init(showFrameRate = False, daemon = False):
 	maps = [x.split("\t") for x in readFile("maps/maps.txt").split("\n")]
 	
 def preloadModels():
+	global modelFileSuffix
+	if os.path.exists("models/basicdroid/BasicDroid.bam"):
+		modelFileSuffix = ".bam"
 	cacheModel("models/basicdroid/BasicDroid")
 	cacheModel("models/basicdroid/chaingun")
 	cacheModel("models/basicdroid/BasicDroid-lowres")

@@ -813,7 +813,7 @@ class MainMenu(DirectObject):
 		self.accept("mouse1", self.click)
 		self.cameraDistance = 20
 	
-		self.globe = loader.loadModel("menu/Globe")
+		self.globe = engine.loadModel("menu/Globe")
 		self.globe.reparentTo(render)
 		self.globe.setTransparency(TransparencyAttrib.MAlpha)
 		self.globe.setColor(Vec4(1, 1, 1, 0.6))
@@ -828,19 +828,19 @@ class MainMenu(DirectObject):
 		self.overlay.setPos(0, 0, 0)
 		self.overlay.setPos(0, self.cameraDistance, 0)
 		
-		self.overlay1 = loader.loadModel("menu/overlay1")
+		self.overlay1 = engine.loadModel("menu/overlay1")
 		self.overlay1.setScale(4)
 		self.overlay1.setTwoSided(True)
 		self.overlay1.setRenderModeWireframe()
 		self.overlay1.reparentTo(self.overlay)
 		
-		self.overlay2 = loader.loadModel("menu/overlay2")
+		self.overlay2 = engine.loadModel("menu/overlay2")
 		self.overlay2.setScale(4)
 		self.overlay2.setTwoSided(True)
 		self.overlay2.setRenderModeWireframe()
 		self.overlay2.reparentTo(self.overlay)
 		
-		self.overlay3 = loader.loadModel("menu/overlay3")
+		self.overlay3 = engine.loadModel("menu/overlay3")
 		self.overlay3.setScale(4)
 		self.overlay3.setTwoSided(True)
 		self.overlay3.setRenderModeWireframe()
@@ -849,7 +849,7 @@ class MainMenu(DirectObject):
 		self.overlay3.setH(uniform(0, 360))
 		self.overlay3.reparentTo(self.overlay)
 		
-		self.overlay4 = loader.loadModel("menu/overlay3")
+		self.overlay4 = engine.loadModel("menu/overlay3")
 		self.overlay4.setScale(4)
 		self.overlay4.setTwoSided(True)
 		self.overlay4.setRenderModeWireframe()
@@ -858,19 +858,19 @@ class MainMenu(DirectObject):
 		self.overlay4.setP(uniform(0, 360))
 		self.overlay4.reparentTo(self.overlay)
 		
-		self.text = loader.loadModel("menu/text")
+		self.text = engine.loadModel("menu/text")
 		self.text.setScale(4)
 		self.text.setTwoSided(True)
 		self.text.reparentTo(self.overlay)
 		
-		self.selector = loader.loadModel("menu/selector")
+		self.selector = engine.loadModel("menu/selector")
 		self.selector.setScale(4)
 		self.selector.setTwoSided(True)
 		self.selector.reparentTo(self.overlay)
 		
 		self.selectedItem = 0
 		
-		self.skyBox = loader.loadModel("menu/skybox")
+		self.skyBox = engine.loadModel("menu/skybox")
 		self.skyBox.setScale(self.cameraDistance + 2)
 		self.skyBox.setRenderModeWireframe()
 		self.skyBox.setTwoSided(True)
@@ -1115,7 +1115,7 @@ class JunkBelt:
 		self.avels = []
 		self.instances = []
 		for file in junkFiles:
-			node = loader.loadModel(file)
+			node = engine.loadModel(file)
 			node.setScale(0.01)
 			node.setRenderModeWireframe()
 			self.models.append(node)
