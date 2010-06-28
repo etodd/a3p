@@ -281,7 +281,7 @@ class NavMesh:
 			self.edges = navMesh.edges
 			self.nodes = navMesh.nodes
 		else:
-			node = loader.loadModel(directory + "/" + self.filename)
+			node = engine.loadModel(directory + "/" + self.filename)
 			self._processNode(node)
 			node.removeNode()
 			navMeshCache[directory + "/" + self.filename] = self
