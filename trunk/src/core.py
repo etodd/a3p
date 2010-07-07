@@ -66,6 +66,7 @@ class Backend(DirectObject):
 			if not engine.paused:
 				self.aiWorld.update()
 				self.netManager.update(self)
+			if self.entityGroup != None:
 				self.entityGroup.update()
 			if self.map != None:
 				self.map.update()
