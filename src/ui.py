@@ -1064,7 +1064,6 @@ class HostList(DirectObject):
 		self.serverIpEntry.set("")
 	
 	def show(self):
-		engine.Mouse.showCursor()
 		self.dialog.show()
 		for a in self.hostButtons:
 			a.destroy()
@@ -1090,7 +1089,6 @@ class HostList(DirectObject):
 			offset -= 0.15
 	
 	def hide(self):
-		engine.Mouse.hideCursor()
 		self.lastShow = -1
 		self.lastHide = engine.clock.time
 		self.visible = False
@@ -1147,14 +1145,12 @@ class LoginDialog(DirectObject):
 				self.dialog.hide()
 	
 	def show(self):
-		engine.Mouse.showCursor()
 		self.dialog.show()
 		self.visible = True
 		self.lastHide = -1
 		self.lastShow = engine.clock.time
 	
 	def hide(self):
-		engine.Mouse.hideCursor()
 		self.lastShow = -1
 		self.lastHide = engine.clock.time
 		self.visible = False
@@ -1225,14 +1221,12 @@ class MapList(DirectObject):
 				self.dialog.hide()
 	
 	def show(self):
-		engine.Mouse.showCursor()
 		self.dialog.show()
 		self.visible = True
 		self.lastShow = engine.clock.time
 		self.lastHide = -1
 
 	def hide(self):
-		engine.Mouse.hideCursor()
 		self.visible = False
 		self.lastShow = -1
 		self.lastHide = engine.clock.time

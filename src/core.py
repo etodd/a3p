@@ -80,12 +80,15 @@ class Backend(DirectObject):
 
 	def reset(self):
 		self.gameOver = False
-		self.entityGroup.delete()
-		del self.entityGroup
-		self.map.delete()
-		self.aiWorld.delete()
-		del self.aiWorld
-		del self.map
+		if self.entityGroup != None:
+			self.entityGroup.delete()
+		self.entityGroup = None
+		if self.map != None:
+			self.map.delete()
+		if self.aiWorld != None:
+			self.aiWorld.delete()
+		self.aiWorld = None
+		self.map = None
 		engine.clearLights()
 		self.entityGroup = entities.EntityGroup(self.netManager)
 		self.aiWorld = ai.World()
@@ -93,16 +96,20 @@ class Backend(DirectObject):
 		self.matchNumber = 0
 	
 	def delete(self):
-		self.entityGroup.delete()
-		self.aiWorld.delete()
-		self.map.delete()
+		if self.entityGroup != None:
+			self.entityGroup.delete()
+		self.entityGroup = None
+		if self.aiWorld != None:
+			self.aiWorld.delete()
+		if self.map != None:
+			self.map.delete()
+		self.aiWorld = None
+		self.map = None
 		engine.clearLights()
 		particles.clear()
-		self.netManager.delete()
-		del self.entityGroup
-		del self.aiWorld
-		del self.map
-		del self.netManager
+		if self.netManager != None:
+			self.netManager.delete()
+		self.netManager = None
 		self.active = False
 		self.ignoreAll()
 
@@ -384,6 +391,7 @@ class ClientBackend(Backend):
 		if net.compareAddresses(address, net.context.hostConnection.address): # We only care if the server disconnected
 			engine.log.info("Server disconnected.")
 			self.connected = False
+			self.delete()
 		else:
 			engine.log.info("Client " + address.getIpString() + " disconnected.")
 		
@@ -802,8 +810,8 @@ import math
 class MainMenu(DirectObject):
 	def __init__(self, skipIntro = False):
 		render.show()
+		engine.Mouse.showCursor()
 		engine.renderLit.show() # In case we just got back from the tutorial, which hides everything sometimes.
-		engine.Mouse.hideCursor()
 		self.backgroundSound = audio.FlatSound("menu/background.ogg", volume = 0.3)
 		self.backgroundSound.setVolume(0)
 		self.backgroundSound.setLoop(True)
@@ -819,8 +827,6 @@ class MainMenu(DirectObject):
 		self.globe.setColor(Vec4(1, 1, 1, 0.6))
 		self.globe.setTwoSided(True)
 		self.globe.setRenderModeWireframe()
-		
-		self.mouse = engine.Mouse()
 		
 		self.overlay = camera.attachNewNode("overlay")
 		self.overlay.setTransparency(TransparencyAttrib.MAlpha)
@@ -1019,19 +1025,18 @@ class MainMenu(DirectObject):
 		self.hostList.update()
 		self.mapList.update()
 		self.loginDialog.update()
-		self.mouse.update()
-		vector = Vec3(self.mouse.getX(), self.mouse.getY(), 0)
+		mouse = base.win.getPointer(0)
+		props = base.win.getProperties()
+		vector = Vec3((mouse.getX() / float(props.getXSize())) - 0.5, (mouse.getY() / float(props.getYSize())) - 0.5, 0)
 		vector.normalize()
-		self.mouse.setX(vector.getX() * 0.1)
-		self.mouse.setY(vector.getY() * 0.1)
-		angle = math.degrees(math.atan2(-vector.getX(), -vector.getY())) + 180
+		angle = math.degrees(math.atan2(-vector.getX(), vector.getY())) + 180
 		angle -= self.uiAngle
-		while angle < 0:
-			angle += 360
-		while angle > 360:
-			angle -= 360
-		if not self.hostList.visible:
-			self.selectedItem = int(angle/ 90.0)
+		if not self.hostList.visible and not self.mapList.visible and not self.loginDialog.visible:
+			self.selectedItem = int(round(angle / 90.0))
+		while self.selectedItem > 3:
+			self.selectedItem -= 4
+		while self.selectedItem < 0:
+			self.selectedItem += 4
 		self.selector.setR(self.uiAngle + self.selectedItem * 90)
 		
 		self.overlay1.setR(self.overlay1.getR() - engine.clock.timeStep * 2)

@@ -98,7 +98,6 @@ if mode != MODE_DAEMON:
 	engine.windowWidth = base.win.getProperties().getXSize()
 	engine.windowHeight = base.win.getProperties().getYSize()
 	engine.aspectRatio = float(engine.windowWidth) / float(engine.windowHeight)
-	engine.Mouse.hideCursor()
 
 disableAudio = False
 defaultPort = 1337

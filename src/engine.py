@@ -389,6 +389,7 @@ class Map(DirectObject):
 		self.isSurvival = False
 		self.ambientSound = None
 		self.platforms = []
+		self.name = ""
 	
 	def addSoundGroup(self, soundGroup):
 		self.soundGroups[soundGroup.name] = soundGroup;
