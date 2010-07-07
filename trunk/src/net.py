@@ -163,6 +163,7 @@ class PythonNetContext(NetworkContext):
 		datagram.addUint8(PACKET_NEWCLIENT)
 		datagram.addString(username)
 		self.sendDatagram(datagram, self.hostConnection.address)
+		print "Connecting to " + addressToString(self.hostConnection.address) + "..."
 		self.hostConnection.lastSentPacketTime = timeFunction()
 	
 	def serverConnect(self, clientAddress):
@@ -230,6 +231,7 @@ class PythonNetContext(NetworkContext):
 						self.connectionAttempts += 1
 						self.lastConnectionAttempt = timeFunction()
 				else:
+					self.connectionAttempts = 0
 					self.disconnectCallback(self.hostConnection.address)
 	
 		readQueue = []
@@ -275,7 +277,7 @@ class PythonNetContext(NetworkContext):
 				elif code == PACKET_CLIENTREADY:
 					if address in self.activeConnections:
 						self.activeConnections[address].ready = True
-			elif self.mode == MODE_CLIENT:
+			elif self.mode == MODE_CLIENT and address == self.hostConnection.address:
 				self.hostConnection.lastPacketTime = timeFunction()
 				if not self.clientConnected:
 					self.clientConnected = True
