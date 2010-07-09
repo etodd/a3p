@@ -112,7 +112,14 @@ class Backend(DirectObject):
 			self.netManager.delete()
 		self.netManager = None
 		self.active = False
+		net.context.reset()
 		self.ignoreAll()
+		engine.renderLit.removeNode()
+		engine.renderObjects.removeNode()
+		engine.renderEnvironment.removeNode()
+		engine.renderLit = render.attachNewNode("renderLit")
+		engine.renderObjects = engine.renderLit.attachNewNode("renderObjects")
+		engine.renderEnvironment = engine.renderLit.attachNewNode("renderEnvironment")
 
 class ServerBackend(Backend):
 	def __init__(self, registerHost = True, username = "Unnamed"):
@@ -197,6 +204,7 @@ class ServerBackend(Backend):
 		p = net.Packet()
 		p.add(net.Uint8(net.PACKET_ENDMATCH))
 		p.add(net.Boolean(self.gameOver))
+		p.add(net.Uint8(winningTeam.getId()))
 		engine.log.info("Broadcasted match end packet.")
 		for team in self.entityGroup.teams:
 			team.lastMatchPosition = len([x for x in self.entityGroup.teams if x.score > team.score])
@@ -239,13 +247,14 @@ class ServerBackend(Backend):
 				team = self.entityGroup.teams[self.clients.index(client)]
 				team.setLocal(False)
 				team.setUsername(username)
-				self.sendSetupPackets(client)
 				net.context.addClient(client)
 			else:
 				engine.log.info("Connection from " + username + " (" + net.addressToString(client) + ") refused. Server full.")
 				p = net.Packet()
 				p.add(net.Uint8(net.PACKET_SERVERFULL))
 				net.context.send(p, client)
+		else:
+			self.sendSetupPackets(client)
 	
 	def sendSetupPackets(self, client):
 		engine.log.info("Constructing initialization packet for client " + net.addressToString(client))
@@ -259,9 +268,6 @@ class ServerBackend(Backend):
 		p.add(net.Uint16(self.scoreLimit))
 		p.add(net.Boolean(self.enableRespawn))
 		p.add(net.Uint8(self.type))
-		# Teams have to be spawned first, so other entities can link to them.
-		for entity in (x for x in self.entityGroup.entities.values() if isinstance(x, entities.TeamEntity)):
-			p.add(entity.controller.buildSpawnPacket())
 		return p
 	
 	def clientReadyCallback(self, client):
@@ -270,6 +276,9 @@ class ServerBackend(Backend):
 	
 	def makeUberSpawnPacket(self):
 		p = net.Packet()
+		# Teams have to be spawned first, so other entities can link to them.
+		for entity in (x for x in self.entityGroup.entities.values() if isinstance(x, entities.TeamEntity)):
+			p.add(entity.controller.buildSpawnPacket())
 		for entity in (x for x in self.entityGroup.entities.values() if not isinstance(x, entities.TeamEntity)):
 			p.add(entity.controller.buildSpawnPacket())
 		return p
@@ -363,10 +372,10 @@ class SurvivalBackend(ServerBackend):
 					self.zombieTeam.respawn(self.zombieLoadouts[self.matchNumber][0], self.zombieLoadouts[self.matchNumber][1])
 				self.zombiesSpawned = True
 				self.zombieSpawnTime = engine.clock.time
-			else:
+			elif self.zombiesSpawned and engine.clock.time - self.zombieSpawnTime > self.zombieTeam.controller.spawnDelay + 1.0:
 				if deadPlayers == self.numClients:
 					self.endMatch(self.zombieTeam)
-				elif self.zombiesSpawned and engine.clock.time - self.zombieSpawnTime > self.zombieTeam.controller.spawnDelay + 1.0 and len([x for x in self.entityGroup.entities.values() if isinstance(x, entities.Actor) and x.team.isAlly(self.zombieTeam)]) == 0:
+				elif len([x for x in self.entityGroup.entities.values() if isinstance(x, entities.Actor) and x.getTeam().isAlly(self.zombieTeam)]) == 0:
 					highestScore = -1
 					winningTeam = None
 					for team in self.entityGroup.teams:
@@ -392,7 +401,6 @@ class ClientBackend(Backend):
 		if net.compareAddresses(address, net.context.hostConnection.address): # We only care if the server disconnected
 			engine.log.info("Server disconnected.")
 			self.connected = False
-			self.delete()
 		else:
 			engine.log.info("Client " + address.getIpString() + " disconnected.")
 		
@@ -407,15 +415,13 @@ class ClientBackend(Backend):
 		self.matchNumber += 1
 		try:
 			self.gameOver = net.Boolean.getFrom(iterator)
-			winningTeam = None
+			winningTeam = self.entityGroup.getEntity(net.Uint8.getFrom(iterator))
 			for i in range(len(self.entityGroup.teams)):
 				id = net.Uint8.getFrom(iterator)
 				team = self.entityGroup.getEntity(id)
 				pos = net.Uint8.getFrom(iterator)
 				if team != None:
 					team.lastMatchPosition = pos
-					if winningTeam == None and team.lastMatchPosition == 0: # Winning team
-						winningTeam = team
 				self.entityGroup.teams[i].resetScore() # Just in case some packets came in late after the match ended.
 			if winningTeam != None:
 				winningTeam.matchScore += 1
@@ -501,15 +507,11 @@ class Game(DirectObject):
 	def gameInfoCallback(self, iterator):
 		engine.log.info("Processing game setup information...")
 		info = GameInfo()
-		try:
-			info.teamId = net.Uint8.getFrom(iterator) # Find out which team we are on this computer
-			info.mapFile = net.String.getFrom(iterator) # Map filename
-			info.scoreLimit = net.Uint16.getFrom(iterator) # Score limit
-			info.enableRespawn = net.Boolean.getFrom(iterator) # Whether we should respawn our local player
-			info.type = net.Uint8.getFrom(iterator) # Game type
-		except AssertionError:
-			engine.log.warning("Error while processing game setup information.")
-			return
+		info.teamId = net.Uint8.getFrom(iterator) # Find out which team we are on this computer
+		info.mapFile = net.String.getFrom(iterator) # Map filename
+		info.scoreLimit = net.Uint16.getFrom(iterator) # Score limit
+		info.enableRespawn = net.Boolean.getFrom(iterator) # Whether we should respawn our local player
+		info.type = net.Uint8.getFrom(iterator) # Game type
 		self.localTeamID = info.teamId
 		self.backend.loadMap(info.mapFile)
 		self.backend.scoreLimit = info.scoreLimit
@@ -518,6 +520,7 @@ class Game(DirectObject):
 		if self.backend.type == SURVIVAL:
 			self.unitSelector.disableUnits()
 		self.unitSelector.show()
+		net.context.clientConnected = True
 	
 	def localStart(self, map):
 		self.backend.loadMap(map)

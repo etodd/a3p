@@ -98,12 +98,13 @@ class SoundGroup(DirectObject):
 		self.soundFiles = soundFiles
 		self.volume = volume
 		self.sounds = dict()
-		for file in self.soundFiles:
-			self.sounds[file] = []
-			for _ in range(3):
-				sound = manager.loadSfx(file)
-				sound.setVolume(self.volume)
-				self.sounds[file].append(sound)
+		if enabled:
+			for file in self.soundFiles:
+				self.sounds[file] = []
+				for _ in range(3):
+					sound = manager.loadSfx(file)
+					sound.setVolume(self.volume)
+					self.sounds[file].append(sound)
 
 	def get(self):
 		sounds = self.sounds[choice(self.soundFiles)]
@@ -115,25 +116,35 @@ class SoundGroup(DirectObject):
 
 class FlatSound(DirectObject):
 	def __init__(self, file, volume = 1.0):
-		self.sound = loader.loadSfx(file)
+		if enabled:
+			self.sound = loader.loadSfx(file)
 		self.filename = file
 		self.setVolume(volume)
 	
 	def setVolume(self, volume):
-		self.sound.setVolume(volume)
+		if enabled:
+			self.sound.setVolume(volume)
 	
 	def getVolume(self):
-		return self.sound.getVolume()
+		if enabled:
+			return self.sound.getVolume()
+		else:
+			return 0.0
 	
 	def isPlaying(self):
-		return self.sound.status() == 2
+		if enabled:
+			return self.sound.status() == 2
+		else:
+			return False
 	
 	def play(self):
 		if enabled:
 			self.sound.play()
 	
 	def setLoop(self, loop):
-		self.sound.setLoop(loop)
+		if enabled:
+			self.sound.setLoop(loop)
 	
 	def stop(self):
-		self.sound.stop()
+		if enabled:
+			self.sound.stop()

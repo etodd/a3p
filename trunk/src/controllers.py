@@ -238,7 +238,7 @@ class TeamEntityController(Controller):
 				self.entity.actors.append(u)
 			pos.setZ(pos.getZ() + u.radius)
 			u.setPosition(pos)
-			u.setTeam(self.entity)
+			u.setTeamId(self.entity.getId())
 			u.commitChanges()
 			p.add(net2.HighResVec3(Vec3(pos)))
 			self.addCriticalPacket(p, packetUpdate)
@@ -536,7 +536,7 @@ class DropPodController(ObjectController):
 			droid = aiWorld.getNearestDroid(entityGroup, self.entity.getPosition())
 			if droid != None and (droid.getPosition() - self.entity.getPosition()).length() < self.captureDistance:
 				p.add(net.Boolean(True))
-				p.add(net.Uint8(droid.team.getId()))
+				p.add(net.Uint8(droid.getTeam().getId()))
 				paid = True
 				self.money -= self.payoutAmount
 				self.lastPayout = engine.clock.time
@@ -596,14 +596,14 @@ class GrenadeController(ObjectController):
 	
 	def buildSpawnPacket(self):
 		p = ObjectController.buildSpawnPacket(self)
-		p.add(net.Uint8(self.entity.team.getId()))
+		p.add(net.Uint8(self.entity.getTeam().getId()))
 		return p
 	
 	@staticmethod
 	def readSpawnPacket(aiWorld, entityGroup, iterator, entity = None):
 		entity = entities.Grenade(aiWorld.world, aiWorld.space)
 		entity = ObjectController.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
-		entity.setTeam(entityGroup.getEntity(net.Uint8.getFrom(iterator)))
+		entity.setTeamId(net.Uint8.getFrom(iterator))
 		return entity
 		
 	def setEntity(self, entity):
@@ -650,7 +650,7 @@ class GrenadeController(ObjectController):
 	
 		p = ObjectController.serverUpdate(self, aiWorld, entityGroup, packetUpdate)
 		
-		enemy = aiWorld.getNearestEnemy(entityGroup, self.entity.getPosition(), self.entity.team)
+		enemy = aiWorld.getNearestEnemy(entityGroup, self.entity.getPosition(), self.entity.getTeam())
 		if enemy != None and Vec3(enemy.getPosition() - self.entity.getPosition()).length() < enemy.radius + self.entity.radius:
 			self.entity.kill(aiWorld, entityGroup)
 		
@@ -679,7 +679,7 @@ class MolotovController(ObjectController):
 	def buildSpawnPacket(self):
 		p = ObjectController.buildSpawnPacket(self)
 		p.add(net.Uint8(self.entity.actor.getId()))
-		p.add(net.Uint8(self.entity.team.getId()))
+		p.add(net.Uint8(self.entity.getTeam().getId()))
 		return p
 	
 	@staticmethod
@@ -687,7 +687,7 @@ class MolotovController(ObjectController):
 		entity = entities.Molotov(aiWorld.world, aiWorld.space)
 		entity = ObjectController.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
 		entity.setActor(entityGroup.getEntity(net.Uint8.getFrom(iterator)))
-		entity.setTeam(entityGroup.getEntity(net.Uint8.getFrom(iterator)))
+		entity.setTeamId(net.Uint8.getFrom(iterator))
 		return entity
 		
 	def setEntity(self, entity):
@@ -732,7 +732,7 @@ class MolotovController(ObjectController):
 			self.particleGroup.isIndependent = True
 			particles.add(self.particleGroup)
 		self.particleGroup.setPosition(pos)
-		for enemy in (x for x in entityGroup.entities.values() if isinstance(x, entities.Actor) and not x.team.isAlly(self.entity.team) and (x.getPosition() - self.entity.getPosition()).length() < 8.0):
+		for enemy in (x for x in entityGroup.entities.values() if isinstance(x, entities.Actor) and not x.getTeam().isAlly(self.entity.getTeam()) and (x.getPosition() - self.entity.getPosition()).length() < 8.0):
 			enemy.controller.setOnFire(self.entity.actor)
 	
 	def delete(self, killed = False):
@@ -755,15 +755,15 @@ class ActorController(ObjectController):
 	
 	def buildSpawnPacket(self):
 		p = ObjectController.buildSpawnPacket(self)
-		p.add(net.Uint8(self.entity.team.getId()))
+		p.add(net.Uint8(self.entity.getTeam().getId()))
 		return p
 	
 	@staticmethod
 	def readSpawnPacket(aiWorld, entityGroup, iterator, entity = None):
 		entity = ObjectController.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
-		entity.setTeam(entityGroup.getEntity(net.Uint8.getFrom(iterator)))
+		entity.setTeamId(net.Uint8.getFrom(iterator))
 		if not isinstance(entity, entities.PlayerDroid):
-			entity.team.actors.append(entity)
+			entity.getTeam().actors.append(entity)
 		return entity
 
 	def serverUpdate(self, aiWorld, entityGroup, packetUpdate):
@@ -779,7 +779,7 @@ class ActorController(ObjectController):
 					p.add(p2)
 		p.add(net.Uint8(255)) # End of component packets
 		p.add(net.Boolean(self.onFire))
-		if self.entity.health < self.entity.maxHealth and (engine.clock.time - self.lastDamage > 4.0 or (self.entity.team.dock != None and (self.entity.team.dock.getPosition() - self.entity.getPosition()).length() < self.entity.team.dock.radius)):
+		if self.entity.health < self.entity.maxHealth and (engine.clock.time - self.lastDamage > 4.0 or (self.entity.getTeam().dock != None and (self.entity.getTeam().dock.getPosition() - self.entity.getPosition()).length() < self.entity.getTeam().dock.radius)):
 			self.healthAddition += 60 * engine.clock.timeStep
 		self.entity.health += int(self.healthAddition)
 		self.lastHealthAddition = self.healthAddition
@@ -1061,7 +1061,7 @@ class PlayerController(DroidController):
 	def readSpawnPacket(aiWorld, entityGroup, iterator, entity = None):
 		entity = entities.PlayerDroid(aiWorld.world, aiWorld.space, PlayerController(), local = False)
 		entity = DroidController.readSpawnPacket(aiWorld, entityGroup, iterator, entity)
-		entity.team.setPlayer(entity)
+		entity.getTeam().setPlayer(entity)
 		entity.setUsername(net.String.getFrom(iterator))
 		engine.log.debug("Spawning remote player " + entity.username + " - ID: " + str(entity.getId()))
 		return entity
@@ -1104,7 +1104,6 @@ class PlayerController(DroidController):
 			self.accept("e", self.issueCommand, [1])
 			self.commandSound = audio.FlatSound("sounds/command.ogg", 0.5)
 			self.sprintSound = audio.FlatSound("sounds/sprint.ogg", 0.5)
-			self.jumpSound = audio.FlatSound("sounds/jump.ogg", 0.5)
 		
 	def sprint(self):
 		if engine.inputEnabled:
@@ -1137,7 +1136,7 @@ class PlayerController(DroidController):
 	
 	def issueCommand(self, id):
 		if engine.inputEnabled:
-			actors = [x for x in self.entity.team.actors if x.teamIndex == id]
+			actors = [x for x in self.entity.getTeam().actors if x.teamIndex == id]
 			if len(actors) > 0:
 				actor = actors[0]
 				if engine.clock.time - self.lastCommandTimes[id] < 0.4:
@@ -1172,7 +1171,6 @@ class PlayerController(DroidController):
 			if engine.clock.time - self.lastJump > 0.25 and aiWorld.testCollisions(self.entity.collisionNodePath).getNumEntries() > 0:
 				self.lastJump = engine.clock.time
 				self.entity.setLinearVelocity(self.entity.getLinearVelocity() + Vec3(0, 0, 16))
-				self.jumpSound.play()
 		if self.keyMap["switch-weapon"]:
 			self.keyMap["switch-weapon"] = False
 			if self.activeWeapon == 1:
@@ -1273,7 +1271,7 @@ class PlayerController(DroidController):
 		dir = render.getRelativeVector(camera, Vec3(0, 1, 0))
 		closestDot = 0.95
 		self.targetedEnemy = None
-		for enemy in (x for x in entityGroup.entities.values() if isinstance(x, entities.DropPod) or ((isinstance(x, entities.Actor) and not x.team.isAlly(self.entity.team) and not x.cloaked))):
+		for enemy in (x for x in entityGroup.entities.values() if isinstance(x, entities.DropPod) or ((isinstance(x, entities.Actor) and not x.getTeam().isAlly(self.entity.getTeam()) and not x.cloaked))):
 			vector = enemy.getPosition() - origin
 			vector.normalize()
 			dot = vector.dot(dir)
@@ -1336,7 +1334,7 @@ class PlayerController(DroidController):
 						else:
 							controller.setTarget(target)
 		
-		particles.UnitHighlightParticleGroup.draw(self.entity.getPosition(), self.entity.team.color, self.entity.radius + 0.4)
+		particles.UnitHighlightParticleGroup.draw(self.entity.getPosition(), self.entity.getTeam().color, self.entity.radius + 0.4)
 
 		weapon = self.entity.components[self.activeWeapon]
 		if weapon.selected and self.sprinting:
@@ -1403,23 +1401,23 @@ class AIController(DroidController):
 		if engine.clock.time - self.lastPathFind > 1.0:
 			self.lastPathFind = engine.clock.time
 			
-			player = self.entity.team.getPlayer()
+			player = self.entity.getTeam().getPlayer()
 			if player == None and (self.targetedEnemy == None or not self.targetedEnemy.active):
 				self.targetedEnemy = aiWorld.getNearestDropPod(entityGroup, self.entity.getPosition())
 				if self.targetedEnemy == None:
-					self.targetedEnemy = aiWorld.getNearestEnemy(entityGroup, self.entity.getPosition(), self.entity.team)
+					self.targetedEnemy = aiWorld.getNearestEnemy(entityGroup, self.entity.getPosition(), self.entity.getTeam())
 			if self.targetedEnemy != None and self.targetedEnemy.active and isinstance(self.targetedEnemy, entities.Actor):
 				self.nearestEnemy = self.targetedEnemy
 			elif self.nearestEnemy == None or not self.nearestEnemy.active or (self.nearestEnemy.getPosition() - self.entity.getPosition()).length() > 15:
-				self.nearestEnemy = aiWorld.getNearestEnemy(entityGroup, self.entity.getPosition(), self.entity.team)
+				self.nearestEnemy = aiWorld.getNearestEnemy(entityGroup, self.entity.getPosition(), self.entity.getTeam())
 			
 			aiNode = aiWorld.navMesh.getNode(self.entity.getPosition(), self.entity.radius, self.lastAiNode)
 			targetAiNode = None
 			target = None
 			if self.targetedEnemy != None and self.targetedEnemy.active:
 				target = self.targetedEnemy
-			elif self.entity.team.getPlayer() != None and self.entity.team.getPlayer().active:
-				target = self.entity.team.getPlayer()
+			elif self.entity.getTeam().getPlayer() != None and self.entity.getTeam().getPlayer().active:
+				target = self.entity.getTeam().getPlayer()
 			if target != None:
 				targetAiNode = aiWorld.navMesh.getNode(target.getPosition(), target.radius)
 				if (target.getPosition() - self.entity.getPosition()).length() > 10:
@@ -1536,8 +1534,8 @@ class Special(DirectObject):
 			self.criticalPackets.append(p)
 
 	def enable(self):
-		if self.actor.team.specialAvailable():
-			self.actor.team.enableSpecial()
+		if self.actor.getTeam().specialAvailable():
+			self.actor.getTeam().enableSpecial()
 			self.timer = engine.clock.time
 			self.newEnabled = True
 	
@@ -1594,7 +1592,7 @@ class KamikazeSpecial(Special):
 				self.specialSound.play(entity = self.actor)
 			self.triggered = True
 			for entity in entityGroup.entities.values():
-				if isinstance(entity, entities.ObjectEntity) and not (isinstance(entity, entities.Actor) and entity.team.isAlly(self.actor.team)):
+				if isinstance(entity, entities.ObjectEntity) and not (isinstance(entity, entities.Actor) and entity.getTeam().isAlly(self.actor.getTeam())):
 					vector = self.actor.getPosition() - entity.getPosition()
 					distance = vector.length()
 					vector /= distance
@@ -1626,17 +1624,17 @@ class ShieldSpecial(Special):
 			self.shieldSound.play(entity = self.actor)
 		self.lastEnabled = self.enabled
 		self.actor.setShielded(True)
-		player = self.actor.team.getPlayer()
+		player = self.actor.getTeam().getPlayer()
 		if player != None and player != self.actor:
 			player.setShielded(self.enabled or player.initialSpawnShieldEnabled or isinstance(player.special, ShieldSpecial))
-		for actor in (x for x in self.actor.team.actors if x != self.actor):
+		for actor in (x for x in self.actor.getTeam().actors if x != self.actor):
 			actor.setShielded(self.enabled or actor.initialSpawnShieldEnabled or isinstance(actor.special, ShieldSpecial))
 
 	def delete(self):
 		Special.delete(self)
-		for actor in (x for x in self.actor.team.actors if x != self.actor):
+		for actor in (x for x in self.actor.getTeam().actors if x != self.actor):
 			actor.setShielded(False or actor.initialSpawnShieldEnabled or isinstance(actor.special, ShieldSpecial))
-		player = self.actor.team.getPlayer()
+		player = self.actor.getTeam().getPlayer()
 		if player != None:
 			player.setShielded(False or player.initialSpawnShieldEnabled or isinstance(player.special, ShieldSpecial))
 
@@ -1654,18 +1652,18 @@ class CloakSpecial(Special):
 		if self.enabled and not self.lastEnabled:
 			self.cloakSound.play(entity = self.actor)
 		self.lastEnabled = self.enabled
-		for actor in (x for x in self.actor.team.actors if x != self.actor):
+		for actor in (x for x in self.actor.getTeam().actors if x != self.actor):
 			actor.setCloaked(self.enabled or isinstance(actor.special, CloakSpecial))
-		if self.actor.team.getPlayer() != None:
-			self.actor.team.getPlayer().setCloaked(self.enabled or isinstance(self.actor.team.getPlayer().special, CloakSpecial))
+		if self.actor.getTeam().getPlayer() != None:
+			self.actor.getTeam().getPlayer().setCloaked(self.enabled or isinstance(self.actor.getTeam().getPlayer().special, CloakSpecial))
 		self.actor.setCloaked(True)
 	
 	def delete(self):
 		Special.delete(self)
-		for actor in (x for x in self.actor.team.actors if x != self.actor):
+		for actor in (x for x in self.actor.getTeam().actors if x != self.actor):
 			actor.setCloaked(False or isinstance(actor.special, CloakSpecial))
-		if self.actor.team.getPlayer() != None:
-			self.actor.team.getPlayer().setCloaked(False or isinstance(self.actor.team.getPlayer().special, CloakSpecial))
+		if self.actor.getTeam().getPlayer() != None:
+			self.actor.getTeam().getPlayer().setCloaked(False or isinstance(self.actor.getTeam().getPlayer().special, CloakSpecial))
 
 AWESOME_SPECIAL = 131
 class AwesomeSpecial(Special):
@@ -1717,7 +1715,7 @@ class RocketSpecial(Special):
 				if self.actor.controller.targetedEnemy != None and self.actor.controller.targetedEnemy.active:
 					self.target = self.actor.controller.targetedEnemy.getPosition()
 				else:
-					target = aiWorld.getNearestEnemy(entityGroup, self.actor.getPosition(), self.actor.team)
+					target = aiWorld.getNearestEnemy(entityGroup, self.actor.getPosition(), self.actor.getTeam())
 					if target != None:
 						self.target = target.getPosition()
 				self.rocketSound.play(position = self.start)
