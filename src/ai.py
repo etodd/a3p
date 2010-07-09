@@ -107,7 +107,7 @@ class World:
 		"Gets an entity on any opposing team with the smallest straight-line distance from the specified position."
 		distance = -1
 		enemy = None
-		for entity in (x for x in entityGroup.entities.values() if isinstance(x, entities.BasicDroid) and ((not x.cloaked) or includeCloakedUnits) and (not team.isAlly(x.team))):
+		for entity in (x for x in entityGroup.entities.values() if isinstance(x, entities.BasicDroid) and ((not x.cloaked) or includeCloakedUnits) and (not team.isAlly(x.getTeam()))):
 			vector = pos - entity.getPosition()
 			if vector.length() < distance or distance == -1:
 				distance = vector.length()
@@ -150,7 +150,7 @@ class World:
 	def getNearestOpenSpawnPoint(self, team, entityGroup, pos, minRadius = 50):
 		dockList = [team.dock] if team.dock != None else []
 		points = sorted(dockList + self.spawnPoints, key = lambda x: (x.getPosition() - pos).length())
-		enemies = [x for x in entityGroup.entities.values() if isinstance(x, entities.Actor) and x.team != team]
+		enemies = [x for x in entityGroup.entities.values() if isinstance(x, entities.Actor) and x.getTeam() != team]
 		for point in points:
 			p = point.getPosition()
 			open = True
@@ -179,7 +179,7 @@ class World:
 		if team != None and team.dock != None:
 			spawns.append(team.dock)
 		goodSpawns = []
-		enemies = [x for x in entityGroup.entities.values() if isinstance(x, entities.Actor) and x.team != team]
+		enemies = [x for x in entityGroup.entities.values() if isinstance(x, entities.Actor) and x.getTeam() != team]
 		for point in spawns:
 			p = point.getPosition()
 			open = True

@@ -210,6 +210,8 @@ class NetManager(DirectObject):
 				elif type == net.PACKET_SETUP:
 					if net.netMode == net.MODE_CLIENT:
 						messenger.send("client-setup", [iterator])
+					else:
+						return False
 					rebroadcast = False
 				elif type == net.PACKET_CHAT:
 					messenger.send("chat-incoming", [net.String.getFrom(iterator), net.String.getFrom(iterator)]) # Username and message
@@ -287,6 +289,7 @@ class NetManager(DirectObject):
 					rebroadcast = False
 		except AssertionError:
 			engine.log.warning("Packet iteration failed. Discarding packet.")
+			rebroadcast = False
 		return rebroadcast
 
 	def update(self, backend):

@@ -206,7 +206,7 @@ class GameUI(DirectObject):
 		for i in range(len(self.teams)):
 			team = self.teams[i]
 			for bot in (x for x in team.actors if x.active):
-				if bot.team.isAlly(self.localTeam):
+				if bot.getTeam().isAlly(self.localTeam):
 					allyList.append(bot)
 			player = team.getPlayer()
 			if team != self.localTeam:
@@ -231,7 +231,7 @@ class GameUI(DirectObject):
 		for i in range(len(allyList)):
 			actor = allyList[i]
 			self.healthBars[i].show()
-			if actor.team == self.localTeam:
+			if actor.getTeam() == self.localTeam:
 				self.healthBars[i].setTeamIndex(actor.teamIndex)
 			else:
 				self.healthBars[i].setTeamIndex(-1)
@@ -242,7 +242,7 @@ class GameUI(DirectObject):
 				img.setTransparency(TransparencyAttrib.MAlpha)
 			self.healthBars[i].setPos(actor.getPosition() + Vec3(0, 0, actor.radius + 1))
 			self.healthBars[i].setValue(actor.health, actor.maxHealth)
-			self.healthBars[i].setColor(actor.team.color)
+			self.healthBars[i].setColor(actor.getTeam().color)
 			self.healthBars[i].setScale((camera.getPos() - self.healthBars[i].getPos()).length() * 0.07)
 			
 		i = 0
@@ -481,7 +481,6 @@ class UnitSelectorScreen(DirectObject):
 	codes = [components.MOLOTOV_THROWER, components.GRENADE_LAUNCHER, components.SNIPER, components.PISTOL, components.SHOTGUN, components.CHAINGUN, controllers.AWESOME_SPECIAL, controllers.ROCKET_SPECIAL, controllers.CLOAK_SPECIAL, controllers.SHIELD_SPECIAL, controllers.KAMIKAZE_SPECIAL]
 	def __init__(self, startCallback):
 		self.startCallback = startCallback
-		self.team = None
 		self.hidden = False
 		self.pressed = False
 		self.selectedIcon = None
@@ -491,12 +490,13 @@ class UnitSelectorScreen(DirectObject):
 		self.playerSlots = []
 		self.unitSlots = []
 		self.purchases = []
+		self.team = None
 		
 		self.accept("mouse1", self.click)
 		self.accept("mouse1-up", self.release)
 		self.accept("mouse3", self.rightClick)
 		
-		self.container = DirectFrame(frameColor = (0.0, 0.0, 0.0, 0.0), frameSize=(-1.15, 1.15, -0.85, 0.75), pos = (0, 0, 0), sortOrder = -1)
+		self.container = DirectFrame(parent = aspect2d, frameColor = (0.0, 0.0, 0.0, 0.0), frameSize=(-1.15, 1.15, -0.85, 0.75), pos = (0, 0, 0), sortOrder = -1)
 		self.container.setBin("fixed", 0)
 		self.background = OnscreenImage(image = "menu/background.jpg", pos = (0, 0, -0.05), parent = self.container, scale = (1.15, 1, 0.8))
 		self.background.setTransparency(TransparencyAttrib.MAlpha)
@@ -567,7 +567,9 @@ class UnitSelectorScreen(DirectObject):
 		self.unitSlots.append(slot)
 		slot = UnitIconSlot(-1, UnitIconSlot.AcceptsSpecials, Vec3(0.3, 0, -0.7), "images/special-slot.png", isSpecial = True)
 		self.unitSlots.append(slot)
-		
+	
+	def setTeam(self, team):	
+		self.team = team
 	
 	def rightClick(self):
 		if not self.hidden:
@@ -650,9 +652,6 @@ class UnitSelectorScreen(DirectObject):
 		height = float(props.getYSize())
 		aspectRatio = width / height
 		return Vec3(((float(x) / width) - 0.5) * aspectRatio * 2, 0, (-float(y) / height) * 2.0 + 1.0)
-	
-	def setTeam(self, team):
-		self.team = team
 
 	def show(self):
 		self.hidden = False

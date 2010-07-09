@@ -359,7 +359,7 @@ class ChainGun(Gun):
 						if entity != None:
 							entity.damage(self.actor, damage)
 							if isinstance(entity, entities.Actor):
-								particles.add(particles.HitRegisterParticleGroup(hitPos - direction, entity.team.color, damage * 2 / self.damage))
+								particles.add(particles.HitRegisterParticleGroup(hitPos - direction, entity.getTeam().color, damage * 2 / self.damage))
 							else:
 								particles.add(particles.SparkParticleGroup(hitPos))
 					else:
@@ -462,7 +462,7 @@ class Shotgun(Gun):
 						if entity != None:
 							entity.damage(self.actor, damage)
 							if isinstance(entity, entities.Actor):
-								particles.add(particles.HitRegisterParticleGroup(hitPos - direction, entity.team.color, (damage * 3) / self.damage))
+								particles.add(particles.HitRegisterParticleGroup(hitPos - direction, entity.getTeam().color, (damage * 3) / self.damage))
 					else:
 						self.ricochetSound.play(position = hitPos)
 		if engine.clock.time - self.lastFire > 0.1:
@@ -558,7 +558,7 @@ class SniperRifle(Gun):
 						if entity != None:
 							entity.damage(self.actor, damage)
 							if isinstance(entity, entities.Actor):
-								particles.add(particles.HitRegisterParticleGroup(hitPos - direction, entity.team.color, damage / self.damage))
+								particles.add(particles.HitRegisterParticleGroup(hitPos - direction, entity.getTeam().color, damage / self.damage))
 							else:
 								particles.add(particles.SparkParticleGroup(hitPos))
 					else:
@@ -615,7 +615,7 @@ class MeleeClaw(Weapon):
 		if self.firing and self.active:
 			self.addCriticalPacket(p, packetUpdate)
 			p.add(net.Uint8(1)) # 1 = We're starting to impale an entity
-			enemy = aiWorld.getNearestEnemy(entityGroup, self.actor.getPosition(), self.actor.team, includeCloakedUnits = True)
+			enemy = aiWorld.getNearestEnemy(entityGroup, self.actor.getPosition(), self.actor.getTeam(), includeCloakedUnits = True)
 			if enemy != None:
 				vector = self.actor.controller.targetPos - base.camera.getPos()
 				vector2 = enemy.getPosition() - base.camera.getPos()
@@ -665,7 +665,7 @@ class MeleeClaw(Weapon):
 				enemy = entityGroup.getEntity(net.Uint8.getFrom(iterator))
 				if enemy != None and enemy.active:
 					pos = (enemy.getPosition() + self.actor.getPosition()) * 0.5
-					particles.add(particles.HitRegisterParticleGroup(pos, enemy.team.color, 2))
+					particles.add(particles.HitRegisterParticleGroup(pos, enemy.getTeam().color, 2))
 					enemy.damage(self.actor, self.damage, False)
 		
 		# Animation code
@@ -721,7 +721,7 @@ class GrenadeLauncher(Weapon):
 			
 			origin = self.actor.getPosition() + (direction * (self.actor.radius + 0.1))
 			grenade = entities.Grenade(aiWorld.world, aiWorld.space)
-			grenade.setTeam(self.actor.team)
+			grenade.setTeam(self.actor.getTeam())
 			grenade.setActor(self.actor)
 			grenade.setPosition(origin)
 			grenade.setLinearVelocity(direction * 40)
@@ -765,7 +765,7 @@ class MolotovThrower(Weapon):
 			
 			origin = self.actor.getPosition() + (direction * (self.actor.radius + 0.1))
 			grenade = entities.Molotov(aiWorld.world, aiWorld.space)
-			grenade.setTeam(self.actor.team)
+			grenade.setTeam(self.actor.getTeam())
 			grenade.setActor(self.actor)
 			grenade.setPosition(origin)
 			grenade.setLinearVelocity(direction * 40)
@@ -905,7 +905,7 @@ class Pistol(Gun):
 								
 							entity.damage(self.actor, damage)
 							if isinstance(entity, entities.Actor):
-								particles.add(particles.HitRegisterParticleGroup(hitPos - direction, entity.team.color, damage * 2 / self.damage))
+								particles.add(particles.HitRegisterParticleGroup(hitPos - direction, entity.getTeam().color, damage * 2 / self.damage))
 							else:
 								particles.add(particles.SparkParticleGroup(hitPos))
 					else:

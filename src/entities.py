@@ -13,6 +13,7 @@ import particles
 class EntityGroup(DirectObject):
 	"""An entity group handles all the logistics of Entities and Impostors.
 	The entity group actually steps the ODE world and space in the AI world, and it updates all the controllers as well."""
+	default = None
 	def __init__(self, netManager):
 		self.entities = dict()
 		self.graphicsObjects = []
@@ -25,6 +26,8 @@ class EntityGroup(DirectObject):
 		self.cameraShakeTime = 0.9
 		self.manager = netManager
 		self.teams = []
+		EntityGroup.default = self
+		TeamEntity.default = TeamEntity()
 
 	def update(self):
 		"Updates all graphics objects, clears deleted entities, shakes the camera."
@@ -581,6 +584,7 @@ class TeamEntity(Entity):
 	"""A team is used to purchase new units. Each team has a controller and a color associated with it.
 	The team also tracks which actors are on the team."""
 	costs = {None:0, components.SHOTGUN:250, components.CHAINGUN:150, components.SNIPER:400, components.GRENADE_LAUNCHER:500, components.PISTOL:300, components.MOLOTOV_THROWER:550, controllers.CLOAK_SPECIAL:450, controllers.SHIELD_SPECIAL:300, controllers.AWESOME_SPECIAL:500, controllers.KAMIKAZE_SPECIAL:250, controllers.ROCKET_SPECIAL:600}
+	defaultTeam = None
 	def __init__(self):
 		Entity.__init__(self, controllers.TeamEntityController(), local = False)
 		self.actors = []
@@ -693,6 +697,7 @@ class Actor(ObjectEntity):
 	Actors can contain components, such as guns, engines, shields, etc."""
 	def __init__(self, world, space, filename, controller, local = net.netMode == net.MODE_SERVER):
 		self.team = None
+		self.teamId = 0
 		self.health = 100
 		self.maxHealth = 100
 		self.rangedDamageRatio = 1.0
@@ -705,6 +710,21 @@ class Actor(ObjectEntity):
 		self.pinRotation = None
 		self.pinTime = 0
 		ObjectEntity.__init__(self, filename, controller, local)
+	
+	def getTeam(self):
+		if self.team == None:
+			team = EntityGroup.default.getEntity(self.teamId)
+			if team != None:
+				self.setTeam(team)
+				return self.team
+			else:
+				return TeamEntity.default
+		else:
+			return self.team
+	
+	def setTeamId(self, id):
+		self.teamId = id
+		self.getTeam() # Trigger the process to try and find our team. If it hasn't spawned yet, we get the default team.
 	
 	def setTeam(self, team):
 		self.team = team
@@ -727,7 +747,7 @@ class Actor(ObjectEntity):
 		self.pinTime = engine.clock.time
 
 	def damage(self, entity, damage, ranged = True):
-		if self.health > 0 and (not isinstance(entity, Actor) or entity == self or (not entity.team.isAlly(self.team) and self.active)):
+		if self.health > 0 and (not isinstance(entity, Actor) or entity == self or (not entity.getTeam().isAlly(self.getTeam()) and self.active)):
 			if ranged:
 				actualDamage = int(math.ceil(damage * self.rangedDamageRatio))
 			else:
@@ -743,7 +763,7 @@ class Actor(ObjectEntity):
 			if self.killer == self:
 				score *= -1
 			if isinstance(self.killer, Actor):
-				self.killer.team.controller.addScore(score)
+				self.killer.getTeam().controller.addScore(score)
 				if isinstance(self.killer, PlayerDroid) and self.killer.isLocal:
 					entityGroup.shakeCamera()
 		ObjectEntity.kill(self, aiWorld, entityGroup, localDelete)
@@ -751,7 +771,7 @@ class Actor(ObjectEntity):
 	def delete(self, entityGroup, killed = False, localDelete = True):
 		for component in self.components:
 			component.delete()
-		self.team.removeActor(self)
+		self.getTeam().removeActor(self)
 		ObjectEntity.delete(self, entityGroup, killed, localDelete)
 	
 	def clear(self, entityGroup):
@@ -859,13 +879,12 @@ class BasicDroid(Actor):
 class PlayerDroid(BasicDroid):
 	def __init__(self, world, space, controller, local = net.netMode == net.MODE_SERVER):
 		BasicDroid.__init__(self, world, space, controller, local)
-		print "done"
 		self.username = "Unnamed"
 		self.scoreMultiplier = 2.0
 	
 	def setTeam(self, team):
 		BasicDroid.setTeam(self, team)
-		self.team.setPlayer(self)
+		self.getTeam().setPlayer(self)
 	
 	def setWeapons(self, weapons):
 		self.components.append(components.MeleeClaw(self, 0))
@@ -878,6 +897,7 @@ class Grenade(ObjectEntity):
 	"Grenades trigger an explosion animation when damaged. Most of the action happens in the GrenadeController."
 	def __init__(self, world, space):
 		self.team = None
+		self.teamId = 0
 		ObjectEntity.__init__(self, "models/grenade/Grenade", controllers.GrenadeController())
 		self.collisionNode = CollisionNode("cnode")
 		self.collisionNodePath = self.node.attachNewNode(self.collisionNode)
@@ -895,6 +915,21 @@ class Grenade(ObjectEntity):
 		self.commitChanges()
 		self.grenadeAlive = True
 		self.actor = None
+	
+	def setTeamId(self, id):
+		self.teamId = id
+		self.getTeam() # Trigger the process to try and find our team. If it hasn't spawned yet, we get the default team.
+	
+	def getTeam(self):
+		if self.team == None:
+			team = entityGroup.getEntity(self.teamId)
+			if team != None:
+				self.setTeam(team)
+				return self.team
+			else:
+				return TeamEntity.default
+		else:
+			return self.team
 	
 	def setActor(self, actor):
 		self.actor = actor

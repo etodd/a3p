@@ -110,7 +110,7 @@ class PythonNetContext(NetworkContext):
 		self.writeQueue = []
 		self.hostListCallback = None
 		self.disconnectCallback = None
-		self.connectionTimeout = 10.0
+		self.connectionTimeout = 10.0 if netMode == MODE_SERVER else 15.0
 		self.clientUsername = "Unnamed"
 		self.lastConnectionAttempt = 0
 		self.connectionAttempts = 0
@@ -143,7 +143,6 @@ class PythonNetContext(NetworkContext):
 		self.activeConnections.clear()
 		self.hostConnection = Connection()
 		self.connectionAttempts = 0
-		del self.writeQueue[:]
 	
 	def bindSocket(self, port):
 		bound = False
@@ -223,9 +222,10 @@ class PythonNetContext(NetworkContext):
 			if self.clientConnected:
 				if self.disconnectCallback != None and timeFunction() - self.hostConnection.lastPacketTime > self.connectionTimeout:
 					self.disconnectCallback(self.hostConnection.address)
+					self.clientConnected = False
 			else:
 				if self.connectionAttempts < 10:
-					if timeFunction() - self.lastConnectionAttempt > 0.25:
+					if timeFunction() - self.lastConnectionAttempt > 0.5:
 						self.clientConnect(self.clientUsername)
 						self.connectionAttempts += 1
 						self.lastConnectionAttempt = timeFunction()
@@ -276,10 +276,8 @@ class PythonNetContext(NetworkContext):
 				elif code == PACKET_CLIENTREADY:
 					if address in self.activeConnections:
 						self.activeConnections[address].ready = True
-			elif self.mode == MODE_CLIENT and address == self.hostConnection.address and code == PACKET_SETUP:
+			elif self.mode == MODE_CLIENT and address == self.hostConnection.address:
 				self.hostConnection.lastPacketTime = timeFunction()
-				if not self.clientConnected:
-					self.clientConnected = True
 			readQueue.append((message, address))
 		return readQueue
 	
