@@ -664,6 +664,8 @@ class Game(DirectObject):
 			self.promptText.destroy()
 		if not self.scoreText.isEmpty():
 			self.scoreText.destroy()
+			
+		self.ignoreAll()
 
 class Tutorial(Game):
 	def __init__(self, backend, index):
