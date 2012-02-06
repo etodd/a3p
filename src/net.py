@@ -197,16 +197,25 @@ class PythonNetContext(NetworkContext):
 			if data[0] == 0: # Broadcast
 				for c in (x for x in self.activeConnections.values() if x.ready):
 					c.lastSentPacketTime = timeFunction()
-					self.socket.sendto(compressedData, c.address)
+					try:
+						self.socket.sendto(compressedData, c.address)
+					except error:
+						pass
 			elif data[0] == 1: # Send to specific machine
-				self.socket.sendto(compressedData, data[2])
+				try:
+					self.socket.sendto(compressedData, data[2])
+				except error:
+					pass
 				if data[2] in self.activeConnections:
 					self.activeConnections[data[2]].lastSentPacketTime = timeFunction()
 				elif compareAddresses(data[2], self.hostConnection.address):
 					self.hostConnection.lastSentPacketTime = timeFunction()
 			elif data[0] == 2: # Broadcast, excluding one machine
 				for c in (x for x in self.activeConnections.values() if x.ready and not compareAddresses(x.address, data[2])):
-					self.socket.sendto(compressedData, c.address)
+					try:
+						self.socket.sendto(compressedData, c.address)
+					except error:
+						pass
 					c.lastSentPacketTime = timeFunction()
 		del self.writeQueue[:]
 
